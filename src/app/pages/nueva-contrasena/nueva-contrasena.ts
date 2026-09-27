@@ -9,13 +9,14 @@ import {
 } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { PasswordToggle } from '../../shared/password-toggle/password-toggle';
 
 /** Estado del token que llega en el enlace del correo. */
 type EstadoToken = 'sin-token' | 'validando' | 'valido' | 'invalido';
 
 @Component({
   selector: 'app-nueva-contrasena',
-  imports: [RouterLink, ReactiveFormsModule],
+  imports: [RouterLink, ReactiveFormsModule, PasswordToggle],
   templateUrl: './nueva-contrasena.html',
   styleUrl: './nueva-contrasena.scss',
 })
@@ -34,6 +35,8 @@ export class NuevaContrasena {
   readonly estado = signal<EstadoToken>('validando');
   readonly cargando = signal(false);
   readonly error = signal<string | null>(null);
+  readonly mostrarPassword = signal(false);
+  readonly mostrarConfirmar = signal(false);
 
   /** Token del enlace: se lee una sola vez, no cambia mientras dura la pantalla. */
   private readonly token = inject(ActivatedRoute).snapshot.queryParamMap.get('token')?.trim() ?? '';

@@ -33,24 +33,30 @@
 
     <div class="ab-field">
       <label class="ab-label" for="password">Contraseña</label>
-      <input
-        class="ab-input"
-        id="password"
-        type="password"
-        placeholder="••••••••"
-        autocomplete="new-password"
-      />
+      <div class="ab-password">
+        <input
+          class="ab-input"
+          id="password"
+          [type]="mostrarPassword() ? 'text' : 'password'"
+          placeholder="••••••••"
+          autocomplete="new-password"
+        />
+        <app-password-toggle [visible]="mostrarPassword()" (visibleChange)="mostrarPassword.set($event)" />
+      </div>
     </div>
 
     <div class="ab-field">
       <label class="ab-label" for="confirmar">Confirmar contraseña</label>
-      <input
-        class="ab-input"
-        id="confirmar"
-        type="password"
-        placeholder="••••••••"
-        autocomplete="new-password"
-      />
+      <div class="ab-password">
+        <input
+          class="ab-input"
+          id="confirmar"
+          [type]="mostrarConfirmar() ? 'text' : 'password'"
+          placeholder="••••••••"
+          autocomplete="new-password"
+        />
+        <app-password-toggle [visible]="mostrarConfirmar()" (visibleChange)="mostrarConfirmar.set($event)" />
+      </div>
     </div>
 
     <button class="ab-button ab-button--lg perfil__guardar" type="button">

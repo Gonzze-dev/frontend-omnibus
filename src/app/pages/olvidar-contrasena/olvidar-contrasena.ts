@@ -3,10 +3,11 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { Toast } from '../../shared/toast/toast';
 
 @Component({
   selector: 'app-olvidar-contrasena',
-  imports: [RouterLink, ReactiveFormsModule],
+  imports: [RouterLink, ReactiveFormsModule, Toast],
   templateUrl: './olvidar-contrasena.html',
   styleUrl: './olvidar-contrasena.scss',
 })
@@ -20,6 +21,7 @@ export class OlvidarContrasena {
   readonly cargando = signal(false);
   readonly error = signal<string | null>(null);
   readonly enviado = signal<string | null>(null);
+  readonly mostrarToast = signal(false);
 
   enviarEnlace(): void {
     if (this.form.invalid) {
@@ -39,6 +41,7 @@ export class OlvidarContrasena {
           res.message ||
             'Si el email esta registrado, te llegara un correo para cambiar tu contraseña.',
         );
+        this.mostrarToast.set(true);
       },
       error: (err: HttpErrorResponse) => {
         this.cargando.set(false);

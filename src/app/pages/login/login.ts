@@ -3,10 +3,11 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { PasswordToggle } from '../../shared/password-toggle/password-toggle';
 
 @Component({
   selector: 'app-login',
-  imports: [RouterLink, ReactiveFormsModule],
+  imports: [RouterLink, ReactiveFormsModule, PasswordToggle],
   templateUrl: './login.html',
   styleUrl: './login.scss',
 })
@@ -21,6 +22,7 @@ export class Login {
 
   readonly cargando = signal(false);
   readonly error = signal<string | null>(null);
+  readonly mostrarPassword = signal(false);
 
   /** Aviso que deja /reset-password al terminar de cambiar la contraseña. */
   readonly cambioOk = signal(

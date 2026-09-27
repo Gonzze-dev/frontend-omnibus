@@ -15,8 +15,12 @@
       <form class="nueva__form" [formGroup]="form" (ngSubmit)="guardar()" novalidate>
         <div class="ab-field">
           <label class="ab-label" for="password">Contraseña</label>
-          <input class="ab-input" id="password" type="password" placeholder="••••••••" autocomplete="new-password"
-                 formControlName="password" [attr.aria-invalid]="invalido('password')" />
+          <div class="ab-password">
+            <input class="ab-input" id="password" [type]="mostrarPassword() ? 'text' : 'password'"
+                   placeholder="••••••••" autocomplete="new-password"
+                   formControlName="password" [attr.aria-invalid]="invalido('password')" />
+            <app-password-toggle [visible]="mostrarPassword()" (visibleChange)="mostrarPassword.set($event)" />
+          </div>
           @if (invalido('password')) {
             <p class="ab-field-error">La contraseña debe tener al menos 8 caracteres.</p>
           }
@@ -24,8 +28,12 @@
 
         <div class="ab-field">
           <label class="ab-label" for="confirmar">Confirmar contraseña</label>
-          <input class="ab-input" id="confirmar" type="password" placeholder="••••••••" autocomplete="new-password"
-                 formControlName="confirmar" [attr.aria-invalid]="invalido('confirmar') || noCoinciden()" />
+          <div class="ab-password">
+            <input class="ab-input" id="confirmar" [type]="mostrarConfirmar() ? 'text' : 'password'"
+                   placeholder="••••••••" autocomplete="new-password"
+                   formControlName="confirmar" [attr.aria-invalid]="invalido('confirmar') || noCoinciden()" />
+            <app-password-toggle [visible]="mostrarConfirmar()" (visibleChange)="mostrarConfirmar.set($event)" />
+          </div>
           @if (invalido('confirmar')) {
             <p class="ab-field-error">Confirma tu contraseña.</p>
           } @else if (noCoinciden()) {

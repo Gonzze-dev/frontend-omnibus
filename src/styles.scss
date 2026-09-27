@@ -228,6 +228,29 @@ body {
 .ab-input:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 2px; }
 .ab-input[aria-invalid="true"] { box-shadow: inset 0 0 0 1px var(--ab-danger); }
 
+/* Campo de contraseña con boton para mostrar/ocultar */
+.ab-password { position: relative; display: flex; }
+.ab-password .ab-input { padding-right: 44px; }
+
+.ab-password__toggle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 44px;
+  height: var(--ab-input-h);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  color: var(--ab-body);
+  cursor: pointer;
+}
+
+.ab-password__toggle:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: -2px; border-radius: var(--ab-r-input); }
+.ab-password__toggle svg { width: 20px; height: 20px; }
+
 /* Mensaje bajo un campo invalido */
 .ab-field-error {
   margin: 0;

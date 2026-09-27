@@ -10,12 +10,13 @@ import {
 import { Router, RouterLink } from '@angular/router';
 import { switchMap } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
+import { PasswordToggle } from '../../shared/password-toggle/password-toggle';
 
 type Campo = 'nombre' | 'apellido' | 'email' | 'password' | 'confirmar';
 
 @Component({
   selector: 'app-registro',
-  imports: [RouterLink, ReactiveFormsModule],
+  imports: [RouterLink, ReactiveFormsModule, PasswordToggle],
   templateUrl: './registro.html',
   styleUrl: './registro.scss',
 })
@@ -36,6 +37,8 @@ export class Registro {
 
   readonly cargando = signal(false);
   readonly error = signal<string | null>(null);
+  readonly mostrarPassword = signal(false);
+  readonly mostrarConfirmar = signal(false);
 
   crearCuenta(): void {
     if (this.form.invalid) {
