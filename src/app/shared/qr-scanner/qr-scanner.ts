@@ -34,9 +34,15 @@ export class QrScanner implements AfterViewInit, OnDestroy {
   protected readonly cargando = signal(true);
   /** Camara frontal (PC o selfie): se espeja para que se vea como un espejo. */
   protected readonly espejo = signal(false);
+  /** Se detecto el QR: se muestra el check un instante antes de cerrar, para no cortar la camara de golpe. */
+  protected readonly leido = signal(false);
 
   private stream: MediaStream | null = null;
   private frameId = 0;
+  private cierreTimer?: ReturnType<typeof setTimeout>;
+
+  /** Tiempo que se muestra la confirmacion antes de cerrar el modal. */
+  private static readonly PAUSA_LECTURA_MS = 600;
 
   async ngAfterViewInit(): Promise<void> {
     await this.iniciarCamara();
@@ -106,8 +112,13 @@ export class QrScanner implements AfterViewInit, OnDestroy {
     const codigo = jsQR(imagen.data, imagen.width, imagen.height);
 
     if (codigo?.data) {
-      this.codigoLeido.emit(codigo.data);
-      this.cerrarModal();
+      // Se deja de leer frames pero la camara sigue prendida un instante:
+      // el check confirma la lectura antes de que el modal se cierre.
+      this.leido.set(true);
+      this.cierreTimer = setTimeout(() => {
+        this.codigoLeido.emit(codigo.data);
+        this.cerrarModal();
+      }, QrScanner.PAUSA_LECTURA_MS);
       return;
     }
 
@@ -116,6 +127,7 @@ export class QrScanner implements AfterViewInit, OnDestroy {
 
   private detenerCamara(): void {
     cancelAnimationFrame(this.frameId);
+    clearTimeout(this.cierreTimer);
     this.stream?.getTracks().forEach((track) => track.stop());
     this.stream = null;
   }

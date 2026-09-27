@@ -1,6 +1,10 @@
 <div class="home">
   <app-topbar />
 
+  @if (mostrarExito()) {
+    <app-toast mensaje="ID del pasaje cargado con éxito" (cerrado)="mostrarExito.set(false)" />
+  }
+
   @if (esperando()) {
     <app-espera-viaje (buscarOtro)="esperando.set(false)" />
   } @else {
