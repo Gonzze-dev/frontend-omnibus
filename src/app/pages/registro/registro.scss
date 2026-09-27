@@ -18,6 +18,13 @@
   margin-top: 71px;
 }
 
+/* Nombre y apellido comparten fila */
+.registro__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
 /* El boton respira un poco mas que la separacion del formulario */
 .registro__submit {
   margin-top: 0;
