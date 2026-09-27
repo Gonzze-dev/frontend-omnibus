@@ -1,0 +1,39 @@
+.login__brand {
+  padding-top: 66px;
+}
+
+.login__card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ab-card-gap);
+  margin-top: 87px;
+  padding: var(--ab-card-pad);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--ab-r-card);
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: var(--ab-shadow-card);
+}
+
+.login__head {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.login__form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* El link viaja junto al label, sin la mayuscula ni el tracking */
+.login__forgot {
+  flex: none;
+  font-size: var(--ab-fs-label);
+  line-height: 16px;
+}
+
+.login__foot {
+  padding-top: var(--ab-card-gap);
+  border-top: 1px solid var(--ab-line);
+}

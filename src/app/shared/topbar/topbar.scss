@@ -1,0 +1,68 @@
+/* El host no participa del layout: asi el `position: sticky` de la
+   barra se resuelve contra la pagina y no contra el componente. */
+:host { display: contents; }
+
+/* La barra va de borde a borde y sus dos controles se apoyan
+   en las esquinas de la pantalla, no en la columna de contenido. */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: var(--ab-topbar-h);
+  padding: 0 var(--ab-gutter);
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(8px);
+  box-shadow: var(--ab-shadow-bar);
+}
+
+.topbar__menu {
+  display: flex;
+  padding: 8px;
+  border: 0;
+  border-radius: var(--ab-r-button);
+  background: transparent;
+  color: var(--ab-icon-nav);
+  cursor: pointer;
+}
+
+/* Es un <a> hacia /notificaciones: hay que apagar el subrayado
+   que el navegador le pone al numero del badge. */
+.topbar__bell {
+  position: relative;
+  display: flex;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ab-icon-muted);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.topbar__menu:focus-visible,
+.topbar__bell:focus-visible {
+  outline: 2px solid var(--ab-primary);
+  outline-offset: 2px;
+}
+
+.topbar__badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  border: 2px solid var(--ab-white);
+  border-radius: 999px;
+  background: var(--ab-badge);
+  box-shadow: var(--ab-shadow-bar);
+  color: var(--ab-white);
+  font-weight: 700;
+  font-size: 10px;
+  line-height: 15px;
+}

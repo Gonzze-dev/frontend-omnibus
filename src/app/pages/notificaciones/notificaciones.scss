@@ -1,0 +1,117 @@
+/* ============================================================
+   Notificaciones (Figma nodo 35:217)
+   ============================================================ */
+
+.avisos {
+  min-height: calc(100dvh - var(--ab-topbar-h));
+  padding-bottom: 23px;
+}
+
+.avisos__titulo {
+  margin: 0;
+  padding-top: 15px;
+  font-family: Manrope, Inter, sans-serif;
+  font-weight: 800;
+  font-size: var(--ab-fs-display);
+  line-height: 1;
+  letter-spacing: -0.05em;
+  color: var(--ab-primary);
+}
+
+.avisos__bajada {
+  margin: 24px 0 0;
+  font-size: var(--ab-fs-lead);
+  line-height: var(--ab-lh-lead);
+  color: var(--ab-body);
+}
+
+.avisos__lista {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  margin: 45px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* --- Tarjeta de aviso --- */
+/* 116px es el alto del mockup; un titulo largo puede estirarla,
+   que es lo que corresponde cuando los datos sean reales. */
+.aviso {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  min-height: 116px;
+  padding: 20px;
+  border-radius: var(--ab-r-card);
+  background: var(--ab-card);
+}
+
+.aviso__icono {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--ab-r-button);
+  box-shadow: var(--ab-shadow-bar);
+  color: var(--ab-white);
+}
+
+.aviso__icono--retraso  { background: #FD6C00; }
+.aviso__icono--llegada  { background: #34C759; }
+.aviso__icono--servicio { background: #FFCC00; }
+
+.aviso__texto {
+  display: flex;
+  flex-direction: column;
+  gap: 2.75px;
+  min-width: 0;
+}
+
+.aviso__titulo {
+  margin: 0;
+  font-family: Manrope, Inter, sans-serif;
+  font-weight: 700;
+  font-size: var(--ab-fs-h3);
+  line-height: var(--ab-lh-h3);
+  letter-spacing: -0.025em;
+  color: var(--ab-ink);
+}
+
+.aviso__detalle {
+  margin: 0;
+  font-size: var(--ab-fs-body);
+  line-height: 22.8px;
+  color: var(--ab-body);
+}
+
+/* --- Pie --- */
+.avisos__limpiar {
+  display: block;
+  margin: 95px auto 0;
+  padding: 12px 32px;
+  border: 1px solid rgba(196, 197, 214, 0.2);
+  border-radius: var(--ab-r-button);
+  background: var(--ab-field);
+  color: var(--ab-primary);
+  font-family: Manrope, Inter, sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: -0.025em;
+  cursor: pointer;
+}
+
+.avisos__limpiar:hover { background: #D5D6E2; }
+.avisos__limpiar:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 2px; }
+
+/* Estado vacio: no esta en el mockup, hace falta al limpiar la lista */
+.avisos__vacio {
+  margin: 45px 0 0;
+  font-size: var(--ab-fs-lead);
+  line-height: var(--ab-lh-lead);
+  color: var(--ab-placeholder);
+  text-align: center;
+}

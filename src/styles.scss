@@ -1,0 +1,281 @@
+/* ============================================================
+   Alerta Bus - estilos globales
+   Tokens extraidos del Figma "FRONTEND" (mobile, 393px)
+
+   La escala es mobile-first: los valores base son los del
+   mockup y las media queries solo los agrandan. Los botones
+   quedan fuera de la escala a proposito: mantienen su tamaño
+   en todos los anchos.
+   ============================================================ */
+
+:root {
+  /* --- Color --- */
+  --ab-bg:            #F9F9FF;  /* fondo de pantalla        */
+  --ab-primary:       #002C98;  /* azul de marca            */
+  --ab-primary-2:     #1A43BF;  /* fin del degrade          */
+  --ab-ink:           #191B22;  /* titulos                  */
+  --ab-body:          #444654;  /* texto y labels           */
+  --ab-field:         #E1E2EB;  /* fondo de inputs          */
+  --ab-placeholder:   #747685;  /* placeholder (al 50%)     */
+  --ab-card:          #F3F3FC;  /* card clara               */
+  --ab-line:          rgba(196, 197, 214, 0.30);
+  --ab-white:         #FFFFFF;
+  --ab-accent:        #9F4200;  /* pin de ubicacion         */
+  --ab-badge:         #F97316;  /* burbuja de notificacion  */
+  --ab-ok:            #16A34A;  /* aviso de colectivo en anden */
+  --ab-icon-muted:    #64748B;
+  --ab-icon-nav:      #1D4ED8;
+  --ab-muted:         #6B7280;
+  --ab-barcode:       #C4C5D6;
+
+  /* --- Degrade de botones --- */
+  --ab-gradient: linear-gradient(135deg, #002C98 0%, #1A43BF 100%);
+
+  /* --- Radios --- */
+  --ab-r-input:  4px;
+  --ab-r-card:   8px;
+  --ab-r-button: 12px;
+
+  /* --- Sombras --- */
+  --ab-shadow-card:   0 24px 48px rgba(0, 44, 152, 0.08);
+  --ab-shadow-button: 0 4px 6px rgba(0, 44, 152, 0.20), 0 10px 15px rgba(0, 44, 152, 0.20);
+  --ab-shadow-dark:   0 4px 6px rgba(0, 0, 0, 0.10), 0 10px 15px rgba(0, 0, 0, 0.10);
+  --ab-shadow-bar:    0 1px 2px rgba(0, 0, 0, 0.05);
+
+  /* --- Layout --- */
+  --ab-screen-max: 393px;  /* ancho del contenedor centrado */
+  --ab-gutter:      25px;
+  --ab-topbar-h:    60px;
+  --ab-drawer-w:   269px;
+
+  /* --- Escala tipografica --- */
+  --ab-fs-brand: 24px;  --ab-lh-brand: 32px;   /* "Alerta Bus", H1 de pantalla */
+  --ab-fs-title: 24px;  --ab-lh-title: 32px;   /* "Iniciar Sesion"             */
+  --ab-fs-display: 48px;  /* "Notificaciones" */
+  --ab-fs-hero:  32px;  --ab-lh-hero:  28px;   /* "RASTREA TU VIAJE"           */
+  --ab-fs-lead:  18px;  --ab-lh-lead:  28px;   /* bajada del home              */
+  --ab-fs-h3:    18px;  --ab-lh-h3:    28px;   /* "Buscar Terminal"            */
+  --ab-fs-body:  14px;  --ab-lh-body:  20px;
+  --ab-fs-label: 12px;
+  --ab-fs-input: 16px;
+  --ab-fs-drawer: 20px;
+  --ab-lead-max: 283px;
+  --ab-lead-max-sm: 276px;  /* bajadas de registro / olvidar */
+
+  /* --- Medidas de bloque --- */
+  --ab-input-h:     47px;
+  --ab-row-h:       60px;  /* filas blancas de "Buscar Terminal" */
+  --ab-card-pad:    32px;
+  --ab-card-pad-sm: 24px;
+  --ab-card-gap:    32px;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --ab-screen-max: 560px;
+    --ab-gutter:      32px;
+    --ab-topbar-h:    68px;
+    --ab-drawer-w:   300px;
+
+    --ab-fs-brand: 28px;  --ab-lh-brand: 38px;
+    --ab-fs-title: 28px;  --ab-lh-title: 38px;
+    --ab-fs-display: 56px;
+    --ab-fs-hero:  40px;  --ab-lh-hero:  44px;
+    --ab-fs-lead:  19px;  --ab-lh-lead:  30px;
+    --ab-fs-h3:    20px;  --ab-lh-h3:    30px;
+    --ab-fs-body:  15px;  --ab-lh-body:  22px;
+    --ab-fs-label: 13px;
+    --ab-fs-input: 17px;
+    --ab-fs-drawer: 21px;
+    --ab-lead-max: 420px;
+    --ab-lead-max-sm: 480px;
+
+    --ab-input-h:     52px;
+    --ab-row-h:       64px;
+    --ab-card-pad:    40px;
+    --ab-card-pad-sm: 28px;
+    --ab-card-gap:    36px;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --ab-screen-max: 720px;
+    --ab-gutter:      40px;
+    --ab-topbar-h:    72px;
+    --ab-drawer-w:   320px;
+
+    --ab-fs-brand: 32px;  --ab-lh-brand: 42px;
+    --ab-fs-title: 32px;  --ab-lh-title: 42px;
+    --ab-fs-display: 64px;
+    --ab-fs-hero:  48px;  --ab-lh-hero:  52px;
+    --ab-fs-lead:  20px;  --ab-lh-lead:  32px;
+    --ab-fs-h3:    22px;  --ab-lh-h3:    32px;
+    --ab-fs-body:  16px;  --ab-lh-body:  24px;
+    --ab-fs-label: 14px;
+    --ab-fs-input: 18px;
+    --ab-fs-drawer: 22px;
+    --ab-lead-max: 520px;
+    --ab-lead-max-sm: 520px;
+
+    --ab-input-h:     56px;
+    --ab-row-h:       68px;
+    --ab-card-pad:    48px;
+    --ab-card-pad-sm: 32px;
+    --ab-card-gap:    40px;
+  }
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+
+body {
+  background: var(--ab-bg);
+  color: var(--ab-body);
+  font-family: Inter, "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-size: var(--ab-fs-body);
+  line-height: var(--ab-lh-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ============================================================
+   Contenedor de pantalla - mobile first.
+   La base es el mockup de 393px; a medida que hay lugar el
+   contenido crece hasta 720px y se mantiene centrado.
+   ============================================================ */
+.ab-screen {
+  width: 100%;
+  max-width: var(--ab-screen-max);
+  margin: 0 auto;
+  min-height: 100dvh;
+  padding: 0 var(--ab-gutter);
+  background: var(--ab-bg);
+}
+
+/* ============================================================
+   Tipografia
+   ============================================================ */
+.ab-brand {
+  margin: 0;
+  font-family: Manrope, Inter, sans-serif;
+  font-weight: 800;
+  font-size: var(--ab-fs-brand);
+  line-height: var(--ab-lh-brand);
+  letter-spacing: -0.05em;
+  color: var(--ab-primary);
+  text-align: center;
+}
+
+.ab-title {
+  margin: 0;
+  font-family: Manrope, Inter, sans-serif;
+  font-weight: 700;
+  font-size: var(--ab-fs-title);
+  line-height: var(--ab-lh-title);
+  letter-spacing: -0.025em;
+  color: var(--ab-ink);
+}
+
+.ab-subtitle {
+  margin: 0;
+  font-size: var(--ab-fs-body);
+  line-height: var(--ab-lh-body);
+  color: var(--ab-body);
+}
+
+/* ============================================================
+   Campos de formulario
+   ============================================================ */
+.ab-field { display: flex; flex-direction: column; gap: 6.5px; }
+
+.ab-label {
+  font-weight: 600;
+  font-size: var(--ab-fs-label);
+  line-height: 16px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ab-body);
+}
+
+.ab-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ab-input {
+  width: 100%;
+  height: var(--ab-input-h);
+  padding: 0 16px;
+  border: 0;
+  border-radius: var(--ab-r-input);
+  background: var(--ab-field);
+  color: var(--ab-ink);
+  font-family: inherit;
+  font-size: var(--ab-fs-input);
+  line-height: 1.2;
+}
+
+.ab-input::placeholder { color: rgba(116, 118, 133, 0.5); }
+.ab-input:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 2px; }
+
+/* ============================================================
+   Botones y enlaces
+   Los botones NO escalan: mantienen el tamaño del mockup en
+   todos los anchos.
+   ============================================================ */
+.ab-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 56px;
+  padding: 16px 24px;
+  border: 0;
+  border-radius: var(--ab-r-button);
+  background: var(--ab-gradient);
+  box-shadow: var(--ab-shadow-button);
+  color: var(--ab-white);
+  font-family: Manrope, Inter, sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 24px;
+  cursor: pointer;
+}
+
+.ab-button--lg {
+  min-height: 68px;
+  gap: 12px;
+  padding: 20px 24px;
+  box-shadow: var(--ab-shadow-dark);
+  font-size: 18px;
+  line-height: 28px;
+}
+
+.ab-link {
+  color: var(--ab-primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.ab-link:hover { text-decoration: underline; }
+
+.ab-footnote {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  font-size: var(--ab-fs-body);
+  line-height: var(--ab-lh-body);
+  color: var(--ab-body);
+  text-align: center;
+}
+
+.ab-icon { display: block; flex: none; }

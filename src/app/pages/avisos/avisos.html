@@ -1,0 +1,140 @@
+<app-topbar />
+
+<div class="ab-screen crud tono--naranja">
+  <a class="crud__volver" routerLink="/dashboard/notificaciones">
+    <svg class="ab-icon" width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
+      <path d="M15 7H1M1 7l5.5-5.5M1 7l5.5 5.5" stroke="currentColor" stroke-width="1.8"
+            stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+    Gestionar notificaciones
+  </a>
+
+  <header class="crud__head">
+    <h1 class="crud__titulo">{{ vista().titulo }}</h1>
+    <p class="crud__bajada">{{ vista().bajada }}</p>
+  </header>
+
+  @switch (accion()) {
+    @case ('aviso') {
+      <form class="crud__form">
+        <fieldset class="tipos">
+          <legend class="ab-label tipos__titulo">Tipo de aviso</legend>
+
+          <div class="tipos__opciones">
+            @for (t of tipos; track t.nombre) {
+              <label class="tipo">
+                <input class="tipo__radio" type="radio" name="tipo-aviso" [value]="t.nombre" [checked]="$first" />
+                <span class="tipo__nombre">{{ t.nombre }}</span>
+                <span class="tipo__detalle">{{ t.detalle }}</span>
+              </label>
+            }
+          </div>
+
+          <p class="crud__nota tipos__nota">
+            Para avisar la demora de un colectivo puntual usa
+            <a class="ab-link" routerLink="/dashboard/notificaciones/retraso">Avisar un retraso</a>.
+          </p>
+        </fieldset>
+
+        <div class="ab-field">
+          <label class="ab-label" for="terminal-aviso">Terminal</label>
+          <select class="crud__select" id="terminal-aviso">
+            @for (t of terminales; track t.uuid) {
+              <option [value]="t.uuid">{{ t.name }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="ab-field">
+          <label class="ab-label" for="mensaje-aviso">Mensaje</label>
+          <textarea class="crud__textarea" id="mensaje-aviso"
+                    placeholder="Ej: El anden A3 permanece cerrado por mantenimiento."></textarea>
+        </div>
+
+        <div class="ab-field">
+          <label class="ab-label" for="vida-aviso">Duracion (minutos)</label>
+          <input class="ab-input" id="vida-aviso" type="number" min="1" placeholder="12" />
+          <p class="crud__nota">Pasado ese tiempo el aviso deja de mostrarse a los pasajeros.</p>
+        </div>
+
+        <button class="ab-button ab-button--lg" type="button">Enviar aviso</button>
+      </form>
+    }
+
+    @case ('retraso') {
+      <form class="crud__form">
+        <div class="ab-field">
+          <label class="ab-label" for="patente-retraso">Patente del colectivo</label>
+          <input class="ab-input" id="patente-retraso" type="text" placeholder="AB 123 CD" autocomplete="off" />
+        </div>
+
+        <div class="ab-field">
+          <label class="ab-label" for="terminal-retraso">Terminal</label>
+          <select class="crud__select" id="terminal-retraso">
+            @for (t of terminales; track t.uuid) {
+              <option [value]="t.uuid">{{ t.name }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="ab-field">
+          <label class="ab-label" for="fecha-retraso">Fecha del viaje</label>
+          <input class="ab-input" id="fecha-retraso" type="date" />
+          <p class="crud__nota">El viaje tiene que estar registrado en el sistema de pasajes para esa fecha y patente.</p>
+        </div>
+
+        <div class="crud__fila">
+          <div class="ab-field">
+            <label class="ab-label" for="demora-retraso">Demora (min)</label>
+            <input class="ab-input" id="demora-retraso" type="number" min="1" placeholder="15" />
+          </div>
+
+          <div class="ab-field">
+            <label class="ab-label" for="vida-retraso">Duracion (min)</label>
+            <input class="ab-input" id="vida-retraso" type="number" min="1" placeholder="12" />
+          </div>
+        </div>
+
+        <button class="ab-button ab-button--lg" type="button">Avisar retraso</button>
+      </form>
+    }
+
+    @case ('eliminar') {
+      <div class="crud__form">
+        <div class="ab-field">
+          <label class="ab-label" for="id-eliminar">Identificador del aviso</label>
+          <input class="ab-input" id="id-eliminar" type="text" [value]="aviso.id"
+                 placeholder="98fb4a77-0a0f-44f0-8067-59e5b7df42ba" />
+        </div>
+
+        <button class="ab-button" type="button">Buscar</button>
+      </div>
+
+      <div class="confirmar">
+        <p class="confirmar__texto">
+          Vas a eliminar este aviso. Deja de verse en el momento para todos los pasajeros.
+        </p>
+
+        <dl class="resultado__lista">
+          <div class="resultado__fila">
+            <dt>Tipo</dt>
+            <dd>{{ aviso.tipo }}</dd>
+          </div>
+          <div class="resultado__fila">
+            <dt>Mensaje</dt>
+            <dd>{{ aviso.mensaje }}</dd>
+          </div>
+          <div class="resultado__fila">
+            <dt>Terminal</dt>
+            <dd>{{ aviso.terminal }}</dd>
+          </div>
+        </dl>
+
+        <div class="confirmar__acciones">
+          <a class="ab-link" routerLink="/dashboard/notificaciones">Cancelar</a>
+          <button class="ab-button confirmar__boton" type="button">Eliminar aviso</button>
+        </div>
+      </div>
+    }
+  }
+</div>

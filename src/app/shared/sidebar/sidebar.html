@@ -1,0 +1,59 @@
+<div class="drawer" [class.drawer--open]="open()">
+  <!-- Capa gris: al tocarla se cierra el menu -->
+  <div class="drawer__scrim" (click)="close()"></div>
+
+  <nav
+    class="drawer__panel"
+    id="menu-principal"
+    aria-label="Menu principal"
+    [attr.inert]="open() ? null : ''"
+  >
+    <p class="drawer__brand">Alerta bus</p>
+
+    <ul class="drawer__nav">
+      <li>
+        <a
+          class="drawer__item"
+          routerLink="/home"
+          routerLinkActive="drawer__item--active"
+          (click)="close()"
+        >
+          <svg class="drawer__mark" width="10" height="7" viewBox="0 0 10 7" fill="none" aria-hidden="true">
+            <path d="M0.5 1h9M2 3.5h6M3.5 6h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" />
+          </svg>
+          Inicio
+        </a>
+      </li>
+
+      <li>
+        <a
+          class="drawer__item"
+          routerLink="/perfil"
+          routerLinkActive="drawer__item--active"
+          (click)="close()"
+        >
+          <svg class="drawer__mark" width="10" height="7" viewBox="0 0 10 7" fill="none" aria-hidden="true">
+            <path d="M0.5 1h9M2 3.5h6M3.5 6h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" />
+          </svg>
+          Ver perfil
+        </a>
+      </li>
+
+      <li>
+        <a
+          class="drawer__item"
+          routerLink="/dashboard"
+          routerLinkActive="drawer__item--active"
+          (click)="close()"
+        >
+          <svg class="drawer__mark" width="10" height="7" viewBox="0 0 10 7" fill="none" aria-hidden="true">
+            <path d="M0.5 1h9M2 3.5h6M3.5 6h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" />
+          </svg>
+          Dashboard
+        </a>
+      </li>
+    </ul>
+
+    <button class="drawer__logout" type="button" (click)="close()">Cerrar Sesion</button>
+  </nav>
+</div>

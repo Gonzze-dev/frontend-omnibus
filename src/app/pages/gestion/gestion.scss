@@ -1,0 +1,203 @@
+/* ============================================================
+   Gestion - menu de opciones de una card del dashboard
+   (nodo 37:312). No esta en el Figma: usa los mismos tonos y
+   medidas que las cards de acceso.
+   ============================================================ */
+
+.gestion {
+  --tinta: #131B2E;  /* mismo titulo que las cards del dashboard */
+
+  min-height: calc(100dvh - var(--ab-topbar-h));
+  padding-top: 20px;
+  padding-bottom: 64px;
+}
+
+/* Tonos heredados del dashboard para no romper la continuidad */
+.tono--azul    { --tono: #0050CB; }
+.tono--indigo  { --tono: #4648D4; }
+.tono--carmin  { --tono: #B40036; }
+.tono--tinta   { --tono: #131B2E; }
+.tono--naranja { --tono: var(--ab-accent); }
+
+/* ---------------- Volver ---------------- */
+.gestion__volver {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: var(--ab-fs-body);
+  color: var(--ab-primary);
+  text-decoration: none;
+}
+
+.gestion__volver:hover { text-decoration: underline; }
+.gestion__volver:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 4px; }
+
+/* ---------------- Encabezado ---------------- */
+.gestion__head { margin-top: 20px; }
+
+.gestion__titulo {
+  margin: 0;
+  font-family: Manrope, Inter, sans-serif;
+  font-weight: 800;
+  font-size: var(--ab-fs-title);
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+  color: var(--ab-primary);
+}
+
+.gestion__bajada {
+  margin: 8px 0 0;
+  font-size: calc(var(--ab-fs-body) + 1px);
+  line-height: var(--ab-lh-lead);
+  color: var(--ab-body);
+}
+
+/* Contador chico: adelanta el dato sin abrir el listado */
+.gestion__resumen {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 20px 0 0;
+  padding: 10px 16px;
+  border: 1px solid var(--ab-line);
+  border-radius: var(--ab-r-button);
+  background: #F2F3FF;
+  font-size: calc(var(--ab-fs-body) + 1px);
+  color: var(--ab-body);
+}
+
+.gestion__resumen-valor {
+  font-family: "Hanken Grotesk", Inter, sans-serif;
+  font-weight: 600;
+  font-size: var(--ab-fs-h3);
+  line-height: 1;
+  color: var(--tono);
+}
+
+/* Ruta con una seccion que no esta en el catalogo */
+.gestion__vacio {
+  margin: 40px 0 0;
+  font-size: calc(var(--ab-fs-body) + 1px);
+  color: var(--ab-body);
+}
+
+/* ---------------- Grupos ---------------- */
+.grupo { margin-top: 36px; }
+
+.grupo__titulo {
+  margin: 0;
+  font-weight: 600;
+  font-size: var(--ab-fs-label);
+  line-height: 16px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ab-placeholder);
+}
+
+.opciones {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* El li se estira con la fila y la card lo llena: asi todas quedan
+   del mismo alto aunque la bajada ocupe una linea mas. */
+.opciones > li { display: flex; }
+
+/* ---------------- Opcion ---------------- */
+.opcion {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 18px 20px;
+  border: 1px solid var(--ab-line);
+  border-radius: var(--ab-r-button);
+  background: var(--ab-white);
+  font-family: inherit;
+  text-align: left;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.opcion:hover {
+  border-color: color-mix(in srgb, var(--tono) 45%, transparent);
+  box-shadow: var(--ab-shadow-bar);
+  transform: translateY(-1px);
+}
+
+.opcion:active { transform: none; }
+.opcion:focus-visible { outline: 2px solid var(--tono); outline-offset: 2px; }
+
+.opcion__icono {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--ab-r-card);
+  background: color-mix(in srgb, var(--tono) 10%, transparent);
+  color: var(--tono);
+}
+
+.opcion__texto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.opcion__titulo {
+  font-family: "Hanken Grotesk", Inter, sans-serif;
+  font-size: var(--ab-fs-h3);
+  line-height: 1.25;
+  color: var(--tinta);
+}
+
+/* Marca los endpoints de /api/super, que un admin comun no puede usar */
+.opcion__super {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--tono) 12%, transparent);
+  font-family: Inter, sans-serif;
+  font-weight: 600;
+  font-size: var(--ab-fs-label);
+  line-height: 16px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--tono);
+  vertical-align: middle;
+}
+
+.opcion__bajada {
+  font-size: calc(var(--ab-fs-body) + 1px);
+  line-height: 1.45;
+  color: var(--ab-body);
+}
+
+.opcion__flecha {
+  flex: none;
+  color: var(--tono);
+}
+
+/* A partir de tablet las opciones entran de a dos */
+@media (min-width: 768px) {
+  .opciones {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: 1fr;  /* todas las filas miden lo mismo */
+    gap: 16px;
+  }
+
+  .opciones > li:last-child:nth-child(odd) { grid-column: 1 / -1; }
+}

@@ -1,0 +1,115 @@
+/* ============================================================
+   Menu lateral (Figma "Side bar", nodo 23:90)
+   Panel blanco de 269px sobre un velo gris al 54%.
+   ============================================================ */
+
+.drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 20;          /* por encima de la topbar (z-index 10) */
+  pointer-events: none; /* cerrado no intercepta clicks */
+}
+
+.drawer__scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(217, 217, 217, 0.54);
+  opacity: 0;
+  transition: opacity 220ms ease;
+}
+
+.drawer__panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: var(--ab-drawer-w);
+  max-width: 85vw;
+  height: 100%;
+  padding: 26px 30px 57px;
+  background: var(--ab-white);
+  transform: translateX(-100%);
+  transition: transform 260ms cubic-bezier(0.32, 0.72, 0, 1);
+  overflow-y: auto;
+}
+
+/* --- Abierto --- */
+.drawer--open { pointer-events: auto; }
+.drawer--open .drawer__scrim { opacity: 1; }
+.drawer--open .drawer__panel { transform: translateX(0); }
+
+/* ============================================================
+   Contenido
+   ============================================================ */
+/* Bloque de 49px con el texto centrado: asi el primer item
+   cae a 126px del tope del panel, como en el mockup. */
+.drawer__brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 49px;
+  margin: 0 0 51px;
+  font-weight: 600;
+  font-size: var(--ab-fs-drawer);
+  line-height: 25px;
+  color: var(--ab-primary);
+  text-align: center;
+}
+
+.drawer__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 19px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.drawer__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 47px;
+  padding: 8px 16px;
+  border: 0;
+  border-radius: var(--ab-r-card);
+  background: var(--ab-white);
+  color: var(--ab-primary);
+  font-family: inherit;
+  font-weight: 600;
+  font-size: var(--ab-fs-drawer);
+  line-height: 20px;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.drawer__item:hover { background: var(--ab-card); }
+.drawer__item:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 2px; }
+
+.drawer__item--active { background: var(--ab-card); }
+
+.drawer__mark { flex: none; }
+
+.drawer__logout {
+  margin-top: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ab-primary);
+  font-family: inherit;
+  font-weight: 600;
+  font-size: var(--ab-fs-drawer);
+  line-height: 20px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.drawer__logout:hover { text-decoration: underline; }
+.drawer__logout:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 4px; }
+
+/* Sin animacion para quien la desactivo en el sistema */
+@media (prefers-reduced-motion: reduce) {
+  .drawer__scrim,
+  .drawer__panel { transition: none; }
+}

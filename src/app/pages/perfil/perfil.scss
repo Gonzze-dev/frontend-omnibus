@@ -1,0 +1,57 @@
+/* ============================================================
+   Ver perfil (Figma "Info perfil", nodo 27:518)
+   ============================================================ */
+
+.perfil {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100dvh - var(--ab-topbar-h));
+  padding-bottom: 34px;
+}
+
+.perfil__head {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding-top: 34px;
+}
+
+/* A diferencia del resto de las pantallas, este titulo va alineado
+   a la izquierda. */
+.perfil__titulo {
+  text-align: left;
+}
+
+.perfil__bajada {
+  margin: 0;
+  font-size: var(--ab-fs-body);
+  line-height: var(--ab-lh-body);
+  color: var(--ab-body);
+}
+
+.perfil__form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-top: 59px;
+}
+
+.perfil__guardar {
+  margin-top: 92px;
+}
+
+.perfil__eliminar {
+  margin: 35px auto 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ab-primary);
+  font-family: inherit;
+  font-weight: 600;
+  font-size: var(--ab-fs-body);
+  line-height: var(--ab-lh-body);
+  cursor: pointer;
+}
+
+.perfil__eliminar:hover { text-decoration: underline; }
+.perfil__eliminar:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 4px; }

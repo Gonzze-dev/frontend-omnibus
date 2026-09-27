@@ -1,0 +1,85 @@
+<div class="home">
+  <app-topbar />
+
+  @if (esperando()) {
+    <app-espera-viaje (buscarOtro)="esperando.set(false)" />
+  } @else {
+  <div class="ab-screen home__body">
+    <section class="hero">
+      <h1 class="hero__title">Rastrea tu viaje</h1>
+      <p class="hero__text">
+        Acceda a datos del viaje y espere a ser alertado.
+        Elija la terminal, introduciendo el codigo del viaje o escaneando el QR del pasaje
+      </p>
+    </section>
+
+    <!-- Card 1: seleccion de terminal -->
+    <section class="terminal">
+      <h2 class="terminal__title">Buscar Terminal</h2>
+      <p class="terminal__hint">Filtrar por codigo postal</p>
+
+      <div class="row">
+        <svg class="ab-icon row__pin" width="16" height="20" viewBox="0 0 16 20" fill="none" aria-hidden="true">
+          <path d="M8 1a6 6 0 0 1 6 6c0 4.2-6 12-6 12S2 11.2 2 7a6 6 0 0 1 6-6Z"
+                stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+          <circle cx="8" cy="7" r="2" fill="currentColor" />
+        </svg>
+        <select class="row__control row__control--select" aria-label="Terminal">
+          <option>Terminal Gualeguaychú</option>
+        </select>
+      </div>
+
+      <div class="row">
+        <svg class="ab-icon row__pin" width="14" height="20" viewBox="0 0 16 20" fill="none" aria-hidden="true">
+          <path d="M8 1a6 6 0 0 1 6 6c0 4.2-6 12-6 12S2 11.2 2 7a6 6 0 0 1 6-6Z"
+                stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+          <circle cx="8" cy="7" r="2" fill="currentColor" />
+        </svg>
+        <input class="row__control" type="text" placeholder="Código Postal" aria-label="Código postal" />
+      </div>
+
+      <!-- Marca de agua decorativa de la esquina inferior derecha -->
+      <svg class="terminal__deco" width="90" height="95" viewBox="0 0 90 95" fill="none" aria-hidden="true">
+        <path d="M10 95V25l35-20 35 20v70" stroke="currentColor" stroke-width="6" />
+        <rect x="28" y="45" width="16" height="16" fill="currentColor" />
+        <rect x="52" y="45" width="16" height="16" fill="currentColor" />
+        <rect x="38" y="72" width="18" height="23" fill="currentColor" />
+      </svg>
+    </section>
+
+    <!-- Card 2: verificacion de ticket -->
+    <section class="ticket">
+      <div class="ticket__head">
+        <svg class="ab-icon ticket__icon" width="20" height="16" viewBox="0 0 20 16" fill="none" aria-hidden="true">
+          <path d="M1 1h18v4a3 3 0 0 0 0 6v4H1v-4a3 3 0 0 0 0-6V1Z" fill="currentColor" />
+          <path d="M6 4.5v1M6 7.5v1M6 10.5v1" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round" />
+        </svg>
+        <h2 class="ticket__kicker">Verificacion de ticket</h2>
+      </div>
+
+      <div class="ticket__field">
+        <label class="ticket__label" for="ticket">Ticket de referencia</label>
+        <div class="ticket__box">
+          <svg class="ab-icon ticket__barcode" width="22" height="18" viewBox="0 0 22 18" fill="none" aria-hidden="true">
+            <path d="M1 1v16M5 1v16M8 1v16M12 1v16M15 1v16M18 1v16M21 1v16"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          </svg>
+          <input class="ticket__input" id="ticket" type="text" placeholder="FLE-002-2026" />
+        </div>
+      </div>
+
+      <button class="ab-button ab-button--lg" type="button">
+        <svg class="ab-icon" width="22" height="18" viewBox="0 0 22 18" fill="none" aria-hidden="true">
+          <path d="M1 1v16M5 1v16M8 1v16M12 1v16M15 1v16M18 1v16M21 1v16"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        </svg>
+        Escanear QR
+      </button>
+    </section>
+
+    <button class="ab-button ab-button--lg home__cta" type="button" (click)="esperando.set(true)">
+      Buscar viaje
+    </button>
+  </div>
+  }
+</div>

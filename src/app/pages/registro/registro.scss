@@ -1,0 +1,29 @@
+.registro__head {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 66px;
+}
+
+.registro__lead {
+  max-width: var(--ab-lead-max-sm);
+  margin: 0 auto;
+  text-align: center;
+}
+
+.registro__form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-top: 71px;
+}
+
+/* El boton respira un poco mas que la separacion del formulario */
+.registro__submit {
+  margin-top: 0;
+}
+
+.registro__foot {
+  margin: 34px 0 0;
+  padding-bottom: 40px;
+}

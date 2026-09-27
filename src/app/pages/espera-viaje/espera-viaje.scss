@@ -1,0 +1,237 @@
+/* ============================================================
+   Espera del viaje - frame "Espera del viaje" (mobile, 393px)
+   Es el cuerpo del home cuando ya hay un viaje encontrado.
+   ============================================================ */
+.espera {
+  min-height: calc(100dvh - var(--ab-topbar-h));
+  padding-top: 24px;
+  padding-bottom: 40px;
+}
+
+.espera__title {
+  margin: 0 0 20px;
+  font-family: Manrope, Inter, sans-serif;
+  font-weight: 700;
+  font-size: var(--ab-fs-title);
+  line-height: var(--ab-lh-title);
+  letter-spacing: -0.025em;
+  color: var(--ab-primary);
+}
+
+/* ---------------- Aviso de estado ---------------- */
+.aviso {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  padding: 16px;
+  border-radius: var(--ab-r-card);
+  background: var(--ab-ok);
+  box-shadow: var(--ab-shadow-dark);
+  color: var(--ab-white);
+  font-size: var(--ab-fs-body);
+  line-height: var(--ab-lh-body);
+}
+
+.aviso b { font-weight: 700; }
+
+/* ---------------- Plataforma + mapa ---------------- */
+.plataforma { margin-top: 28px; }
+
+.plataforma__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.plataforma__title {
+  margin: 0;
+  font-family: Manrope, Inter, sans-serif;
+  font-weight: 700;
+  font-size: var(--ab-fs-h3);
+  line-height: var(--ab-lh-h3);
+  color: var(--ab-ink);
+}
+
+.plataforma__link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ab-primary);
+  font-family: inherit;
+  font-weight: 600;
+  font-size: var(--ab-fs-label);
+  line-height: 16px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.mapa {
+  height: 232px;
+  border-radius: var(--ab-r-card);
+  background: var(--ab-field);
+  overflow: hidden;
+  z-index: 0; /* mantiene los panes de Leaflet debajo del drawer */
+}
+
+/* Leaflet monta su DOM en runtime, fuera del scope del componente */
+:host ::ng-deep {
+  /* La atribucion de OSM es obligatoria, pero no tiene que competir con el diseño */
+  .leaflet-control-attribution {
+    padding: 0 4px;
+    background: rgba(255, 255, 255, 0.7);
+    font-size: 9px;
+  }
+
+  /* Chapa azul del colectivo sobre la plataforma */
+  .mapa__pin {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: var(--ab-icon-nav);
+    box-shadow: var(--ab-shadow-dark);
+  }
+
+  /* Etiqueta "Plataforma A27" arriba de la chapa */
+  .mapa__label {
+    padding: 3px 8px;
+    border: 0;
+    border-radius: 4px;
+    background: var(--ab-white);
+    box-shadow: var(--ab-shadow-bar);
+    color: var(--ab-ink);
+    font-family: Inter, sans-serif;
+    font-weight: 600;
+    font-size: 11px;
+    line-height: 16px;
+    white-space: nowrap;
+  }
+
+  .mapa__label::before { display: none; }
+}
+
+/* ---------------- Cards ---------------- */
+.card {
+  margin-top: 24px;
+  padding: var(--ab-card-pad-sm);
+  border-radius: var(--ab-r-card);
+  background: var(--ab-card);
+  box-shadow: var(--ab-shadow-card);
+}
+
+.card__kicker {
+  margin: 0 0 12px;
+  font-weight: 600;
+  font-size: var(--ab-fs-body);
+  line-height: var(--ab-lh-body);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ab-body);
+}
+
+/* ---------------- Colectivo ---------------- */
+.colectivo {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 16px;
+  border-radius: var(--ab-r-input);
+  background: var(--ab-white);
+}
+
+.colectivo__icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--ab-r-input);
+  background: var(--ab-field);
+  color: var(--ab-primary);
+}
+
+.colectivo__datos {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.colectivo__empresa {
+  font-family: Manrope, Inter, sans-serif;
+  font-weight: 700;
+  font-size: var(--ab-fs-body);
+  line-height: var(--ab-lh-body);
+  color: var(--ab-ink);
+}
+
+.colectivo__patente {
+  font-size: var(--ab-fs-label);
+  line-height: 16px;
+  color: var(--ab-muted);
+  overflow-wrap: anywhere;
+}
+
+/* ---------------- Pasajero ---------------- */
+.pasajero__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.pasajero__title {
+  margin: 0;
+  font-family: Manrope, Inter, sans-serif;
+  font-weight: 700;
+  font-size: var(--ab-fs-h3);
+  line-height: var(--ab-lh-h3);
+  color: var(--ab-ink);
+}
+
+.pasajero__icono {
+  flex: none;
+  color: var(--ab-placeholder);
+}
+
+/* ---------------- Lista de datos ---------------- */
+.datos { margin: 0; }
+
+.datos__fila {
+  padding: 12px 0;
+  border-top: 1px solid var(--ab-line);
+}
+
+.datos__fila:first-child { border-top: 0; padding-top: 4px; }
+
+.datos__label {
+  margin: 0 0 4px;
+  font-weight: 600;
+  font-size: var(--ab-fs-label);
+  line-height: 16px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ab-body);
+}
+
+.datos__valor {
+  margin: 0;
+  font-family: Manrope, Inter, sans-serif;
+  font-weight: 700;
+  font-size: var(--ab-fs-input);
+  line-height: 24px;
+  color: var(--ab-ink);
+}
+
+.datos__valor--codigo {
+  color: var(--ab-primary);
+  letter-spacing: 0.1em;
+}
+
+/* ---------------- CTA ---------------- */
+.espera__cta { margin-top: 32px; }

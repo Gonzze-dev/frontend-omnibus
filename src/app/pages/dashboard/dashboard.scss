@@ -1,0 +1,149 @@
+/* ============================================================
+   Dashboard admin (Figma nodo 37:312)
+   ============================================================ */
+
+.panel {
+  --tinta: #131B2E;  /* titulos de las cards */
+
+  min-height: calc(100dvh - var(--ab-topbar-h));
+  padding-top: 44px;
+  padding-bottom: 64px;
+}
+
+/* Cada metrica y cada acceso toma su color de un tono */
+.tono--azul    { --tono: #0050CB; }
+.tono--indigo  { --tono: #4648D4; }
+.tono--carmin  { --tono: #B40036; }
+.tono--tinta   { --tono: var(--tinta); }
+.tono--naranja { --tono: var(--ab-accent); }
+
+/* ---------------- Encabezado ---------------- */
+.panel__head {
+  text-align: center;
+}
+
+.panel__titulo {
+  margin: 0;
+  font-weight: 700;
+  font-size: var(--ab-fs-title);
+  line-height: 1.2;
+  color: var(--ab-primary);
+}
+
+.panel__bajada {
+  margin: 0;
+  font-size: calc(var(--ab-fs-body) + 1px);
+  line-height: var(--ab-lh-lead);
+  color: var(--ab-body);
+}
+
+/* ---------------- Metricas ---------------- */
+/* En el mockup esta columna es 20px mas angosta que el contenido */
+.metricas {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  margin: 38px 10px 0;
+  padding: 0;
+  list-style: none;
+}
+
+.metrica {
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  border: 1px solid var(--ab-line);
+  border-radius: var(--ab-r-button);
+  background: #F2F3FF;
+}
+
+.metrica__icono {
+  display: flex;
+  width: fit-content;
+  padding: 16px;
+  border-radius: var(--ab-r-card);
+  background: color-mix(in srgb, var(--tono) 10%, transparent);
+  color: var(--tono);
+}
+
+.metrica__etiqueta {
+  margin-top: 16px;
+  font-size: calc(var(--ab-fs-body) + 2px);
+  line-height: 1.5;
+  color: var(--ab-body);
+}
+
+.metrica__valor {
+  margin-top: 4px;
+  font-family: "Hanken Grotesk", Inter, sans-serif;
+  font-weight: 600;
+  font-size: var(--ab-fs-hero);
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: var(--tono);
+}
+
+/* ---------------- Accesos ---------------- */
+.accesos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px 16px;
+  margin: 105px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.accesos > li { display: flex; }
+
+/* Si la cantidad es impar, el ultimo ocupa la fila entera */
+.accesos > li:last-child:nth-child(odd) { grid-column: 1 / -1; }
+
+.acceso {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  width: 100%;
+  padding: 24px;
+  border: 1px solid var(--ab-line);
+  border-radius: var(--ab-r-button);
+  background: var(--ab-white);
+  font-family: inherit;
+  text-align: left;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+/* Las cards son links al menu de su gestion */
+a.acceso { text-decoration: none; }
+
+.acceso:hover { border-color: rgba(196, 197, 214, 0.8); }
+.acceso:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 2px; }
+
+.acceso__icono { color: var(--tono); }
+
+.acceso__titulo {
+  padding: 11.25px 0 0.75px;
+  font-family: "Hanken Grotesk", Inter, sans-serif;
+  font-weight: 400;
+  font-size: var(--ab-fs-h3);
+  line-height: 1.25;
+  color: var(--tinta);
+}
+
+.acceso__bajada {
+  font-size: calc(var(--ab-fs-body) + 2px);
+  line-height: 1.5;
+  color: var(--ab-body);
+}
+
+/* Marca de agua recortada por el borde de la card */
+.acceso__marca {
+  position: absolute;
+  right: -15px;
+  bottom: -15px;
+  color: var(--tinta);
+  opacity: 0.05;
+  pointer-events: none;
+}

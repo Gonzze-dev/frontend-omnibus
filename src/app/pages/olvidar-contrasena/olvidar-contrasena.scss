@@ -1,0 +1,31 @@
+/* Esta pantalla usa el alto completo: el bloque del formulario queda
+   arriba y la nota al pie se ancla abajo, como en el mockup. */
+.olvidar {
+  display: flex;
+  flex-direction: column;
+}
+
+.olvidar__head {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 148px;
+}
+
+.olvidar__lead {
+  max-width: var(--ab-lead-max-sm);
+  margin: 0 auto;
+  text-align: center;
+}
+
+.olvidar__form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-top: 117px;
+}
+
+.olvidar__foot {
+  margin: auto 0 0;
+  padding: 40px 0 149px;
+}

@@ -1,0 +1,8 @@
+/* Terminales: ABM completo con los estilos comunes del dashboard. */
+@use '../../../styles/crud' as *;
+
+/* Terminal | Ciudad | acciones */
+.tabla { --cols: 1.3fr 1fr auto; }
+
+/* Celdas de dos lineas: dos renglones + el gap, el padding y el borde */
+.tabla--fija { --fila: calc(2 * var(--ab-lh-body) + 31px); }

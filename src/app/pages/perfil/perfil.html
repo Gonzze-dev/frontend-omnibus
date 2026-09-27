@@ -1,0 +1,62 @@
+<app-topbar />
+
+<div class="ab-screen perfil">
+  <header class="perfil__head">
+    <h1 class="ab-brand perfil__titulo">Informacion sobre tu perfil</h1>
+    <p class="perfil__bajada">
+      Actualiza tus datos personales y tu información de contacto.
+    </p>
+  </header>
+
+  <form class="perfil__form">
+    <div class="ab-field">
+      <label class="ab-label" for="nombre">Nombre completo</label>
+      <input
+        class="ab-input"
+        id="nombre"
+        type="text"
+        [value]="perfil.nombre"
+        autocomplete="name"
+      />
+    </div>
+
+    <div class="ab-field">
+      <label class="ab-label" for="email">Email</label>
+      <input
+        class="ab-input"
+        id="email"
+        type="email"
+        [value]="perfil.email"
+        autocomplete="email"
+      />
+    </div>
+
+    <div class="ab-field">
+      <label class="ab-label" for="password">Contraseña</label>
+      <input
+        class="ab-input"
+        id="password"
+        type="password"
+        placeholder="••••••••"
+        autocomplete="new-password"
+      />
+    </div>
+
+    <div class="ab-field">
+      <label class="ab-label" for="confirmar">Confirmar contraseña</label>
+      <input
+        class="ab-input"
+        id="confirmar"
+        type="password"
+        placeholder="••••••••"
+        autocomplete="new-password"
+      />
+    </div>
+
+    <button class="ab-button ab-button--lg perfil__guardar" type="button">
+      Guardar cambios
+    </button>
+  </form>
+
+  <button class="perfil__eliminar" type="button">Eliminar cuenta</button>
+</div>

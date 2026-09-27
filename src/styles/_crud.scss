@@ -1,0 +1,535 @@
+/* ============================================================
+   Pantallas de ABM del dashboard (ciudades, plataformas,
+   terminales, permisos y avisos).
+
+   Cada seccion tiene su propio componente, asi que los estilos
+   se comparten desde aca: el componente hace
+   @use '../../../styles/crud' as *;
+   y Angular los deja scopeados a su propia pantalla.
+
+   El tono lo pone el contenedor con .tono--*, igual que en el
+   dashboard y en el menu de gestion.
+   ============================================================ */
+
+.crud {
+  min-height: calc(100dvh - var(--ab-topbar-h));
+  padding-top: 20px;
+  padding-bottom: 64px;
+}
+
+/* Tonos heredados del dashboard para no romper la continuidad */
+.tono--azul    { --tono: #0050CB; }
+.tono--indigo  { --tono: #4648D4; }
+.tono--carmin  { --tono: #B40036; }
+.tono--tinta   { --tono: #131B2E; }
+.tono--naranja { --tono: var(--ab-accent); }
+
+$carmin: #B40036;
+
+/* Alto de los iconos de accion: es lo que marca el alto de una fila */
+$icono: 32px;
+/* Fila completa: los iconos + 14px de padding arriba y abajo + el borde */
+$fila: $icono + 29px;
+
+/* ---------------- Volver ---------------- */
+.crud__volver {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: var(--ab-fs-body);
+  color: var(--ab-primary);
+  text-decoration: none;
+}
+
+.crud__volver:hover { text-decoration: underline; }
+.crud__volver:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 4px; }
+
+/* ---------------- Encabezado ---------------- */
+.crud__head { margin-top: 20px; }
+
+.crud__titulo {
+  margin: 0;
+  font-family: Manrope, Inter, sans-serif;
+  font-weight: 800;
+  font-size: var(--ab-fs-title);
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+  color: var(--ab-primary);
+}
+
+.crud__bajada {
+  margin: 8px 0 0;
+  font-size: calc(var(--ab-fs-body) + 1px);
+  line-height: var(--ab-lh-lead);
+  color: var(--ab-body);
+}
+
+/* Marca las pantallas que son solo para super admin */
+.crud__super {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--tono) 12%, transparent);
+  font-weight: 600;
+  font-size: var(--ab-fs-label);
+  line-height: 16px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--tono);
+}
+
+/* ---------------- Tablas ---------------- */
+.tabla {
+  display: flex;
+  flex-direction: column;
+  margin: 28px 0 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--ab-line);
+  border-radius: var(--ab-r-card);
+  overflow: hidden;
+  background: var(--ab-white);
+}
+
+.tabla__fila {
+  display: grid;
+  /* Cada pantalla decide el ancho de sus columnas con --cols */
+  grid-template-columns: var(--cols, 1fr 1.4fr auto);
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--ab-line);
+}
+
+.tabla__fila:last-child { border-bottom: none; }
+
+.tabla__fila--cabecera {
+  font-weight: 600;
+  font-size: var(--ab-fs-label);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ab-placeholder);
+  background: var(--ab-card);
+}
+
+/* Separador con el nombre de la terminal en los listados agrupados */
+.tabla__grupo {
+  display: block;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--ab-line);
+  background: color-mix(in srgb, var(--tono) 7%, transparent);
+  font-weight: 600;
+  font-size: var(--ab-fs-body);
+  color: var(--tono);
+}
+
+.tabla__dato {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  font-size: calc(var(--ab-fs-body) + 1px);
+  color: var(--ab-ink);
+}
+
+/* Primera linea de la celda */
+.tabla__linea { min-width: 0; }
+
+/* Segunda linea de la celda: uuid, id externo, coordenadas */
+.tabla__sub {
+  font-size: var(--ab-fs-label);
+  color: var(--ab-placeholder);
+  overflow-wrap: anywhere;
+}
+
+.tabla__acciones {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.tabla__icono {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: $icono;
+  height: $icono;
+  border-radius: var(--ab-r-input);
+  color: var(--tono);
+  text-decoration: none;
+}
+
+.tabla__icono:hover { background: color-mix(in srgb, var(--tono) 10%, transparent); }
+.tabla__icono--carmin { color: $carmin; }
+.tabla__icono--carmin:hover { background: rgba(180, 0, 54, 0.1); }
+
+/* Fila en blanco que completa la pagina para que la tabla no cambie de alto */
+.tabla__fila--relleno { visibility: hidden; }
+
+/* La ultima fila con datos cierra sin linea, como si la tabla terminara ahi.
+   Se apaga el color y no el borde para no perder el pixel de alto. */
+.tabla__fila:has(+ .tabla__fila--relleno) { border-bottom-color: transparent; }
+
+/* ---------------- Tabla de alto fijo ----------------
+   Para los listados paginados: todas las filas miden lo mismo, asi el
+   paginado y el boton de abajo no se mueven entre una pagina y otra.
+   Un texto que no entra se recorta en vez de pasar a dos lineas.
+
+   El alto por defecto es el de una celda de una sola linea, donde
+   manda el alto de los iconos. Una tabla con celdas de dos lineas
+   pisa --fila en su propio scss, igual que hace con --cols. */
+.tabla--fija { --fila: #{$fila}; }
+
+.tabla--fija .tabla__fila { height: var(--fila); }
+
+.tabla--fija .tabla__vacio {
+  display: flex;
+  align-items: center;
+  height: var(--fila);
+  padding-block: 0;
+}
+
+/* La ultima terminal antes del relleno tambien cierra sin linea */
+.tabla__item:has(+ .tabla__fila--relleno) .tabla__desplegable { border-bottom-color: transparent; }
+
+/* Cada linea de una celda se recorta sola, asi la celda no crece */
+.tabla--fija .tabla__linea,
+.tabla--fija .tabla__sub {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.tabla__vacio {
+  padding: 20px 16px;
+  font-size: calc(var(--ab-fs-body) + 1px);
+  color: var(--ab-body);
+}
+
+/* ---------------- Fila que se despliega ----------------
+   El listado de plataformas pagina por terminal: cada fila es una
+   terminal y abre sus andenes abajo. Una sola abierta a la vez. */
+.tabla__item { display: block; }
+
+.tabla__desplegable {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid var(--ab-line);
+  background: none;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+}
+
+.tabla__desplegable:hover { background: color-mix(in srgb, var(--tono) 5%, transparent); }
+.tabla__desplegable:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: -2px; }
+.tabla__desplegable[aria-expanded='true'] { background: color-mix(in srgb, var(--tono) 7%, transparent); }
+
+.tabla__flecha {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: $icono;
+  height: $icono;
+  color: var(--tono);
+  transition: transform 0.15s ease;
+}
+
+.tabla__flecha--abierta { transform: rotate(180deg); }
+
+/* Andenes de la terminal abierta */
+.tabla__panel {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background: var(--ab-card);
+}
+
+.tabla__panel .tabla__fila { padding-left: 32px; }
+
+/* ---------------- Paginado del listado ---------------- */
+/* Sigue ocupando su lugar con una sola pagina, para no correr lo de abajo */
+.paginado--oculto { visibility: hidden; }
+
+.paginado {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 20px;
+}
+
+.paginado__flecha,
+.paginado__numero {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  height: 34px;
+  padding: 0 8px;
+  border: 1px solid var(--ab-line);
+  border-radius: var(--ab-r-input);
+  background: var(--ab-white);
+  font-family: inherit;
+  font-size: var(--ab-fs-body);
+  color: var(--ab-body);
+  cursor: pointer;
+}
+
+.paginado__flecha:hover:not(:disabled),
+.paginado__numero:hover:not(.paginado__numero--activa) {
+  border-color: var(--tono);
+  color: var(--tono);
+}
+
+.paginado__flecha:focus-visible,
+.paginado__numero:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 2px; }
+
+.paginado__flecha:disabled {
+  color: var(--ab-placeholder);
+  cursor: default;
+  opacity: 0.5;
+}
+
+.paginado__numero--activa {
+  border-color: var(--tono);
+  background: var(--tono);
+  color: var(--ab-white);
+  font-weight: 600;
+}
+
+/* ---------------- Formularios ---------------- */
+.crud__form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-top: 28px;
+}
+
+/* Dos campos cortos en la misma linea (lat / lng, demora / vida) */
+.crud__fila {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+/* Mismo aspecto que .ab-input, que es un input y no sirve para el select */
+.crud__select {
+  width: 100%;
+  height: var(--ab-input-h);
+  padding: 0 12px;
+  border: 0;
+  border-radius: var(--ab-r-input);
+  background: var(--ab-field);
+  color: var(--ab-ink);
+  font-family: inherit;
+  font-size: var(--ab-fs-input);
+}
+
+.crud__select:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 2px; }
+
+.crud__textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 12px 16px;
+  border: 0;
+  border-radius: var(--ab-r-input);
+  background: var(--ab-field);
+  color: var(--ab-ink);
+  font-family: inherit;
+  font-size: var(--ab-fs-input);
+  line-height: 1.45;
+  resize: vertical;
+}
+
+.crud__textarea::placeholder { color: rgba(116, 118, 133, 0.5); }
+.crud__textarea:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 2px; }
+
+/* Aclaracion al pie de un campo */
+.crud__nota {
+  margin: 0;
+  font-size: var(--ab-fs-label);
+  line-height: 1.45;
+  color: var(--ab-placeholder);
+}
+
+.crud__cargar { margin-top: 20px; }
+
+/* Accion destructiva: el mismo boton pero en carmin */
+.crud__peligro {
+  background: $carmin;
+  box-shadow: none;
+}
+
+/* Filtro sobre un listado */
+.crud__filtro {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.crud__filtro .ab-field { flex: 1; }
+
+.crud__filtro-boton {
+  width: auto;
+  min-height: var(--ab-input-h);
+  padding: 0 20px;
+  font-size: var(--ab-fs-body);
+}
+
+/* ---------------- Resultado / detalle ---------------- */
+.resultado {
+  margin-top: 24px;
+  padding: 20px;
+  border: 1px solid var(--ab-line);
+  border-radius: var(--ab-r-card);
+  background: var(--ab-white);
+}
+
+.resultado__titulo {
+  margin: 0 0 12px;
+  font-size: var(--ab-fs-label);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ab-placeholder);
+}
+
+.resultado__lista { margin: 0; }
+
+.resultado__fila {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--ab-line);
+}
+
+.resultado__fila:last-child { border-bottom: none; }
+
+.resultado__fila dt {
+  flex: none;
+  font-size: var(--ab-fs-body);
+  color: var(--ab-body);
+}
+
+.resultado__fila dd {
+  margin: 0;
+  min-width: 0;
+  font-weight: 600;
+  color: var(--ab-ink);
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+/* Rol del usuario en la pantalla de permisos */
+.resultado__rol {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--tono) 12%, transparent);
+  font-size: var(--ab-fs-label);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--tono);
+}
+
+/* ---------------- Tipos de aviso ----------------
+   Tarjetas que hacen de radio: el tipo se elige sobre la misma
+   tarjeta que explica para que sirve. */
+.tipos {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.tipos__titulo {
+  padding: 0;
+  margin-bottom: 10px;
+}
+
+.tipos__opciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.tipos__nota { margin-top: 10px; }
+
+.tipo {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1 1 200px;
+  padding: 14px 16px;
+  border: 1px solid var(--ab-line);
+  border-radius: var(--ab-r-button);
+  background: var(--ab-white);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.tipo:has(.tipo__radio:checked) {
+  border-color: var(--tono);
+  background: color-mix(in srgb, var(--tono) 8%, transparent);
+}
+
+.tipo:has(.tipo__radio:focus-visible) {
+  outline: 2px solid var(--tono);
+  outline-offset: 2px;
+}
+
+/* El radio sigue existiendo para el teclado y el lector de pantalla */
+.tipo__radio {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.tipo__nombre {
+  font-family: "Hanken Grotesk", Inter, sans-serif;
+  font-size: var(--ab-fs-body);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--tono);
+}
+
+.tipo__detalle {
+  font-size: var(--ab-fs-label);
+  line-height: 1.45;
+  color: var(--ab-body);
+}
+
+/* ---------------- Confirmar una baja ---------------- */
+.confirmar { margin-top: 24px; }
+
+.confirmar__texto {
+  margin: 0 0 16px;
+  font-size: calc(var(--ab-fs-body) + 1px);
+  line-height: 1.5;
+  color: var(--ab-body);
+}
+
+.confirmar__acciones {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.confirmar__boton {
+  width: auto;
+  min-height: 48px;
+  padding: 12px 24px;
+  background: $carmin;
+  box-shadow: none;
+}

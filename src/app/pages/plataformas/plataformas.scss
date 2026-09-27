@@ -1,0 +1,11 @@
+/* Plataformas: ABM completo con los estilos comunes del dashboard. */
+@use '../../../styles/crud' as *;
+
+/* Fila de terminal: nombre + flecha de desplegar */
+.tabla { --cols: 1fr auto; }
+
+/* Celdas de dos lineas: dos renglones + el gap, el padding y el borde */
+.tabla--fija { --fila: calc(2 * var(--ab-lh-body) + 31px); }
+
+/* Anden | Coordenadas | acciones */
+.tabla__panel { --cols: 1fr 1fr auto; }

@@ -1,0 +1,37 @@
+<div class="ab-screen registro">
+  <header class="registro__head">
+    <h1 class="ab-brand">Create una cuenta</h1>
+    <p class="ab-subtitle registro__lead">
+      Disfrute de la comodidad de ser alertado del arribo de su bus
+    </p>
+  </header>
+
+  <form class="registro__form">
+    <div class="ab-field">
+      <label class="ab-label" for="nombre">Nombre completo</label>
+      <input class="ab-input" id="nombre" type="text" placeholder="name@company.com" autocomplete="name" />
+    </div>
+
+    <div class="ab-field">
+      <label class="ab-label" for="email">Email</label>
+      <input class="ab-input" id="email" type="email" placeholder="name@company.com" autocomplete="email" />
+    </div>
+
+    <div class="ab-field">
+      <label class="ab-label" for="password">Contraseña</label>
+      <input class="ab-input" id="password" type="password" placeholder="••••••••" autocomplete="new-password" />
+    </div>
+
+    <div class="ab-field">
+      <label class="ab-label" for="confirmar">Confirmar contraseña</label>
+      <input class="ab-input" id="confirmar" type="password" placeholder="••••••••" autocomplete="new-password" />
+    </div>
+
+    <button class="ab-button registro__submit" type="button">Crear Cuenta</button>
+  </form>
+
+  <p class="ab-footnote registro__foot">
+    Ya tienes cuenta?
+    <a class="ab-link" routerLink="/login">Inicia Sesión</a>
+  </p>
+</div>
