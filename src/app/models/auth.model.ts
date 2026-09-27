@@ -41,3 +41,34 @@ export interface RegisterRequest {
 export interface RefreshResponse {
   access_token: string;
 }
+
+/** POST /api/auth/forgot-password */
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+/**
+ * El backend responde siempre el mismo mensaje, exista o no el email, para
+ * no revelar que cuentas estan registradas.
+ */
+export interface ForgotPasswordResponse {
+  message: string;
+}
+
+/**
+ * POST /api/auth/validate-recovery-token: el token de recuperacion viaja en
+ * el header Authorization, no en el body.
+ */
+export interface ValidateRecoveryTokenResponse {
+  valid: boolean;
+  expires_at?: string;
+}
+
+/** POST /api/auth/reset-password (token en el header Authorization). */
+export interface ResetPasswordRequest {
+  password: string;
+}
+
+export interface ResetPasswordResponse {
+  message: string;
+}

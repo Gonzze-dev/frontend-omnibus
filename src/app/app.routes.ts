@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { Login } from './pages/login/login';
 import { Registro } from './pages/registro/registro';
 import { OlvidarContrasena } from './pages/olvidar-contrasena/olvidar-contrasena';
+import { NuevaContrasena } from './pages/nueva-contrasena/nueva-contrasena';
 import { Home } from './pages/home/home';
 import { Notificaciones } from './pages/notificaciones/notificaciones';
 import { Perfil } from './pages/perfil/perfil';
@@ -18,6 +19,8 @@ export const routes: Routes = [
   { path: 'login', component: Login, title: 'Iniciar Sesion' },
   { path: 'registro', component: Registro, title: 'Create una cuenta' },
   { path: 'olvidar-contrasena', component: OlvidarContrasena, title: 'Olvidaste tu contraseña?' },
+  // La ruta la arma el backend en el mail (FRONT_END_BASE_LINK + /reset-password?token=...)
+  { path: 'reset-password', component: NuevaContrasena, title: 'Nueva contraseña' },
   { path: 'home', component: Home, title: 'Rastrea tu viaje' },
   { path: 'notificaciones', component: Notificaciones, title: 'Notificaciones' },
   { path: 'perfil', component: Perfil, title: 'Informacion sobre tu perfil' },

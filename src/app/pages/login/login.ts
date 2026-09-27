@@ -1,7 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
@@ -22,6 +22,11 @@ export class Login {
   readonly cargando = signal(false);
   readonly error = signal<string | null>(null);
 
+  /** Aviso que deja /reset-password al terminar de cambiar la contraseña. */
+  readonly cambioOk = signal(
+    inject(ActivatedRoute).snapshot.queryParamMap.get('cambio') === 'ok',
+  );
+
   ingresar(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -30,6 +35,7 @@ export class Login {
 
     this.cargando.set(true);
     this.error.set(null);
+    this.cambioOk.set(false);
 
     const { email, password } = this.form.getRawValue();
     this.auth.login({ email: email.trim(), password }).subscribe({

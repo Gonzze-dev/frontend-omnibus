@@ -7,6 +7,10 @@
       <p class="ab-subtitle">Ingresa tus credenciales para continuar</p>
     </header>
 
+    @if (cambioOk()) {
+      <p class="ab-form-ok" role="status">Tu contraseña se cambio. Ingresa con la nueva.</p>
+    }
+
     <form class="login__form" [formGroup]="form" (ngSubmit)="ingresar()" novalidate>
       <div class="ab-field">
         <label class="ab-label" for="email">Email</label>

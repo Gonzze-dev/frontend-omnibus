@@ -247,6 +247,17 @@ body {
   line-height: var(--ab-lh-body);
 }
 
+/* Confirmacion general del formulario (par de .ab-form-error) */
+.ab-form-ok {
+  margin: 0;
+  padding: 12px 16px;
+  border-radius: var(--ab-r-input);
+  background: rgba(22, 163, 74, 0.08);
+  color: var(--ab-ok);
+  font-size: var(--ab-fs-body);
+  line-height: var(--ab-lh-body);
+}
+
 /* ============================================================
    Botones y enlaces
    Los botones NO escalan: mantienen el tamaño del mockup en

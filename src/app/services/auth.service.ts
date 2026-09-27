@@ -1,14 +1,19 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { finalize, map, Observable, shareReplay, tap } from 'rxjs';
 import { APP_CONFIG } from '../config';
 import {
+  ForgotPasswordRequest,
+  ForgotPasswordResponse,
   LoginRequest,
   LoginResponse,
   RefreshResponse,
   RegisterRequest,
+  ResetPasswordRequest,
+  ResetPasswordResponse,
   User,
+  ValidateRecoveryTokenResponse,
 } from '../models/auth.model';
 
 const TOKEN_KEY = 'access_token';
@@ -76,6 +81,32 @@ export class AuthService {
     this.router.navigate(['/login']);
   }
 
+  /**
+   * Pide el correo de recuperacion. Responde igual exista o no la cuenta, asi
+   * que la pantalla solo muestra el mensaje que llega.
+   */
+  forgotPassword(email: string): Observable<ForgotPasswordResponse> {
+    const body: ForgotPasswordRequest = { email: email.trim() };
+    return this.http.post<ForgotPasswordResponse>(`${this.authUrl}/forgot-password`, body);
+  }
+
+  /** Comprueba el token del enlace del mail antes de mostrar el formulario. */
+  validateRecoveryToken(token: string): Observable<ValidateRecoveryTokenResponse> {
+    return this.http.post<ValidateRecoveryTokenResponse>(
+      `${this.authUrl}/validate-recovery-token`,
+      null,
+      { headers: cabeceraRecuperacion(token) },
+    );
+  }
+
+  /** Guarda la contraseña nueva usando el token del enlace. */
+  resetPassword(token: string, password: string): Observable<ResetPasswordResponse> {
+    const body: ResetPasswordRequest = { password };
+    return this.http.post<ResetPasswordResponse>(`${this.authUrl}/reset-password`, body, {
+      headers: cabeceraRecuperacion(token),
+    });
+  }
+
   /** Pantalla inicial segun el rol: los administradores van al dashboard. */
   rutaInicio(user: User | null = this._user()): string {
     return user?.rol === 'admin' || user?.rol === 'super_admin' ? '/dashboard' : '/home';
@@ -85,6 +116,14 @@ export class AuthService {
     this._accessToken.set(token);
     guardar(TOKEN_KEY, token);
   }
+}
+
+/**
+ * El token de recuperacion no es el de sesion: va como Bearer solo en estas
+ * tres llamadas y el interceptor las deja pasar sin tocar (SKIP_PATHS).
+ */
+function cabeceraRecuperacion(token: string): HttpHeaders {
+  return new HttpHeaders({ Authorization: `Bearer ${token.trim()}` });
 }
 
 // localStorage puede fallar (modo privado, almacenamiento bloqueado)

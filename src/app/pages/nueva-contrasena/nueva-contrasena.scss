@@ -1,0 +1,37 @@
+/* Misma composicion que "olvidar contraseña": el bloque del formulario
+   arriba y la nota al pie anclada abajo. */
+.nueva {
+  display: flex;
+  flex-direction: column;
+}
+
+.nueva__head {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 148px;
+}
+
+.nueva__lead {
+  max-width: var(--ab-lead-max-sm);
+  margin: 0 auto;
+  text-align: center;
+}
+
+.nueva__form,
+.nueva__aviso {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-top: 64px;
+}
+
+/* El "pedir enlace nuevo" es un link con forma de boton */
+.nueva__aviso .ab-button {
+  text-decoration: none;
+}
+
+.nueva__foot {
+  margin: auto 0 0;
+  padding: 40px 0 149px;
+}

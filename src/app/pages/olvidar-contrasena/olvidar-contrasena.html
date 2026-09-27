@@ -6,13 +6,27 @@
     </p>
   </header>
 
-  <form class="olvidar__form">
+  <form class="olvidar__form" [formGroup]="form" (ngSubmit)="enviarEnlace()" novalidate>
     <div class="ab-field">
       <label class="ab-label" for="email">Email</label>
-      <input class="ab-input" id="email" type="email" placeholder="name@company.com" autocomplete="email" />
+      <input class="ab-input" id="email" type="email" placeholder="name@company.com" autocomplete="email"
+             formControlName="email" [attr.aria-invalid]="invalido()" />
+      @if (invalido()) {
+        <p class="ab-field-error">Ingresa un email valido.</p>
+      }
     </div>
 
-    <button class="ab-button" type="button">Enviar enlace</button>
+    @if (error()) {
+      <p class="ab-form-error" role="alert">{{ error() }}</p>
+    }
+
+    @if (enviado()) {
+      <p class="ab-form-ok" role="status">{{ enviado() }}</p>
+    }
+
+    <button class="ab-button" type="submit" [disabled]="cargando() || !!enviado()">
+      {{ cargando() ? 'Enviando...' : 'Enviar enlace' }}
+    </button>
   </form>
 
   <p class="ab-footnote olvidar__foot">
