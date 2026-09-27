@@ -64,11 +64,21 @@
             <path d="M1 1v16M5 1v16M8 1v16M12 1v16M15 1v16M18 1v16M21 1v16"
                   stroke="currentColor" stroke-width="2" stroke-linecap="round" />
           </svg>
-          <input class="ticket__input" id="ticket" type="text" placeholder="FLE-002-2026" />
+          <input
+            class="ticket__input"
+            id="ticket"
+            type="text"
+            placeholder="FLE-002-2026"
+            [value]="ticket()"
+            (input)="ticket.set($any($event.target).value)"
+          />
         </div>
+        @if (errorEscaneo()) {
+          <p class="ticket__error">{{ errorEscaneo() }}</p>
+        }
       </div>
 
-      <button class="ab-button ab-button--lg" type="button">
+      <button class="ab-button ab-button--lg" type="button" (click)="escaneando.set(true)">
         <svg class="ab-icon" width="22" height="18" viewBox="0 0 22 18" fill="none" aria-hidden="true">
           <path d="M1 1v16M5 1v16M8 1v16M12 1v16M15 1v16M18 1v16M21 1v16"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" />
@@ -76,6 +86,13 @@
         Escanear QR
       </button>
     </section>
+
+    @if (escaneando()) {
+      <app-qr-scanner
+        (codigoLeido)="onCodigoLeido($event)"
+        (cerrar)="escaneando.set(false)"
+      />
+    }
 
     <button class="ab-button ab-button--lg home__cta" type="button" (click)="esperando.set(true)">
       Buscar viaje

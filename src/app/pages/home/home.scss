@@ -177,6 +177,13 @@
 .ticket__input::placeholder { color: rgba(116, 118, 133, 0.5); }
 .ticket__input:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 2px; }
 
+.ticket__error {
+  margin: 0;
+  color: var(--ab-primary);
+  font-size: var(--ab-fs-body);
+  line-height: var(--ab-lh-body);
+}
+
 /* ---------------- CTA final ---------------- */
 .home__cta {
   margin-top: 73px;
