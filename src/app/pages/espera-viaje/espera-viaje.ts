@@ -1,37 +1,95 @@
-import { AfterViewInit, Component, ElementRef, OnDestroy, output, viewChild } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  ElementRef,
+  afterRenderEffect,
+  computed,
+  inject,
+  input,
+  output,
+  viewChild,
+} from '@angular/core';
+import { DatePipe } from '@angular/common';
 import * as L from 'leaflet';
-
-/** Coordenadas de la terminal de Gualeguaychu (placeholder hasta que llegue del backend). */
-const PLATAFORMA: L.LatLngTuple = [-33.0089, -58.5236];
+import { RealtimeService } from '../../services/realtime.service';
+import { Coordenadas, ViajeEsperado } from '../../models/viaje.model';
 
 @Component({
   selector: 'app-espera-viaje',
+  imports: [DatePipe],
   templateUrl: './espera-viaje.html',
   styleUrl: './espera-viaje.scss',
 })
-export class EsperaViaje implements AfterViewInit, OnDestroy {
+export class EsperaViaje {
+  readonly viaje = input.required<ViajeEsperado>();
   /** Devuelve el home a su estado de busqueda. */
   readonly buscarOtro = output<void>();
 
-  private readonly mapaRef = viewChild.required<ElementRef<HTMLElement>>('mapa');
+  private readonly realtime = inject(RealtimeService);
+  protected readonly conectado = this.realtime.conectado;
+  protected readonly llegada = this.realtime.llegada;
+  protected readonly demora = this.realtime.demora;
+
+  /** Coordenadas de la plataforma donde esta el colectivo (solo tras la llegada). */
+  protected readonly posicion = computed<Coordenadas | null>(() => {
+    const c = this.llegada()?.coordinates;
+    return c && Number.isFinite(c.lat) && Number.isFinite(c.lng) ? c : null;
+  });
+
+  protected readonly mapsUrl = computed(() => {
+    const p = this.posicion();
+    return p ? `https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}` : null;
+  });
+
+  /** Ciudades del recorrido en orden, para mostrarlas como "A → B → C". */
+  protected readonly recorrido = computed(() =>
+    [...this.viaje().trip.trip_city]
+      .sort((a, b) => a.order - b.order)
+      .map((c) => c.city_name)
+      .join(' → '),
+  );
+
+  private readonly mapaRef = viewChild<ElementRef<HTMLElement>>('mapa');
   private mapa?: L.Map;
+  private pin?: L.Marker;
   private observer?: ResizeObserver;
 
-  /** Datos de muestra: cuando exista la API se reemplazan por un input(). */
-  protected readonly viaje = {
-    plataforma: 'A27',
-    empresa: 'Flecha Bus',
-    patente: 'GDMKD MFDKFV AF 122 A2',
-    pasajero: 'Gonzalo Errandonea',
-    dni: '12141210',
-    codigo: 'FLE-002-2026',
-    asiento: '27 - ARRIBA',
-  };
+  constructor() {
+    // El contenedor del mapa solo existe cuando llega el colectivo, por eso
+    // el mapa se crea despues del render y no en ngAfterViewInit.
+    afterRenderEffect(() => {
+      const el = this.mapaRef()?.nativeElement;
+      const pos = this.posicion();
+      const anden = this.llegada()?.anden ?? '';
 
-  ngAfterViewInit(): void {
-    this.mapa = L.map(this.mapaRef().nativeElement, {
-      center: PLATAFORMA,
-      zoom: 16,
+      if (!el || !pos) {
+        this.destruirMapa();
+        return;
+      }
+
+      const punto: L.LatLngTuple = [pos.lat, pos.lng];
+      if (this.mapa && this.mapa.getContainer() === el) {
+        this.pin?.setLatLng(punto).setTooltipContent(`Plataforma ${anden}`);
+        this.mapa.setView(punto, this.mapa.getZoom());
+        return;
+      }
+
+      this.destruirMapa();
+      this.crearMapa(el, punto, anden);
+    });
+
+    inject(DestroyRef).onDestroy(() => this.destruirMapa());
+  }
+
+  protected verEnMapa(): void {
+    const pos = this.posicion();
+    if (pos) this.mapa?.flyTo([pos.lat, pos.lng], 18);
+  }
+
+  private crearMapa(el: HTMLElement, punto: L.LatLngTuple, anden: string): void {
+    this.mapa = L.map(el, {
+      center: punto,
+      zoom: 18,
       zoomControl: false,
       scrollWheelZoom: false,
     });
@@ -45,7 +103,7 @@ export class EsperaViaje implements AfterViewInit, OnDestroy {
     this.mapa.attributionControl.setPrefix(false);
 
     // Chapa azul con el icono del colectivo, como en el mockup.
-    L.marker(PLATAFORMA, {
+    this.pin = L.marker(punto, {
       icon: L.divIcon({
         className: 'mapa__pin-wrap',
         html: `<span class="mapa__pin" aria-hidden="true">
@@ -62,7 +120,7 @@ export class EsperaViaje implements AfterViewInit, OnDestroy {
       keyboard: false,
     })
       .addTo(this.mapa)
-      .bindTooltip(`Plataforma ${this.viaje.plataforma}`, {
+      .bindTooltip(`Plataforma ${anden}`, {
         permanent: true,
         direction: 'top',
         offset: [0, -18],
@@ -72,15 +130,14 @@ export class EsperaViaje implements AfterViewInit, OnDestroy {
     // Si la card cambia de tamaño (rotacion, breakpoint) Leaflet necesita
     // recalcular o quedan tiles sin pedir.
     this.observer = new ResizeObserver(() => this.mapa?.invalidateSize());
-    this.observer.observe(this.mapaRef().nativeElement);
+    this.observer.observe(el);
   }
 
-  ngOnDestroy(): void {
+  private destruirMapa(): void {
     this.observer?.disconnect();
+    this.observer = undefined;
     this.mapa?.remove();
-  }
-
-  protected verEnMapa(): void {
-    this.mapa?.flyTo(PLATAFORMA, 17);
+    this.mapa = undefined;
+    this.pin = undefined;
   }
 }

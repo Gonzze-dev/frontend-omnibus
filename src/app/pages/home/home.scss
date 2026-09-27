@@ -188,3 +188,14 @@
 .home__cta {
   margin-top: 73px;
 }
+
+/* Si hay error, el mensaje ocupa parte del aire que separa el CTA */
+.home__error {
+  margin: 40px 0 0;
+  color: var(--ab-danger);
+  font-size: var(--ab-fs-body);
+  line-height: var(--ab-lh-body);
+  text-align: center;
+}
+
+.home__error + .home__cta { margin-top: 16px; }

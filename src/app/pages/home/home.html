@@ -5,9 +5,17 @@
     <app-toast mensaje="ID del pasaje cargado con éxito" (cerrado)="mostrarExito.set(false)" />
   }
 
-  @if (esperando()) {
-    <app-espera-viaje (buscarOtro)="esperando.set(false)" />
-  } @else {
+  @if (mostrarLlegada() && viaje()) {
+    <app-toast
+      [mensaje]="'¡Tu colectivo llegó! Plataforma ' + andenLlegada()"
+      [duracionMs]="6000"
+      (cerrado)="mostrarLlegada.set(false)"
+    />
+  }
+
+  @if (viaje(); as v) {
+    <app-espera-viaje [viaje]="v" (buscarOtro)="buscarOtro()" />
+  } @else if (!restaurando()) {
   <div class="ab-screen home__body">
     <section class="hero">
       <h1 class="hero__title">Rastrea tu viaje</h1>
@@ -28,8 +36,15 @@
                 stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
           <circle cx="8" cy="7" r="2" fill="currentColor" />
         </svg>
-        <select class="row__control row__control--select" aria-label="Terminal">
-          <option>Terminal Gualeguaychú</option>
+        <select
+          class="row__control row__control--select"
+          aria-label="Terminal"
+          (change)="terminalId.set($any($event.target).value || null)"
+        >
+          <option value="" disabled [selected]="!terminalId()">Elegí una terminal</option>
+          @for (t of terminalesFiltradas(); track t.uuid) {
+            <option [value]="t.uuid" [selected]="t.uuid === terminalId()">{{ t.name }}</option>
+          }
         </select>
       </div>
 
@@ -39,7 +54,15 @@
                 stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
           <circle cx="8" cy="7" r="2" fill="currentColor" />
         </svg>
-        <input class="row__control" type="text" placeholder="Código Postal" aria-label="Código postal" />
+        <input
+          class="row__control"
+          type="text"
+          inputmode="numeric"
+          placeholder="Código Postal"
+          aria-label="Código postal"
+          [value]="filtroCp()"
+          (input)="onFiltroCp($any($event.target).value)"
+        />
       </div>
 
       <!-- Marca de agua decorativa de la esquina inferior derecha -->
@@ -73,8 +96,10 @@
             id="ticket"
             type="text"
             placeholder="FLE-002-2026"
+            autocapitalize="characters"
             [value]="ticket()"
             (input)="ticket.set($any($event.target).value)"
+            (keydown.enter)="buscarViaje()"
           />
         </div>
         @if (errorEscaneo()) {
@@ -98,8 +123,17 @@
       />
     }
 
-    <button class="ab-button ab-button--lg home__cta" type="button" (click)="esperando.set(true)">
-      Buscar viaje
+    @if (errorBusqueda(); as error) {
+      <p class="home__error" role="alert">{{ error }}</p>
+    }
+
+    <button
+      class="ab-button ab-button--lg home__cta"
+      type="button"
+      [disabled]="buscando()"
+      (click)="buscarViaje()"
+    >
+      {{ buscando() ? 'Buscando…' : 'Buscar viaje' }}
     </button>
   </div>
   }

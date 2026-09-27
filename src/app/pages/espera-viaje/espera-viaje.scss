@@ -35,6 +35,47 @@
 
 .aviso b { font-weight: 700; }
 
+.aviso + .aviso { margin-top: 12px; }
+
+/* Todavia no llego: mismo aviso en azul de marca con un pulso "en vivo" */
+.aviso--espera { background: var(--ab-gradient); }
+
+.aviso--demora { background: var(--ab-badge); }
+
+.aviso__pulso {
+  position: relative;
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--ab-white);
+}
+
+.aviso__pulso::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--ab-white);
+  animation: pulso 1.6s ease-out infinite;
+}
+
+@keyframes pulso {
+  from { transform: scale(1); opacity: 0.7; }
+  to   { transform: scale(2.6); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aviso__pulso::after { animation: none; }
+}
+
+.espera__offline {
+  margin: 12px 0 0;
+  color: var(--ab-muted);
+  font-size: var(--ab-fs-label);
+  line-height: 16px;
+}
+
 /* ---------------- Plataforma + mapa ---------------- */
 .plataforma { margin-top: 28px; }
 
@@ -53,6 +94,11 @@
   font-size: var(--ab-fs-h3);
   line-height: var(--ab-lh-h3);
   color: var(--ab-ink);
+}
+
+.plataforma__acciones {
+  display: flex;
+  gap: 16px;
 }
 
 .plataforma__link {
