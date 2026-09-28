@@ -1,7 +1,11 @@
-import { Component, computed, inject, signal } from '@angular/core';
-import { ActivatedRoute, ResolveFn, RouterLink } from '@angular/router';
+import { Component, computed, effect, inject, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute, Router, ResolveFn, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Topbar } from '../../shared/topbar/topbar';
+import { CiudadService } from '../../services/ciudad.service';
+import { Ciudad } from '../../models/ciudad.model';
 
 export type AccionCiudad = 'listar' | 'crear' | 'editar' | 'eliminar';
 
@@ -29,36 +33,11 @@ const VISTAS: Record<AccionCiudad, VistaCiudad> = {
   },
 };
 
-/** Datos de ejemplo hasta que exista la conexion con GET /api/admin/cities. */
-const CIUDADES_EJEMPLO = [
-  { postal_code: '2820', name: 'Gualeguaychú' },
-  { postal_code: '1004', name: 'Buenos Aires 1004' },
-  { postal_code: '2000', name: 'Rosario' },
-  { postal_code: '5000', name: 'Córdoba' },
-  { postal_code: '5500', name: 'Mendoza' },
-  { postal_code: '4000', name: 'San Miguel de Tucumán' },
-  { postal_code: '3100', name: 'Paraná' },
-  { postal_code: '3000', name: 'Santa Fe' },
-  { postal_code: '7600', name: 'Mar del Plata' },
-  { postal_code: '8000', name: 'Bahía Blanca' },
-  { postal_code: '8300', name: 'Neuquén' },
-  { postal_code: '8400', name: 'San Carlos de Bariloche' },
-  { postal_code: '4400', name: 'Salta' },
-  { postal_code: '3400', name: 'Corrientes' },
-  { postal_code: '3500', name: 'Resistencia' },
-  { postal_code: '3300', name: 'Posadas' },
-  { postal_code: '5900', name: 'Villa María' },
-  { postal_code: '2400', name: 'San Francisco' },
-  { postal_code: '6000', name: 'Junín' },
-  { postal_code: '7000', name: 'Tandil' },
-  { postal_code: '9000', name: 'Comodoro Rivadavia' },
-  { postal_code: '9100', name: 'Trelew' },
-  { postal_code: '2900', name: 'San Nicolás de los Arroyos' },
-  { postal_code: '2600', name: 'Venado Tuerto' },
-];
-
 /** Filas que entran en una pagina del listado. */
 const POR_PAGINA = 10;
+
+/** Cantidad de ciudades que se piden al backend para filtrar/paginar en el cliente. */
+const LIMITE_BACKEND = 500;
 
 /**
  * Pantallas de CRUD de ciudades. Las opciones de la gestion
@@ -67,12 +46,15 @@ const POR_PAGINA = 10;
  */
 @Component({
   selector: 'app-ciudades',
-  imports: [Topbar, RouterLink],
+  imports: [Topbar, RouterLink, ReactiveFormsModule],
   templateUrl: './ciudades.html',
   styleUrl: './ciudades.scss',
 })
 export class Ciudades {
   private readonly ruta = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly ciudadService = inject(CiudadService);
+  private readonly fb = inject(FormBuilder);
 
   private readonly parametros = toSignal(this.ruta.paramMap, {
     initialValue: this.ruta.snapshot.paramMap,
@@ -83,6 +65,9 @@ export class Ciudades {
     return accion && accion in VISTAS ? accion : 'listar';
   });
 
+  /** Codigo postal de la ciudad a editar/eliminar, si la ruta lo trae. */
+  private readonly codigo = computed(() => this.parametros().get('codigo'));
+
   protected readonly vista = computed(() => VISTAS[this.accion()]);
 
   /** Texto del filtro del listado: busca por codigo postal o por nombre. */
@@ -90,11 +75,17 @@ export class Ciudades {
 
   protected readonly pagina = signal(1);
 
+  // --- Listado ---
+  protected readonly cargandoListado = signal(false);
+  protected readonly errorListado = signal<string | null>(null);
+  private readonly todasLasCiudades = signal<Ciudad[]>([]);
+
   private readonly filtradas = computed(() => {
     const texto = this.filtro().trim().toLowerCase();
-    if (!texto) return CIUDADES_EJEMPLO;
+    const ciudades = this.todasLasCiudades();
+    if (!texto) return ciudades;
 
-    return CIUDADES_EJEMPLO.filter(
+    return ciudades.filter(
       (c) => c.postal_code.toLowerCase().includes(texto) || c.name.toLowerCase().includes(texto),
     );
   });
@@ -128,6 +119,84 @@ export class Ciudades {
     Array.from({ length: Math.max(0, POR_PAGINA - (this.ciudades().length || 1)) }),
   );
 
+  // --- Alta ---
+  protected readonly formCrear = this.fb.nonNullable.group({
+    postal_code: ['', Validators.required],
+    name: ['', Validators.required],
+  });
+  protected readonly guardandoCrear = signal(false);
+  protected readonly errorCrear = signal<string | null>(null);
+
+  // --- Edicion ---
+  protected readonly formEditar = this.fb.nonNullable.group({
+    postal_code: ['', Validators.required],
+    name: ['', Validators.required],
+  });
+  protected readonly cargandoSeleccionada = signal(false);
+  protected readonly errorSeleccionada = signal<string | null>(null);
+  protected readonly guardandoEditar = signal(false);
+  protected readonly errorEditar = signal<string | null>(null);
+
+  // --- Baja ---
+  protected readonly ciudadSeleccionada = signal<Ciudad | null>(null);
+  protected readonly eliminando = signal(false);
+  protected readonly errorEliminar = signal<string | null>(null);
+
+  constructor() {
+    effect(() => {
+      const accion = this.accion();
+
+      if (accion === 'listar') {
+        this.cargarCiudades();
+      } else if (accion === 'editar' || accion === 'eliminar') {
+        this.cargarSeleccionada(this.codigo());
+      } else if (accion === 'crear') {
+        this.formCrear.reset();
+        this.errorCrear.set(null);
+      }
+    });
+  }
+
+  private cargarCiudades(): void {
+    this.cargandoListado.set(true);
+    this.errorListado.set(null);
+
+    this.ciudadService.listar({ limit: LIMITE_BACKEND, order: 'ASC' }).subscribe({
+      next: (res) => {
+        this.todasLasCiudades.set(res.cities);
+        this.cargandoListado.set(false);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.cargandoListado.set(false);
+        this.errorListado.set(mensajeError(err));
+      },
+    });
+  }
+
+  private cargarSeleccionada(codigo: string | null): void {
+    this.ciudadSeleccionada.set(null);
+    this.errorSeleccionada.set(null);
+    this.errorEliminar.set(null);
+
+    if (!codigo) {
+      this.errorSeleccionada.set('No se indico que ciudad usar.');
+      return;
+    }
+
+    this.cargandoSeleccionada.set(true);
+    this.ciudadService.obtener(codigo).subscribe({
+      next: (ciudad) => {
+        this.cargandoSeleccionada.set(false);
+        this.ciudadSeleccionada.set(ciudad);
+        this.formEditar.setValue({ postal_code: ciudad.postal_code, name: ciudad.name });
+      },
+      error: (err: HttpErrorResponse) => {
+        this.cargandoSeleccionada.set(false);
+        this.errorSeleccionada.set(mensajeError(err));
+      },
+    });
+  }
+
   protected filtrar(texto: string): void {
     this.filtro.set(texto);
     this.pagina.set(1);
@@ -137,8 +206,98 @@ export class Ciudades {
     this.pagina.set(Math.min(Math.max(pagina, 1), this.totalPaginas()));
   }
 
-  /** Ciudad de ejemplo para precargar el detalle, editar o confirmar la baja. */
-  protected readonly ciudadSeleccionada = CIUDADES_EJEMPLO[0];
+  protected crear(): void {
+    if (this.formCrear.invalid) {
+      this.formCrear.markAllAsTouched();
+      return;
+    }
+
+    this.guardandoCrear.set(true);
+    this.errorCrear.set(null);
+
+    const { postal_code, name } = this.formCrear.getRawValue();
+    this.ciudadService.crear({ postal_code: postal_code.trim(), name: name.trim() }).subscribe({
+      next: () => {
+        this.guardandoCrear.set(false);
+        this.router.navigateByUrl('/dashboard/ciudades/listar');
+      },
+      error: (err: HttpErrorResponse) => {
+        this.guardandoCrear.set(false);
+        this.errorCrear.set(mensajeError(err));
+      },
+    });
+  }
+
+  protected guardarEdicion(): void {
+    if (this.formEditar.invalid) {
+      this.formEditar.markAllAsTouched();
+      return;
+    }
+
+    const seleccionada = this.ciudadSeleccionada();
+    if (!seleccionada) return;
+
+    this.guardandoEditar.set(true);
+    this.errorEditar.set(null);
+
+    const { postal_code, name } = this.formEditar.getRawValue();
+    this.ciudadService
+      .actualizar(seleccionada.postal_code, { postal_code: postal_code.trim(), name: name.trim() })
+      .subscribe({
+        next: () => {
+          this.guardandoEditar.set(false);
+          this.router.navigateByUrl('/dashboard/ciudades/listar');
+        },
+        error: (err: HttpErrorResponse) => {
+          this.guardandoEditar.set(false);
+          this.errorEditar.set(mensajeError(err));
+        },
+      });
+  }
+
+  protected eliminar(): void {
+    const seleccionada = this.ciudadSeleccionada();
+    if (!seleccionada) return;
+
+    this.eliminando.set(true);
+    this.errorEliminar.set(null);
+
+    this.ciudadService.eliminar(seleccionada.postal_code).subscribe({
+      next: () => {
+        this.eliminando.set(false);
+        this.router.navigateByUrl('/dashboard/ciudades/listar');
+      },
+      error: (err: HttpErrorResponse) => {
+        this.eliminando.set(false);
+        this.errorEliminar.set(mensajeError(err));
+      },
+    });
+  }
+
+  protected invalidoCrear(campo: 'postal_code' | 'name'): boolean {
+    const control = this.formCrear.controls[campo];
+    return control.invalid && control.touched;
+  }
+
+  protected invalidoEditar(campo: 'postal_code' | 'name'): boolean {
+    const control = this.formEditar.controls[campo];
+    return control.invalid && control.touched;
+  }
+}
+
+function mensajeError(err: HttpErrorResponse): string {
+  switch (err.status) {
+    case 0:
+      return 'No se pudo conectar con el servidor. Intenta mas tarde.';
+    case 400:
+      return 'El nombre y el codigo postal son obligatorios.';
+    case 404:
+      return 'No se encontro la ciudad.';
+    case 409:
+      return 'Ya existe una ciudad con ese codigo postal.';
+    default:
+      return 'Ocurrio un error inesperado. Intenta de nuevo.';
+  }
 }
 
 export const tituloCiudades: ResolveFn<string> = (ruta) => {
