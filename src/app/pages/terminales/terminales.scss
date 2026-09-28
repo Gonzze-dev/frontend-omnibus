@@ -2,7 +2,34 @@
 @use '../../../styles/crud' as *;
 
 /* Terminal | Ciudad | acciones */
-.tabla { --cols: 1.3fr 1fr auto; }
+.tabla {
+  --cols: 1.3fr 1fr auto;
+  /* El agrandado de la fila seleccionada no se puede recortar */
+  overflow: visible;
+}
 
 /* Celdas de dos lineas: dos renglones + el gap, el padding y el borde */
 .tabla--fija { --fila: calc(2 * var(--ab-lh-body) + 31px); }
+
+/* El contenedor ya no recorta el contenido, asi que el redondeado
+   de las esquinas lo ponen directamente la primera y la ultima fila. */
+.tabla__fila:first-child { border-top-left-radius: var(--ab-r-card); border-top-right-radius: var(--ab-r-card); }
+.tabla__fila:last-child { border-bottom-left-radius: var(--ab-r-card); border-bottom-right-radius: var(--ab-r-card); }
+
+/* Terminal seleccionable: click en cualquier parte lleva a editarla */
+.tabla__fila--seleccionable {
+  position: relative;
+  cursor: pointer;
+  transform-origin: center;
+  transition: background-color 0.1s, color 0.1s, transform 0.1s;
+}
+
+.tabla__fila--seleccionable:hover,
+.tabla__fila--seleccionable:focus-visible {
+  background: color-mix(in srgb, var(--tono) 15%, white);
+  color: var(--ab-ink);
+  transform: scale(1.04);
+  z-index: 1;
+}
+
+.tabla__fila--seleccionable:focus-visible { outline: none; }

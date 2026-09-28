@@ -229,6 +229,10 @@ export class Terminales {
     this.pagina.set(Math.min(Math.max(pagina, 1), this.totalPaginas()));
   }
 
+  protected irAEditar(uuid: string): void {
+    this.router.navigate(['/dashboard/terminales/editar', uuid]);
+  }
+
   protected crear(): void {
     if (this.formCrear.invalid) {
       this.formCrear.markAllAsTouched();
