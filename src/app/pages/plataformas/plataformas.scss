@@ -2,10 +2,37 @@
 @use '../../../styles/crud' as *;
 
 /* Fila de terminal: nombre + flecha de desplegar */
-.tabla { --cols: 1fr auto; }
+.tabla {
+  --cols: 1fr auto;
+  /* El agrandado de la fila seleccionada no se puede recortar */
+  overflow: visible;
+}
 
 /* Celdas de dos lineas: dos renglones + el gap, el padding y el borde */
 .tabla--fija { --fila: calc(2 * var(--ab-lh-body) + 31px); }
 
 /* Anden | Coordenadas | acciones */
 .tabla__panel { --cols: 1fr 1fr auto; }
+
+/* El contenedor ya no recorta el contenido, asi que el redondeado
+   de la esquina superior (la unica con un fondo distinto al del
+   contenedor, la cabecera) lo pone directamente esa fila. */
+.tabla > .tabla__fila:first-child { border-top-left-radius: var(--ab-r-card); border-top-right-radius: var(--ab-r-card); }
+
+/* Anden seleccionable: click en cualquier parte lleva a editar la plataforma */
+.tabla__fila--seleccionable {
+  position: relative;
+  cursor: pointer;
+  transform-origin: center;
+  transition: background-color 0.1s, color 0.1s, transform 0.1s;
+}
+
+.tabla__fila--seleccionable:hover,
+.tabla__fila--seleccionable:focus-visible {
+  background: color-mix(in srgb, var(--tono) 15%, white);
+  color: var(--ab-ink);
+  transform: scale(1.04);
+  z-index: 1;
+}
+
+.tabla__fila--seleccionable:focus-visible { outline: none; }

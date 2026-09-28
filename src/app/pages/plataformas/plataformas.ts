@@ -256,6 +256,10 @@ export class Plataformas {
     this.abierta.set(null);
   }
 
+  protected irAEditar(code: number): void {
+    this.router.navigate(['/dashboard/plataformas/editar', code]);
+  }
+
   /** Una terminal abierta a la vez: volver a tocarla la cierra. */
   protected desplegar(uuid: string): void {
     this.abierta.update((actual) => (actual === uuid ? null : uuid));
