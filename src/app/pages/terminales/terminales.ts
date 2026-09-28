@@ -1,7 +1,13 @@
-import { Component, computed, inject, signal } from '@angular/core';
-import { ActivatedRoute, ResolveFn, RouterLink } from '@angular/router';
+import { Component, computed, effect, inject, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute, Router, ResolveFn, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Topbar } from '../../shared/topbar/topbar';
+import { TerminalService } from '../../services/terminal.service';
+import { CiudadService } from '../../services/ciudad.service';
+import { Terminal } from '../../models/terminal.model';
+import { Ciudad } from '../../models/ciudad.model';
 
 export type AccionTerminal = 'listar' | 'crear' | 'editar' | 'eliminar';
 
@@ -29,103 +35,14 @@ const VISTAS: Record<AccionTerminal, VistaTerminal> = {
   },
 };
 
-/** Ciudades de ejemplo para el select: la terminal va sobre un codigo postal existente. */
-const CIUDADES_EJEMPLO = [
-  { postal_code: '2820', name: 'Gualeguaychú' },
-  { postal_code: '1004', name: 'Buenos Aires 1004' },
-  { postal_code: '2000', name: 'Rosario' },
-];
-
-/** Datos de ejemplo hasta que exista la conexion con GET /api/super/terminals. */
-const TERMINALES_EJEMPLO = [
-  {
-    uuid: 'a0000000-0000-0000-0000-000000000001',
-    name: 'Terminal Gualeguaychu',
-    postal_code: '2820',
-    external_terminal_id: '447ab6ad-91e2-43d4-a72e-1ed619258ac5',
-  },
-  {
-    uuid: 'a0000000-0000-0000-0000-000000000002',
-    name: 'Terminal Retiro BS AS',
-    postal_code: '1004',
-    external_terminal_id: '447ab6ae-91e2-43d4-a72e-1ed619258ac5',
-  },
-  {
-    uuid: 'a0000000-0000-0000-0000-000000000003',
-    name: 'Terminal Rosario',
-    postal_code: '2000',
-    external_terminal_id: '447ab6af-91e2-43d4-a72e-1ed619258ac5',
-  },
-  {
-    uuid: 'a0000000-0000-0000-0000-000000000004',
-    name: 'Terminal Cordoba',
-    postal_code: '5000',
-    external_terminal_id: '447ab6b0-91e2-43d4-a72e-1ed619258ac5',
-  },
-  {
-    uuid: 'a0000000-0000-0000-0000-000000000005',
-    name: 'Terminal Mendoza',
-    postal_code: '5500',
-    external_terminal_id: '447ab6b1-91e2-43d4-a72e-1ed619258ac5',
-  },
-  {
-    uuid: 'a0000000-0000-0000-0000-000000000006',
-    name: 'Terminal Tucuman',
-    postal_code: '4000',
-    external_terminal_id: '447ab6b2-91e2-43d4-a72e-1ed619258ac5',
-  },
-  {
-    uuid: 'a0000000-0000-0000-0000-000000000007',
-    name: 'Terminal Parana',
-    postal_code: '3100',
-    external_terminal_id: '447ab6b3-91e2-43d4-a72e-1ed619258ac5',
-  },
-  {
-    uuid: 'a0000000-0000-0000-0000-000000000008',
-    name: 'Terminal Santa Fe',
-    postal_code: '3000',
-    external_terminal_id: '447ab6b4-91e2-43d4-a72e-1ed619258ac5',
-  },
-  {
-    uuid: 'a0000000-0000-0000-0000-000000000009',
-    name: 'Terminal Mar del Plata',
-    postal_code: '7600',
-    external_terminal_id: '447ab6b5-91e2-43d4-a72e-1ed619258ac5',
-  },
-  {
-    uuid: 'a0000000-0000-0000-0000-000000000010',
-    name: 'Terminal Bahia Blanca',
-    postal_code: '8000',
-    external_terminal_id: '447ab6b6-91e2-43d4-a72e-1ed619258ac5',
-  },
-  {
-    uuid: 'a0000000-0000-0000-0000-000000000011',
-    name: 'Terminal Neuquen',
-    postal_code: '8300',
-    external_terminal_id: '447ab6b7-91e2-43d4-a72e-1ed619258ac5',
-  },
-  {
-    uuid: 'a0000000-0000-0000-0000-000000000012',
-    name: 'Terminal Salta',
-    postal_code: '4400',
-    external_terminal_id: '447ab6b8-91e2-43d4-a72e-1ed619258ac5',
-  },
-  {
-    uuid: 'a0000000-0000-0000-0000-000000000013',
-    name: 'Terminal Corrientes',
-    postal_code: '3400',
-    external_terminal_id: '447ab6b9-91e2-43d4-a72e-1ed619258ac5',
-  },
-  {
-    uuid: 'a0000000-0000-0000-0000-000000000014',
-    name: 'Terminal Posadas',
-    postal_code: '3300',
-    external_terminal_id: '447ab6ba-91e2-43d4-a72e-1ed619258ac5',
-  },
-];
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** Filas que entran en una pagina del listado. */
 const POR_PAGINA = 10;
+
+/** Cantidad de filas que se piden al backend para filtrar/paginar en el cliente. */
+const LIMITE_BACKEND = 500;
 
 /**
  * Pantallas de ABM de terminales. Toda la seccion es exclusiva
@@ -133,12 +50,16 @@ const POR_PAGINA = 10;
  */
 @Component({
   selector: 'app-terminales',
-  imports: [Topbar, RouterLink],
+  imports: [Topbar, RouterLink, ReactiveFormsModule],
   templateUrl: './terminales.html',
   styleUrl: './terminales.scss',
 })
 export class Terminales {
   private readonly ruta = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly terminalService = inject(TerminalService);
+  private readonly ciudadService = inject(CiudadService);
+  private readonly fb = inject(FormBuilder);
 
   private readonly parametros = toSignal(this.ruta.paramMap, {
     initialValue: this.ruta.snapshot.paramMap,
@@ -149,21 +70,30 @@ export class Terminales {
     return accion && accion in VISTAS ? accion : 'listar';
   });
 
+  /** Uuid de la terminal a editar/eliminar, si la ruta lo trae. */
+  private readonly codigo = computed(() => this.parametros().get('codigo'));
+
   protected readonly vista = computed(() => VISTAS[this.accion()]);
 
-  protected readonly ciudades = CIUDADES_EJEMPLO;
+  protected readonly ciudades = signal<Ciudad[]>([]);
 
   /** Texto del filtro del listado: nombre, codigo postal o identificadores. */
   protected readonly filtro = signal('');
 
   protected readonly pagina = signal(1);
 
+  // --- Listado ---
+  protected readonly cargandoListado = signal(false);
+  protected readonly errorListado = signal<string | null>(null);
+  private readonly todasLasTerminales = signal<Terminal[]>([]);
+
   private readonly filtradas = computed(() => {
     const texto = this.filtro().trim().toLowerCase();
-    if (!texto) return TERMINALES_EJEMPLO;
+    const terminales = this.todasLasTerminales();
+    if (!texto) return terminales;
 
-    return TERMINALES_EJEMPLO.filter((t) =>
-      [t.name, t.postal_code, t.uuid, t.external_terminal_id].some((campo) =>
+    return terminales.filter((t) =>
+      [t.name, t.postal_code, t.uuid, t.external_terminal_id ?? ''].some((campo) =>
         campo.toLowerCase().includes(texto),
       ),
     );
@@ -198,6 +128,98 @@ export class Terminales {
     Array.from({ length: Math.max(0, POR_PAGINA - (this.terminales().length || 1)) }),
   );
 
+  // --- Alta ---
+  protected readonly formCrear = this.fb.nonNullable.group({
+    name: ['', Validators.required],
+    postal_code: ['', Validators.required],
+    external_terminal_id: ['', [Validators.required, Validators.pattern(UUID_PATTERN)]],
+  });
+  protected readonly guardandoCrear = signal(false);
+  protected readonly errorCrear = signal<string | null>(null);
+
+  // --- Edicion ---
+  protected readonly formEditar = this.fb.nonNullable.group({
+    name: ['', Validators.required],
+    postal_code: ['', Validators.required],
+    external_terminal_id: ['', [Validators.required, Validators.pattern(UUID_PATTERN)]],
+  });
+  protected readonly cargandoSeleccionada = signal(false);
+  protected readonly errorSeleccionada = signal<string | null>(null);
+  protected readonly guardandoEditar = signal(false);
+  protected readonly errorEditar = signal<string | null>(null);
+
+  // --- Baja ---
+  protected readonly terminalSeleccionada = signal<Terminal | null>(null);
+  protected readonly eliminando = signal(false);
+  protected readonly errorEliminar = signal<string | null>(null);
+
+  constructor() {
+    this.cargarCiudades();
+
+    effect(() => {
+      const accion = this.accion();
+
+      if (accion === 'listar') {
+        this.cargarTerminales();
+      } else if (accion === 'editar' || accion === 'eliminar') {
+        this.cargarSeleccionada(this.codigo());
+      } else if (accion === 'crear') {
+        this.formCrear.reset();
+        this.errorCrear.set(null);
+      }
+    });
+  }
+
+  private cargarCiudades(): void {
+    this.ciudadService.listar({ limit: LIMITE_BACKEND, order: 'ASC' }).subscribe({
+      next: (res) => this.ciudades.set(res.cities),
+    });
+  }
+
+  private cargarTerminales(): void {
+    this.cargandoListado.set(true);
+    this.errorListado.set(null);
+
+    this.terminalService.listar({ limit: LIMITE_BACKEND, order: 'ASC' }).subscribe({
+      next: (res) => {
+        this.todasLasTerminales.set(res.terminals);
+        this.cargandoListado.set(false);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.cargandoListado.set(false);
+        this.errorListado.set(mensajeError(err));
+      },
+    });
+  }
+
+  private cargarSeleccionada(uuid: string | null): void {
+    this.terminalSeleccionada.set(null);
+    this.errorSeleccionada.set(null);
+    this.errorEliminar.set(null);
+
+    if (!uuid) {
+      this.errorSeleccionada.set('No se indico que terminal usar.');
+      return;
+    }
+
+    this.cargandoSeleccionada.set(true);
+    this.terminalService.obtener(uuid).subscribe({
+      next: (terminal) => {
+        this.cargandoSeleccionada.set(false);
+        this.terminalSeleccionada.set(terminal);
+        this.formEditar.setValue({
+          name: terminal.name,
+          postal_code: terminal.postal_code,
+          external_terminal_id: terminal.external_terminal_id ?? '',
+        });
+      },
+      error: (err: HttpErrorResponse) => {
+        this.cargandoSeleccionada.set(false);
+        this.errorSeleccionada.set(mensajeError(err));
+      },
+    });
+  }
+
   protected filtrar(texto: string): void {
     this.filtro.set(texto);
     this.pagina.set(1);
@@ -207,8 +229,108 @@ export class Terminales {
     this.pagina.set(Math.min(Math.max(pagina, 1), this.totalPaginas()));
   }
 
-  /** Terminal de ejemplo para precargar el detalle, editar o confirmar la baja. */
-  protected readonly terminalSeleccionada = TERMINALES_EJEMPLO[0];
+  protected crear(): void {
+    if (this.formCrear.invalid) {
+      this.formCrear.markAllAsTouched();
+      return;
+    }
+
+    this.guardandoCrear.set(true);
+    this.errorCrear.set(null);
+
+    const { name, postal_code, external_terminal_id } = this.formCrear.getRawValue();
+    this.terminalService
+      .crear({
+        name: name.trim(),
+        postal_code,
+        external_terminal_id: external_terminal_id.trim(),
+      })
+      .subscribe({
+        next: () => {
+          this.guardandoCrear.set(false);
+          this.router.navigateByUrl('/dashboard/terminales/listar');
+        },
+        error: (err: HttpErrorResponse) => {
+          this.guardandoCrear.set(false);
+          this.errorCrear.set(mensajeError(err));
+        },
+      });
+  }
+
+  protected guardarEdicion(): void {
+    if (this.formEditar.invalid) {
+      this.formEditar.markAllAsTouched();
+      return;
+    }
+
+    const seleccionada = this.terminalSeleccionada();
+    if (!seleccionada) return;
+
+    this.guardandoEditar.set(true);
+    this.errorEditar.set(null);
+
+    const { name, postal_code, external_terminal_id } = this.formEditar.getRawValue();
+    this.terminalService
+      .actualizar(seleccionada.uuid, {
+        name: name.trim(),
+        postal_code,
+        external_terminal_id: external_terminal_id.trim(),
+      })
+      .subscribe({
+        next: () => {
+          this.guardandoEditar.set(false);
+          this.router.navigateByUrl('/dashboard/terminales/listar');
+        },
+        error: (err: HttpErrorResponse) => {
+          this.guardandoEditar.set(false);
+          this.errorEditar.set(mensajeError(err));
+        },
+      });
+  }
+
+  protected eliminar(): void {
+    const seleccionada = this.terminalSeleccionada();
+    if (!seleccionada) return;
+
+    this.eliminando.set(true);
+    this.errorEliminar.set(null);
+
+    this.terminalService.eliminar(seleccionada.uuid).subscribe({
+      next: () => {
+        this.eliminando.set(false);
+        this.router.navigateByUrl('/dashboard/terminales/listar');
+      },
+      error: (err: HttpErrorResponse) => {
+        this.eliminando.set(false);
+        this.errorEliminar.set(mensajeError(err));
+      },
+    });
+  }
+
+  protected invalidoCrear(campo: 'name' | 'postal_code' | 'external_terminal_id'): boolean {
+    const control = this.formCrear.controls[campo];
+    return control.invalid && control.touched;
+  }
+
+  protected invalidoEditar(campo: 'name' | 'postal_code' | 'external_terminal_id'): boolean {
+    const control = this.formEditar.controls[campo];
+    return control.invalid && control.touched;
+  }
+}
+
+function mensajeError(err: HttpErrorResponse): string {
+  switch (err.status) {
+    case 0:
+      return 'No se pudo conectar con el servidor. Intenta mas tarde.';
+    case 400:
+      return 'Revisa los datos: faltan campos o el id externo no es valido.';
+    case 404:
+      return 'No se encontro la terminal o la ciudad indicada.';
+    case 409:
+      return 'Ese id externo ya esta en uso por otra terminal.';
+    default:
+      return 'Ocurrio un error inesperado. Intenta de nuevo.';
+  }
 }
 
 export const tituloTerminales: ResolveFn<string> = (ruta) => {

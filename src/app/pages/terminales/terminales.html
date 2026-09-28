@@ -36,159 +36,219 @@
         </div>
       </div>
 
-      <ul class="tabla tabla--fija">
-        <li class="tabla__fila tabla__fila--cabecera">
-          <span>Terminal</span>
-          <span>Ciudad</span>
-          <span></span>
-        </li>
+      @if (errorListado()) {
+        <p class="ab-form-error" role="alert">{{ errorListado() }}</p>
+      }
 
-        @for (t of terminales(); track t.uuid) {
-          <li class="tabla__fila">
-            <span class="tabla__dato">
-              <span class="tabla__linea">{{ t.name }}</span>
-              <span class="tabla__sub">{{ t.uuid }}</span>
-            </span>
-            <span class="tabla__dato">
-              <span class="tabla__linea">CP {{ t.postal_code }}</span>
-              <span class="tabla__sub">Ext. {{ t.external_terminal_id }}</span>
-            </span>
-            <span class="tabla__acciones">
-              <a class="tabla__icono" routerLink="/dashboard/terminales/editar" aria-label="Editar terminal">
-                <svg width="18" height="18" viewBox="0 0 22 22" fill="none" aria-hidden="true">
-                  <path d="M14.5 2.5l5 5L8 19H3v-5L14.5 2.5Z" stroke="currentColor" stroke-width="1.8"
-                        stroke-linejoin="round" />
-                </svg>
-              </a>
-              <a class="tabla__icono tabla__icono--carmin" routerLink="/dashboard/terminales/eliminar" aria-label="Eliminar terminal">
-                <svg width="18" height="18" viewBox="0 0 22 22" fill="none" aria-hidden="true">
-                  <path d="M3 5.5h16M8.5 5.5V3h5v2.5M5.5 5.5 6.5 19h9l1-13.5" stroke="currentColor"
-                        stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-              </a>
-            </span>
+      @if (cargandoListado()) {
+        <p class="tabla__vacio">Cargando terminales...</p>
+      } @else {
+        <ul class="tabla tabla--fija">
+          <li class="tabla__fila tabla__fila--cabecera">
+            <span>Terminal</span>
+            <span>Ciudad</span>
+            <span></span>
           </li>
-        } @empty {
-          <li class="tabla__vacio">No hay terminales que coincidan con el filtro.</li>
-        }
 
-        @for (_ of relleno(); track $index) {
-          <li class="tabla__fila tabla__fila--relleno" aria-hidden="true">
-            <span class="tabla__dato">
-              <span class="tabla__linea">&nbsp;</span>
-            </span>
-          </li>
-        }
-      </ul>
+          @for (t of terminales(); track t.uuid) {
+            <li class="tabla__fila">
+              <span class="tabla__dato">
+                <span class="tabla__linea">{{ t.name }}</span>
+                <span class="tabla__sub">{{ t.uuid }}</span>
+              </span>
+              <span class="tabla__dato">
+                <span class="tabla__linea">CP {{ t.postal_code }}</span>
+                <span class="tabla__sub">Ext. {{ t.external_terminal_id }}</span>
+              </span>
+              <span class="tabla__acciones">
+                <a class="tabla__icono" [routerLink]="['/dashboard/terminales/editar', t.uuid]" aria-label="Editar terminal">
+                  <svg width="18" height="18" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+                    <path d="M14.5 2.5l5 5L8 19H3v-5L14.5 2.5Z" stroke="currentColor" stroke-width="1.8"
+                          stroke-linejoin="round" />
+                  </svg>
+                </a>
+                <a class="tabla__icono tabla__icono--carmin" [routerLink]="['/dashboard/terminales/eliminar', t.uuid]" aria-label="Eliminar terminal">
+                  <svg width="18" height="18" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+                    <path d="M3 5.5h16M8.5 5.5V3h5v2.5M5.5 5.5 6.5 19h9l1-13.5" stroke="currentColor"
+                          stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </a>
+              </span>
+            </li>
+          } @empty {
+            <li class="tabla__vacio">No hay terminales que coincidan con el filtro.</li>
+          }
 
-      <nav class="paginado" aria-label="Paginas del listado"
-           [class.paginado--oculto]="totalPaginas() === 1">
-        <button class="paginado__flecha" type="button" aria-label="Pagina anterior"
-                [disabled]="paginaActual() === 1" (click)="irA(paginaActual() - 1)">
-          <svg width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
-            <path d="M10.5 1.5 4 7l6.5 5.5" stroke="currentColor" stroke-width="1.8"
-                  stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-        </button>
+          @for (_ of relleno(); track $index) {
+            <li class="tabla__fila tabla__fila--relleno" aria-hidden="true">
+              <span class="tabla__dato">
+                <span class="tabla__linea">&nbsp;</span>
+              </span>
+            </li>
+          }
+        </ul>
 
-        @for (p of paginas(); track p) {
-          <button class="paginado__numero" type="button"
-                  [class.paginado__numero--activa]="p === paginaActual()"
-                  [attr.aria-current]="p === paginaActual() ? 'page' : null"
-                  (click)="irA(p)">{{ p }}</button>
-        }
+        <nav class="paginado" aria-label="Paginas del listado"
+             [class.paginado--oculto]="totalPaginas() === 1">
+          <button class="paginado__flecha" type="button" aria-label="Pagina anterior"
+                  [disabled]="paginaActual() === 1" (click)="irA(paginaActual() - 1)">
+            <svg width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
+              <path d="M10.5 1.5 4 7l6.5 5.5" stroke="currentColor" stroke-width="1.8"
+                    stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
 
-        <button class="paginado__flecha" type="button" aria-label="Pagina siguiente"
-                [disabled]="paginaActual() === totalPaginas()" (click)="irA(paginaActual() + 1)">
-          <svg width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
-            <path d="M5.5 1.5 12 7l-6.5 5.5" stroke="currentColor" stroke-width="1.8"
-                  stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-        </button>
-      </nav>
+          @for (p of paginas(); track p) {
+            <button class="paginado__numero" type="button"
+                    [class.paginado__numero--activa]="p === paginaActual()"
+                    [attr.aria-current]="p === paginaActual() ? 'page' : null"
+                    (click)="irA(p)">{{ p }}</button>
+          }
+
+          <button class="paginado__flecha" type="button" aria-label="Pagina siguiente"
+                  [disabled]="paginaActual() === totalPaginas()" (click)="irA(paginaActual() + 1)">
+            <svg width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
+              <path d="M5.5 1.5 12 7l-6.5 5.5" stroke="currentColor" stroke-width="1.8"
+                    stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
+        </nav>
+      }
     }
 
     @case ('crear') {
-      <form class="crud__form">
+      <form class="crud__form" [formGroup]="formCrear" (ngSubmit)="crear()" novalidate>
         <div class="ab-field">
           <label class="ab-label" for="nombre-crear">Nombre</label>
-          <input class="ab-input" id="nombre-crear" type="text" placeholder="Ej: Terminal Retiro BS AS" autocomplete="off" />
+          <input class="ab-input" id="nombre-crear" type="text" placeholder="Ej: Terminal Retiro BS AS" autocomplete="off"
+                 formControlName="name" [attr.aria-invalid]="invalidoCrear('name')" />
+          @if (invalidoCrear('name')) {
+            <p class="ab-field-error">Ingresa el nombre.</p>
+          }
         </div>
 
         <div class="ab-field">
           <label class="ab-label" for="ciudad-crear">Ciudad</label>
-          <select class="crud__select" id="ciudad-crear">
-            @for (c of ciudades; track c.postal_code) {
+          <select class="crud__select" id="ciudad-crear" formControlName="postal_code"
+                   [attr.aria-invalid]="invalidoCrear('postal_code')">
+            <option value="" disabled>Elegi una ciudad</option>
+            @for (c of ciudades(); track c.postal_code) {
               <option [value]="c.postal_code">{{ c.name }} ({{ c.postal_code }})</option>
             }
           </select>
+          @if (invalidoCrear('postal_code')) {
+            <p class="ab-field-error">Elegi una ciudad.</p>
+          }
         </div>
 
         <div class="ab-field">
           <label class="ab-label" for="externo-crear">Id externo</label>
           <input class="ab-input" id="externo-crear" type="text"
-                 placeholder="447ab6ac-488a-4ccc-90f1-6ddbf561f6e6" autocomplete="off" />
+                 placeholder="447ab6ac-488a-4ccc-90f1-6ddbf561f6e6" autocomplete="off"
+                 formControlName="external_terminal_id" [attr.aria-invalid]="invalidoCrear('external_terminal_id')" />
           <p class="crud__nota">Es el id de la terminal en el sistema de pasajes. No puede estar en uso por otra terminal.</p>
+          @if (invalidoCrear('external_terminal_id')) {
+            <p class="ab-field-error">Ingresa un id externo valido (uuid).</p>
+          }
         </div>
 
-        <button class="ab-button ab-button--lg" type="button">Cargar terminal</button>
+        @if (errorCrear()) {
+          <p class="ab-form-error" role="alert">{{ errorCrear() }}</p>
+        }
+
+        <button class="ab-button ab-button--lg" type="submit" [disabled]="guardandoCrear()">
+          {{ guardandoCrear() ? 'Cargando...' : 'Cargar terminal' }}
+        </button>
       </form>
     }
 
     @case ('editar') {
-      <form class="crud__form">
-        <div class="ab-field">
-          <label class="ab-label" for="nombre-editar">Nombre</label>
-          <input class="ab-input" id="nombre-editar" type="text" [value]="terminalSeleccionada.name" autocomplete="off" />
-        </div>
-
-        <div class="ab-field">
-          <label class="ab-label" for="ciudad-editar">Ciudad</label>
-          <select class="crud__select" id="ciudad-editar">
-            @for (c of ciudades; track c.postal_code) {
-              <option [value]="c.postal_code" [selected]="c.postal_code === terminalSeleccionada.postal_code">
-                {{ c.name }} ({{ c.postal_code }})
-              </option>
+      @if (cargandoSeleccionada()) {
+        <p class="tabla__vacio">Cargando terminal...</p>
+      } @else if (errorSeleccionada()) {
+        <p class="ab-form-error" role="alert">{{ errorSeleccionada() }}</p>
+      } @else {
+        <form class="crud__form" [formGroup]="formEditar" (ngSubmit)="guardarEdicion()" novalidate>
+          <div class="ab-field">
+            <label class="ab-label" for="nombre-editar">Nombre</label>
+            <input class="ab-input" id="nombre-editar" type="text" autocomplete="off"
+                   formControlName="name" [attr.aria-invalid]="invalidoEditar('name')" />
+            @if (invalidoEditar('name')) {
+              <p class="ab-field-error">Ingresa el nombre.</p>
             }
-          </select>
-        </div>
+          </div>
 
-        <div class="ab-field">
-          <label class="ab-label" for="externo-editar">Id externo</label>
-          <input class="ab-input" id="externo-editar" type="text"
-                 [value]="terminalSeleccionada.external_terminal_id" autocomplete="off" />
-        </div>
+          <div class="ab-field">
+            <label class="ab-label" for="ciudad-editar">Ciudad</label>
+            <select class="crud__select" id="ciudad-editar" formControlName="postal_code"
+                     [attr.aria-invalid]="invalidoEditar('postal_code')">
+              @for (c of ciudades(); track c.postal_code) {
+                <option [value]="c.postal_code">{{ c.name }} ({{ c.postal_code }})</option>
+              }
+            </select>
+            @if (invalidoEditar('postal_code')) {
+              <p class="ab-field-error">Elegi una ciudad.</p>
+            }
+          </div>
 
-        <button class="ab-button ab-button--lg" type="button">Guardar cambios</button>
-      </form>
+          <div class="ab-field">
+            <label class="ab-label" for="externo-editar">Id externo</label>
+            <input class="ab-input" id="externo-editar" type="text" autocomplete="off"
+                   formControlName="external_terminal_id" [attr.aria-invalid]="invalidoEditar('external_terminal_id')" />
+            @if (invalidoEditar('external_terminal_id')) {
+              <p class="ab-field-error">Ingresa un id externo valido (uuid).</p>
+            }
+          </div>
+
+          @if (errorEditar()) {
+            <p class="ab-form-error" role="alert">{{ errorEditar() }}</p>
+          }
+
+          <button class="ab-button ab-button--lg" type="submit" [disabled]="guardandoEditar()">
+            {{ guardandoEditar() ? 'Guardando...' : 'Guardar cambios' }}
+          </button>
+        </form>
+      }
     }
 
     @case ('eliminar') {
-      <div class="confirmar">
-        <p class="confirmar__texto">
-          Vas a eliminar esta terminal del sistema. La accion no se puede deshacer.
-        </p>
+      @if (cargandoSeleccionada()) {
+        <p class="tabla__vacio">Cargando terminal...</p>
+      } @else if (errorSeleccionada()) {
+        <p class="ab-form-error" role="alert">{{ errorSeleccionada() }}</p>
+      } @else if (terminalSeleccionada(); as terminal) {
+        <div class="confirmar">
+          <p class="confirmar__texto">
+            Vas a eliminar esta terminal del sistema. La accion no se puede deshacer.
+          </p>
 
-        <dl class="resultado__lista">
-          <div class="resultado__fila">
-            <dt>Nombre</dt>
-            <dd>{{ terminalSeleccionada.name }}</dd>
-          </div>
-          <div class="resultado__fila">
-            <dt>Identificador</dt>
-            <dd>{{ terminalSeleccionada.uuid }}</dd>
-          </div>
-          <div class="resultado__fila">
-            <dt>Codigo postal</dt>
-            <dd>{{ terminalSeleccionada.postal_code }}</dd>
-          </div>
-        </dl>
+          <dl class="resultado__lista">
+            <div class="resultado__fila">
+              <dt>Nombre</dt>
+              <dd>{{ terminal.name }}</dd>
+            </div>
+            <div class="resultado__fila">
+              <dt>Identificador</dt>
+              <dd>{{ terminal.uuid }}</dd>
+            </div>
+            <div class="resultado__fila">
+              <dt>Codigo postal</dt>
+              <dd>{{ terminal.postal_code }}</dd>
+            </div>
+          </dl>
 
-        <div class="confirmar__acciones">
-          <a class="ab-link" routerLink="/dashboard/terminales/listar">Cancelar</a>
-          <button class="ab-button confirmar__boton" type="button">Eliminar terminal</button>
+          @if (errorEliminar()) {
+            <p class="ab-form-error" role="alert">{{ errorEliminar() }}</p>
+          }
+
+          <div class="confirmar__acciones">
+            <a class="ab-link" routerLink="/dashboard/terminales/listar">Cancelar</a>
+            <button class="ab-button confirmar__boton" type="button" [disabled]="eliminando()" (click)="eliminar()">
+              {{ eliminando() ? 'Eliminando...' : 'Eliminar terminal' }}
+            </button>
+          </div>
         </div>
-      </div>
+      }
     }
   }
 </div>
