@@ -206,6 +206,10 @@ export class Ciudades {
     this.pagina.set(Math.min(Math.max(pagina, 1), this.totalPaginas()));
   }
 
+  protected irAEditar(codigo: string): void {
+    this.router.navigate(['/dashboard/ciudades/editar', codigo]);
+  }
+
   protected crear(): void {
     if (this.formCrear.invalid) {
       this.formCrear.markAllAsTouched();

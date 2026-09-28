@@ -29,6 +29,7 @@ export const routes: Routes = [
   { path: 'dashboard/ciudades/:accion/:codigo', component: Ciudades, title: tituloCiudades },
   { path: 'dashboard/ciudades/:accion', component: Ciudades, title: tituloCiudades },
   { path: 'dashboard/plataformas', pathMatch: 'full', redirectTo: 'dashboard/plataformas/listar' },
+  { path: 'dashboard/plataformas/:accion/:codigo', component: Plataformas, title: tituloPlataformas },
   { path: 'dashboard/plataformas/:accion', component: Plataformas, title: tituloPlataformas },
   { path: 'dashboard/terminales', pathMatch: 'full', redirectTo: 'dashboard/terminales/listar' },
   { path: 'dashboard/terminales/:accion/:codigo', component: Terminales, title: tituloTerminales },

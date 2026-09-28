@@ -35,189 +35,249 @@
         </div>
       </div>
 
-      <ul class="tabla tabla--fija">
-        <li class="tabla__fila tabla__fila--cabecera">
-          <span>Terminal</span>
-          <span></span>
-        </li>
+      @if (errorListado()) {
+        <p class="ab-form-error" role="alert">{{ errorListado() }}</p>
+      }
 
-        @for (g of grupos(); track g.uuid) {
-          <li class="tabla__item">
-            <button class="tabla__fila tabla__desplegable" type="button"
-                    [attr.aria-expanded]="abierta() === g.uuid" [attr.aria-controls]="'andenes-' + g.uuid"
-                    (click)="desplegar(g.uuid)">
+      @if (cargandoListado()) {
+        <p class="tabla__vacio">Cargando plataformas...</p>
+      } @else {
+        <ul class="tabla tabla--fija">
+          <li class="tabla__fila tabla__fila--cabecera">
+            <span>Terminal</span>
+            <span></span>
+          </li>
+
+          @for (g of grupos(); track g.uuid) {
+            <li class="tabla__item">
+              <button class="tabla__fila tabla__desplegable" type="button"
+                      [attr.aria-expanded]="abierta() === g.uuid" [attr.aria-controls]="'andenes-' + g.uuid"
+                      (click)="desplegar(g.uuid)">
+                <span class="tabla__dato">
+                  <span class="tabla__linea">{{ g.name }}</span>
+                  <span class="tabla__sub">{{ g.platforms.length }} andenes</span>
+                </span>
+                <span class="tabla__flecha" [class.tabla__flecha--abierta]="abierta() === g.uuid">
+                  <svg width="14" height="16" viewBox="0 0 14 16" fill="none" aria-hidden="true">
+                    <path d="M1.5 5.5 7 11l5.5-5.5" stroke="currentColor" stroke-width="1.8"
+                          stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </span>
+              </button>
+
+              @if (abierta() === g.uuid) {
+                <ul class="tabla__panel" [id]="'andenes-' + g.uuid">
+                  @for (p of g.platforms; track p.code) {
+                    <li class="tabla__fila">
+                      <span class="tabla__dato">
+                        <span class="tabla__linea">{{ p.anden }}</span>
+                        <span class="tabla__sub">Codigo {{ p.code }}</span>
+                      </span>
+                      <span class="tabla__dato">
+                        <span class="tabla__linea">{{ p.coordinates.lat }}</span>
+                        <span class="tabla__sub">{{ p.coordinates.lng }}</span>
+                      </span>
+                      <span class="tabla__acciones">
+                        <a class="tabla__icono" [routerLink]="['/dashboard/plataformas/editar', p.code]" aria-label="Editar plataforma">
+                          <svg width="18" height="18" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+                            <path d="M14.5 2.5l5 5L8 19H3v-5L14.5 2.5Z" stroke="currentColor" stroke-width="1.8"
+                                  stroke-linejoin="round" />
+                          </svg>
+                        </a>
+                        <a class="tabla__icono tabla__icono--carmin" [routerLink]="['/dashboard/plataformas/eliminar', p.code]" aria-label="Eliminar plataforma">
+                          <svg width="18" height="18" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+                            <path d="M3 5.5h16M8.5 5.5V3h5v2.5M5.5 5.5 6.5 19h9l1-13.5" stroke="currentColor"
+                                  stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                          </svg>
+                        </a>
+                      </span>
+                    </li>
+                  }
+                </ul>
+              }
+            </li>
+          } @empty {
+            <li class="tabla__vacio">No hay terminales que coincidan con el filtro.</li>
+          }
+
+          @for (_ of relleno(); track $index) {
+            <li class="tabla__fila tabla__fila--relleno" aria-hidden="true">
               <span class="tabla__dato">
-                <span class="tabla__linea">{{ g.terminal }}</span>
-                <span class="tabla__sub">{{ g.andenes.length }} andenes</span>
+                <span class="tabla__linea">&nbsp;</span>
               </span>
-              <span class="tabla__flecha" [class.tabla__flecha--abierta]="abierta() === g.uuid">
-                <svg width="14" height="16" viewBox="0 0 14 16" fill="none" aria-hidden="true">
-                  <path d="M1.5 5.5 7 11l5.5-5.5" stroke="currentColor" stroke-width="1.8"
-                        stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-              </span>
-            </button>
+            </li>
+          }
+        </ul>
 
-            @if (abierta() === g.uuid) {
-              <ul class="tabla__panel" [id]="'andenes-' + g.uuid">
-                @for (p of g.andenes; track p.code) {
-                  <li class="tabla__fila">
-                    <span class="tabla__dato">
-                      <span class="tabla__linea">{{ p.anden }}</span>
-                      <span class="tabla__sub">Codigo {{ p.code }}</span>
-                    </span>
-                    <span class="tabla__dato">
-                      <span class="tabla__linea">{{ p.lat }}</span>
-                      <span class="tabla__sub">{{ p.lng }}</span>
-                    </span>
-                    <span class="tabla__acciones">
-                      <a class="tabla__icono" routerLink="/dashboard/plataformas/editar" aria-label="Editar plataforma">
-                        <svg width="18" height="18" viewBox="0 0 22 22" fill="none" aria-hidden="true">
-                          <path d="M14.5 2.5l5 5L8 19H3v-5L14.5 2.5Z" stroke="currentColor" stroke-width="1.8"
-                                stroke-linejoin="round" />
-                        </svg>
-                      </a>
-                      <a class="tabla__icono tabla__icono--carmin" routerLink="/dashboard/plataformas/eliminar" aria-label="Eliminar plataforma">
-                        <svg width="18" height="18" viewBox="0 0 22 22" fill="none" aria-hidden="true">
-                          <path d="M3 5.5h16M8.5 5.5V3h5v2.5M5.5 5.5 6.5 19h9l1-13.5" stroke="currentColor"
-                                stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-                        </svg>
-                      </a>
-                    </span>
-                  </li>
-                }
-              </ul>
-            }
-          </li>
-        } @empty {
-          <li class="tabla__vacio">No hay terminales que coincidan con el filtro.</li>
-        }
+        <nav class="paginado" aria-label="Paginas del listado"
+             [class.paginado--oculto]="totalPaginas() === 1">
+          <button class="paginado__flecha" type="button" aria-label="Pagina anterior"
+                  [disabled]="paginaActual() === 1" (click)="irA(paginaActual() - 1)">
+            <svg width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
+              <path d="M10.5 1.5 4 7l6.5 5.5" stroke="currentColor" stroke-width="1.8"
+                    stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
 
-        @for (_ of relleno(); track $index) {
-          <li class="tabla__fila tabla__fila--relleno" aria-hidden="true">
-            <span class="tabla__dato">
-              <span class="tabla__linea">&nbsp;</span>
-            </span>
-          </li>
-        }
-      </ul>
+          @for (p of paginas(); track p) {
+            <button class="paginado__numero" type="button"
+                    [class.paginado__numero--activa]="p === paginaActual()"
+                    [attr.aria-current]="p === paginaActual() ? 'page' : null"
+                    (click)="irA(p)">{{ p }}</button>
+          }
 
-      <nav class="paginado" aria-label="Paginas del listado"
-           [class.paginado--oculto]="totalPaginas() === 1">
-        <button class="paginado__flecha" type="button" aria-label="Pagina anterior"
-                [disabled]="paginaActual() === 1" (click)="irA(paginaActual() - 1)">
-          <svg width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
-            <path d="M10.5 1.5 4 7l6.5 5.5" stroke="currentColor" stroke-width="1.8"
-                  stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-        </button>
-
-        @for (p of paginas(); track p) {
-          <button class="paginado__numero" type="button"
-                  [class.paginado__numero--activa]="p === paginaActual()"
-                  [attr.aria-current]="p === paginaActual() ? 'page' : null"
-                  (click)="irA(p)">{{ p }}</button>
-        }
-
-        <button class="paginado__flecha" type="button" aria-label="Pagina siguiente"
-                [disabled]="paginaActual() === totalPaginas()" (click)="irA(paginaActual() + 1)">
-          <svg width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
-            <path d="M5.5 1.5 12 7l-6.5 5.5" stroke="currentColor" stroke-width="1.8"
-                  stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-        </button>
-      </nav>
+          <button class="paginado__flecha" type="button" aria-label="Pagina siguiente"
+                  [disabled]="paginaActual() === totalPaginas()" (click)="irA(paginaActual() + 1)">
+            <svg width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
+              <path d="M5.5 1.5 12 7l-6.5 5.5" stroke="currentColor" stroke-width="1.8"
+                    stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
+        </nav>
+      }
     }
 
     @case ('crear') {
-      <form class="crud__form">
+      <form class="crud__form" [formGroup]="formCrear" (ngSubmit)="crear()" novalidate>
         <div class="ab-field">
           <label class="ab-label" for="terminal-crear">Terminal</label>
-          <select class="crud__select" id="terminal-crear">
-            @for (t of terminales; track t.uuid) {
+          <select class="crud__select" id="terminal-crear" formControlName="bus_terminal_id"
+                   [attr.aria-invalid]="invalidoCrear('bus_terminal_id')">
+            <option value="" disabled>Elegi una terminal</option>
+            @for (t of terminales(); track t.uuid) {
               <option [value]="t.uuid">{{ t.name }}</option>
             }
           </select>
+          @if (invalidoCrear('bus_terminal_id')) {
+            <p class="ab-field-error">Elegi una terminal.</p>
+          }
         </div>
 
         <div class="ab-field">
           <label class="ab-label" for="anden-crear">Anden</label>
-          <input class="ab-input" id="anden-crear" type="text" placeholder="Ej: A20" autocomplete="off" />
+          <input class="ab-input" id="anden-crear" type="text" placeholder="Ej: A20" autocomplete="off"
+                 formControlName="anden" [attr.aria-invalid]="invalidoCrear('anden')" />
+          @if (invalidoCrear('anden')) {
+            <p class="ab-field-error">Ingresa el anden.</p>
+          }
         </div>
 
         <div class="crud__fila">
           <div class="ab-field">
             <label class="ab-label" for="lat-crear">Latitud</label>
-            <input class="ab-input" id="lat-crear" type="number" step="any" placeholder="-34.6037" />
+            <input class="ab-input" id="lat-crear" type="number" step="any" placeholder="-34.6037"
+                   formControlName="lat" [attr.aria-invalid]="invalidoCrear('lat')" />
           </div>
 
           <div class="ab-field">
             <label class="ab-label" for="lng-crear">Longitud</label>
-            <input class="ab-input" id="lng-crear" type="number" step="any" placeholder="-58.3816" />
+            <input class="ab-input" id="lng-crear" type="number" step="any" placeholder="-58.3816"
+                   formControlName="lng" [attr.aria-invalid]="invalidoCrear('lng')" />
           </div>
         </div>
 
         <p class="crud__nota">El codigo del anden lo asigna el sistema al crearlo.</p>
 
-        <button class="ab-button ab-button--lg" type="button">Cargar plataforma</button>
+        @if (errorCrear()) {
+          <p class="ab-form-error" role="alert">{{ errorCrear() }}</p>
+        }
+
+        <button class="ab-button ab-button--lg" type="submit" [disabled]="guardandoCrear()">
+          {{ guardandoCrear() ? 'Cargando...' : 'Cargar plataforma' }}
+        </button>
       </form>
     }
 
     @case ('editar') {
-      <form class="crud__form">
-        <div class="ab-field">
-          <label class="ab-label" for="code-editar">Codigo</label>
-          <input class="ab-input" id="code-editar" type="number" [value]="plataformaSeleccionada.code" disabled />
-          <p class="crud__nota">El codigo identifica al anden y no se puede cambiar.</p>
-        </div>
-
-        <div class="ab-field">
-          <label class="ab-label" for="anden-editar">Anden</label>
-          <input class="ab-input" id="anden-editar" type="text" [value]="plataformaSeleccionada.anden" autocomplete="off" />
-        </div>
-
-        <div class="crud__fila">
+      @if (cargandoSeleccionada()) {
+        <p class="tabla__vacio">Cargando plataforma...</p>
+      } @else if (errorSeleccionada()) {
+        <p class="ab-form-error" role="alert">{{ errorSeleccionada() }}</p>
+      } @else if (plataformaSeleccionada(); as plataforma) {
+        <form class="crud__form" [formGroup]="formEditar" (ngSubmit)="guardarEdicion()" novalidate>
           <div class="ab-field">
-            <label class="ab-label" for="lat-editar">Latitud</label>
-            <input class="ab-input" id="lat-editar" type="number" step="any" [value]="plataformaSeleccionada.lat" />
+            <label class="ab-label" for="code-editar">Codigo</label>
+            <input class="ab-input" id="code-editar" type="number" [value]="plataforma.code" disabled />
+            <p class="crud__nota">El codigo identifica al anden y no se puede cambiar.</p>
           </div>
 
           <div class="ab-field">
-            <label class="ab-label" for="lng-editar">Longitud</label>
-            <input class="ab-input" id="lng-editar" type="number" step="any" [value]="plataformaSeleccionada.lng" />
+            <label class="ab-label">Terminal</label>
+            <input class="ab-input" type="text" [value]="plataforma.terminal" disabled />
           </div>
-        </div>
 
-        <button class="ab-button ab-button--lg" type="button">Guardar cambios</button>
-      </form>
+          <div class="ab-field">
+            <label class="ab-label" for="anden-editar">Anden</label>
+            <input class="ab-input" id="anden-editar" type="text" autocomplete="off"
+                   formControlName="anden" [attr.aria-invalid]="invalidoEditar('anden')" />
+            @if (invalidoEditar('anden')) {
+              <p class="ab-field-error">Ingresa el anden.</p>
+            }
+          </div>
+
+          <div class="crud__fila">
+            <div class="ab-field">
+              <label class="ab-label" for="lat-editar">Latitud</label>
+              <input class="ab-input" id="lat-editar" type="number" step="any"
+                     formControlName="lat" [attr.aria-invalid]="invalidoEditar('lat')" />
+            </div>
+
+            <div class="ab-field">
+              <label class="ab-label" for="lng-editar">Longitud</label>
+              <input class="ab-input" id="lng-editar" type="number" step="any"
+                     formControlName="lng" [attr.aria-invalid]="invalidoEditar('lng')" />
+            </div>
+          </div>
+
+          @if (errorEditar()) {
+            <p class="ab-form-error" role="alert">{{ errorEditar() }}</p>
+          }
+
+          <button class="ab-button ab-button--lg" type="submit" [disabled]="guardandoEditar()">
+            {{ guardandoEditar() ? 'Guardando...' : 'Guardar cambios' }}
+          </button>
+        </form>
+      }
     }
 
     @case ('eliminar') {
-      <div class="confirmar">
-        <p class="confirmar__texto">
-          Vas a eliminar este anden del sistema. La accion no se puede deshacer.
-        </p>
+      @if (cargandoSeleccionada()) {
+        <p class="tabla__vacio">Cargando plataforma...</p>
+      } @else if (errorSeleccionada()) {
+        <p class="ab-form-error" role="alert">{{ errorSeleccionada() }}</p>
+      } @else if (plataformaSeleccionada(); as plataforma) {
+        <div class="confirmar">
+          <p class="confirmar__texto">
+            Vas a eliminar este anden del sistema. La accion no se puede deshacer.
+          </p>
 
-        <dl class="resultado__lista">
-          <div class="resultado__fila">
-            <dt>Codigo</dt>
-            <dd>{{ plataformaSeleccionada.code }}</dd>
-          </div>
-          <div class="resultado__fila">
-            <dt>Anden</dt>
-            <dd>{{ plataformaSeleccionada.anden }}</dd>
-          </div>
-          <div class="resultado__fila">
-            <dt>Terminal</dt>
-            <dd>{{ plataformaSeleccionada.terminal }}</dd>
-          </div>
-        </dl>
+          <dl class="resultado__lista">
+            <div class="resultado__fila">
+              <dt>Codigo</dt>
+              <dd>{{ plataforma.code }}</dd>
+            </div>
+            <div class="resultado__fila">
+              <dt>Anden</dt>
+              <dd>{{ plataforma.anden }}</dd>
+            </div>
+            <div class="resultado__fila">
+              <dt>Terminal</dt>
+              <dd>{{ plataforma.terminal }}</dd>
+            </div>
+          </dl>
 
-        <div class="confirmar__acciones">
-          <a class="ab-link" routerLink="/dashboard/plataformas/listar">Cancelar</a>
-          <button class="ab-button confirmar__boton" type="button">Eliminar plataforma</button>
+          @if (errorEliminar()) {
+            <p class="ab-form-error" role="alert">{{ errorEliminar() }}</p>
+          }
+
+          <div class="confirmar__acciones">
+            <a class="ab-link" routerLink="/dashboard/plataformas/listar">Cancelar</a>
+            <button class="ab-button confirmar__boton" type="button" [disabled]="eliminando()" (click)="eliminar()">
+              {{ eliminando() ? 'Eliminando...' : 'Eliminar plataforma' }}
+            </button>
+          </div>
         </div>
-      </div>
+      }
     }
   }
 </div>

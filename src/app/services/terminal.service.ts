@@ -16,6 +16,11 @@ export class TerminalService {
   private readonly http = inject(HttpClient);
   private readonly terminalsUrl = `${APP_CONFIG.apiUrl}/super/terminals`;
 
+  /** Listado publico (cualquier usuario autenticado) para selects de terminal. */
+  listarPublicas(): Observable<Terminal[]> {
+    return this.http.get<Terminal[]>(`${APP_CONFIG.apiUrl}/users/terminals`);
+  }
+
   listar(params: ListTerminalesParams = {}): Observable<ListTerminalesResponse> {
     let query = new HttpParams();
     if (params.page) query = query.set('page', params.page);

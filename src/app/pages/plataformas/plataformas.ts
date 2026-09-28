@@ -1,7 +1,13 @@
-import { Component, computed, inject, signal } from '@angular/core';
-import { ActivatedRoute, ResolveFn, RouterLink } from '@angular/router';
+import { Component, computed, effect, inject, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute, Router, ResolveFn, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Topbar } from '../../shared/topbar/topbar';
+import { PlataformaService } from '../../services/plataforma.service';
+import { TerminalService } from '../../services/terminal.service';
+import { TerminalConPlataformas } from '../../models/plataforma.model';
+import { Terminal } from '../../models/terminal.model';
 
 export type AccionPlataforma = 'listar' | 'crear' | 'editar' | 'eliminar';
 
@@ -29,125 +35,11 @@ const VISTAS: Record<AccionPlataforma, VistaPlataforma> = {
   },
 };
 
-/** Terminales de ejemplo para los selects, hasta que exista la conexion. */
-const TERMINALES_EJEMPLO = [
-  { uuid: 'a0000000-0000-0000-0000-000000000001', name: 'Terminal Retiro BS AS' },
-  { uuid: 'a0000000-0000-0000-0000-000000000002', name: 'Terminal Gualeguaychu' },
-];
-
-/** Datos de ejemplo hasta que exista la conexion con GET /api/admin/platforms. */
-const PLATAFORMAS_EJEMPLO = [
-  {
-    uuid: 'a0000000-0000-0000-0000-000000000001',
-    terminal: 'Terminal Retiro BS AS',
-    andenes: [
-      { code: 1, anden: 'A1', lat: -34.602700000000006, lng: -58.3826 },
-      { code: 2, anden: 'B2', lat: -34.6017, lng: -58.3836 },
-      { code: 3, anden: 'B3', lat: -34.6007, lng: -58.3846 },
-      { code: 4, anden: 'C1', lat: -34.599700000000006, lng: -58.3856 },
-    ],
-  },
-  {
-    uuid: 'a0000000-0000-0000-0000-000000000002',
-    terminal: 'Terminal Gualeguaychu',
-    andenes: [
-      { code: 5, anden: 'A20', lat: -33.0045, lng: -58.522200000000005 },
-    ],
-  },
-  {
-    uuid: 'a0000000-0000-0000-0000-000000000003',
-    terminal: 'Terminal Rosario',
-    andenes: [
-      { code: 6, anden: 'A1', lat: -32.9408, lng: -60.6453 },
-      { code: 7, anden: 'A2', lat: -32.939800000000005, lng: -60.6463 },
-      { code: 8, anden: 'B1', lat: -32.9388, lng: -60.6473 },
-    ],
-  },
-  {
-    uuid: 'a0000000-0000-0000-0000-000000000004',
-    terminal: 'Terminal Cordoba',
-    andenes: [
-      { code: 9, anden: 'P1', lat: -31.4111, lng: -64.1978 },
-      { code: 10, anden: 'P2', lat: -31.4101, lng: -64.1988 },
-    ],
-  },
-  {
-    uuid: 'a0000000-0000-0000-0000-000000000005',
-    terminal: 'Terminal Mendoza',
-    andenes: [
-      { code: 11, anden: 'A5', lat: -32.878499999999995, lng: -68.85679999999999 },
-      { code: 12, anden: 'A6', lat: -32.8775, lng: -68.8578 },
-      { code: 13, anden: 'A7', lat: -32.8765, lng: -68.8588 },
-    ],
-  },
-  {
-    uuid: 'a0000000-0000-0000-0000-000000000006',
-    terminal: 'Terminal Tucuman',
-    andenes: [
-      { code: 14, anden: 'B1', lat: -26.7943, lng: -65.2316 },
-    ],
-  },
-  {
-    uuid: 'a0000000-0000-0000-0000-000000000007',
-    terminal: 'Terminal Parana',
-    andenes: [
-      { code: 15, anden: 'A1', lat: -31.7183, lng: -60.5483 },
-      { code: 16, anden: 'A2', lat: -31.7173, lng: -60.549299999999995 },
-    ],
-  },
-  {
-    uuid: 'a0000000-0000-0000-0000-000000000008',
-    terminal: 'Terminal Santa Fe',
-    andenes: [
-      { code: 17, anden: 'C3', lat: -31.6163, lng: -60.717000000000006 },
-      { code: 18, anden: 'C4', lat: -31.615299999999998, lng: -60.718 },
-    ],
-  },
-  {
-    uuid: 'a0000000-0000-0000-0000-000000000009',
-    terminal: 'Terminal Mar del Plata',
-    andenes: [
-      { code: 19, anden: 'A1', lat: -37.9865, lng: -57.5616 },
-      { code: 20, anden: 'A2', lat: -37.985499999999995, lng: -57.5626 },
-      { code: 21, anden: 'A3', lat: -37.9845, lng: -57.5636 },
-      { code: 22, anden: 'A4', lat: -37.9835, lng: -57.5646 },
-    ],
-  },
-  {
-    uuid: 'a0000000-0000-0000-0000-000000000010',
-    terminal: 'Terminal Bahia Blanca',
-    andenes: [
-      { code: 23, anden: 'B2', lat: -38.695299999999996, lng: -62.289100000000005 },
-    ],
-  },
-  {
-    uuid: 'a0000000-0000-0000-0000-000000000011',
-    terminal: 'Terminal Neuquen',
-    andenes: [
-      { code: 24, anden: 'A1', lat: -38.9276, lng: -68.0831 },
-      { code: 25, anden: 'A2', lat: -38.9266, lng: -68.0841 },
-    ],
-  },
-  {
-    uuid: 'a0000000-0000-0000-0000-000000000012',
-    terminal: 'Terminal Salta',
-    andenes: [
-      { code: 26, anden: 'D1', lat: -24.7561, lng: -65.44919999999999 },
-      { code: 27, anden: 'D2', lat: -24.7551, lng: -65.4502 },
-      { code: 28, anden: 'D3', lat: -24.7541, lng: -65.4512 },
-    ],
-  },
-  {
-    uuid: 'a0000000-0000-0000-0000-000000000013',
-    terminal: 'Terminal Corrientes',
-    andenes: [
-      { code: 29, anden: 'A9', lat: -27.4402, lng: -58.8596 },
-    ],
-  },
-];
-
 /** Terminales que entran en una pagina del listado. */
 const POR_PAGINA = 10;
+
+/** Cantidad de filas que se piden al backend para filtrar/paginar en el cliente. */
+const LIMITE_BACKEND = 500;
 
 /**
  * Pantallas de ABM de plataformas. Las cinco opciones de la
@@ -155,12 +47,16 @@ const POR_PAGINA = 10;
  */
 @Component({
   selector: 'app-plataformas',
-  imports: [Topbar, RouterLink],
+  imports: [Topbar, RouterLink, ReactiveFormsModule],
   templateUrl: './plataformas.html',
   styleUrl: './plataformas.scss',
 })
 export class Plataformas {
   private readonly ruta = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly plataformaService = inject(PlataformaService);
+  private readonly terminalService = inject(TerminalService);
+  private readonly fb = inject(FormBuilder);
 
   private readonly parametros = toSignal(this.ruta.paramMap, {
     initialValue: this.ruta.snapshot.paramMap,
@@ -171,9 +67,16 @@ export class Plataformas {
     return accion && accion in VISTAS ? accion : 'listar';
   });
 
+  /** Codigo del anden a editar/eliminar, si la ruta lo trae. */
+  private readonly codigo = computed(() => {
+    const raw = this.parametros().get('codigo');
+    const code = raw ? Number(raw) : NaN;
+    return Number.isInteger(code) ? code : null;
+  });
+
   protected readonly vista = computed(() => VISTAS[this.accion()]);
 
-  protected readonly terminales = TERMINALES_EJEMPLO;
+  protected readonly terminales = signal<Terminal[]>([]);
 
   /** Texto del filtro: nombre de la terminal, anden o codigo de anden. */
   protected readonly filtro = signal('');
@@ -183,14 +86,20 @@ export class Plataformas {
   /** Terminal desplegada, o null si estan todas cerradas. */
   protected readonly abierta = signal<string | null>(null);
 
+  // --- Listado ---
+  protected readonly cargandoListado = signal(false);
+  protected readonly errorListado = signal<string | null>(null);
+  private readonly todosLosGrupos = signal<TerminalConPlataformas[]>([]);
+
   private readonly filtradas = computed(() => {
     const texto = this.filtro().trim().toLowerCase();
-    if (!texto) return PLATAFORMAS_EJEMPLO;
+    const grupos = this.todosLosGrupos();
+    if (!texto) return grupos;
 
-    return PLATAFORMAS_EJEMPLO.filter(
+    return grupos.filter(
       (g) =>
-        g.terminal.toLowerCase().includes(texto) ||
-        g.andenes.some(
+        g.name.toLowerCase().includes(texto) ||
+        g.platforms.some(
           (a) => a.anden.toLowerCase().includes(texto) || String(a.code).includes(texto),
         ),
     );
@@ -225,6 +134,117 @@ export class Plataformas {
     Array.from({ length: Math.max(0, POR_PAGINA - (this.grupos().length || 1)) }),
   );
 
+  // --- Alta ---
+  protected readonly formCrear = this.fb.nonNullable.group({
+    bus_terminal_id: ['', Validators.required],
+    anden: ['', Validators.required],
+    lat: [0, Validators.required],
+    lng: [0, Validators.required],
+  });
+  protected readonly guardandoCrear = signal(false);
+  protected readonly errorCrear = signal<string | null>(null);
+
+  // --- Edicion ---
+  protected readonly formEditar = this.fb.nonNullable.group({
+    anden: ['', Validators.required],
+    lat: [0, Validators.required],
+    lng: [0, Validators.required],
+  });
+  protected readonly cargandoSeleccionada = signal(false);
+  protected readonly errorSeleccionada = signal<string | null>(null);
+  protected readonly guardandoEditar = signal(false);
+  protected readonly errorEditar = signal<string | null>(null);
+
+  // --- Baja ---
+  protected readonly plataformaSeleccionada = signal<{
+    code: number;
+    anden: string;
+    lat: number;
+    lng: number;
+    terminal: string;
+  } | null>(null);
+  protected readonly eliminando = signal(false);
+  protected readonly errorEliminar = signal<string | null>(null);
+
+  constructor() {
+    this.cargarTerminales();
+
+    effect(() => {
+      const accion = this.accion();
+
+      if (accion === 'listar') {
+        this.cargarPlataformas();
+      } else if (accion === 'editar' || accion === 'eliminar') {
+        this.cargarSeleccionada(this.codigo());
+      } else if (accion === 'crear') {
+        this.formCrear.reset({ lat: 0, lng: 0 });
+        this.errorCrear.set(null);
+      }
+    });
+  }
+
+  private cargarTerminales(): void {
+    this.terminalService.listarPublicas().subscribe({
+      next: (terminales) => this.terminales.set(terminales),
+    });
+  }
+
+  private cargarPlataformas(): void {
+    this.cargandoListado.set(true);
+    this.errorListado.set(null);
+
+    this.plataformaService.listar({ limit: LIMITE_BACKEND, order: 'ASC' }).subscribe({
+      next: (res) => {
+        this.todosLosGrupos.set(res.platforms);
+        this.cargandoListado.set(false);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.cargandoListado.set(false);
+        this.errorListado.set(mensajeError(err));
+      },
+    });
+  }
+
+  private cargarSeleccionada(code: number | null): void {
+    this.plataformaSeleccionada.set(null);
+    this.errorSeleccionada.set(null);
+    this.errorEliminar.set(null);
+
+    if (code === null) {
+      this.errorSeleccionada.set('No se indico que plataforma usar.');
+      return;
+    }
+
+    this.cargandoSeleccionada.set(true);
+    this.plataformaService.obtener(code).subscribe({
+      next: (grupo) => {
+        this.cargandoSeleccionada.set(false);
+        const anden = grupo.platforms[0];
+        if (!anden) {
+          this.errorSeleccionada.set('No se encontro la plataforma.');
+          return;
+        }
+
+        this.plataformaSeleccionada.set({
+          code: anden.code,
+          anden: anden.anden,
+          lat: anden.coordinates.lat,
+          lng: anden.coordinates.lng,
+          terminal: grupo.name,
+        });
+        this.formEditar.setValue({
+          anden: anden.anden,
+          lat: anden.coordinates.lat,
+          lng: anden.coordinates.lng,
+        });
+      },
+      error: (err: HttpErrorResponse) => {
+        this.cargandoSeleccionada.set(false);
+        this.errorSeleccionada.set(mensajeError(err));
+      },
+    });
+  }
+
   protected filtrar(texto: string): void {
     this.filtro.set(texto);
     this.pagina.set(1);
@@ -241,11 +261,100 @@ export class Plataformas {
     this.abierta.update((actual) => (actual === uuid ? null : uuid));
   }
 
-  /** Anden de ejemplo para precargar el detalle, editar o confirmar la baja. */
-  protected readonly plataformaSeleccionada = {
-    ...PLATAFORMAS_EJEMPLO[0].andenes[1],
-    terminal: PLATAFORMAS_EJEMPLO[0].terminal,
-  };
+  protected crear(): void {
+    if (this.formCrear.invalid) {
+      this.formCrear.markAllAsTouched();
+      return;
+    }
+
+    this.guardandoCrear.set(true);
+    this.errorCrear.set(null);
+
+    const { bus_terminal_id, anden, lat, lng } = this.formCrear.getRawValue();
+    this.plataformaService
+      .crear({ bus_terminal_id, anden: anden.trim(), coordinates: { lat, lng } })
+      .subscribe({
+        next: () => {
+          this.guardandoCrear.set(false);
+          this.router.navigateByUrl('/dashboard/plataformas/listar');
+        },
+        error: (err: HttpErrorResponse) => {
+          this.guardandoCrear.set(false);
+          this.errorCrear.set(mensajeError(err));
+        },
+      });
+  }
+
+  protected guardarEdicion(): void {
+    if (this.formEditar.invalid) {
+      this.formEditar.markAllAsTouched();
+      return;
+    }
+
+    const seleccionada = this.plataformaSeleccionada();
+    if (!seleccionada) return;
+
+    this.guardandoEditar.set(true);
+    this.errorEditar.set(null);
+
+    const { anden, lat, lng } = this.formEditar.getRawValue();
+    this.plataformaService
+      .actualizar(seleccionada.code, { anden: anden.trim(), coordinates: { lat, lng } })
+      .subscribe({
+        next: () => {
+          this.guardandoEditar.set(false);
+          this.router.navigateByUrl('/dashboard/plataformas/listar');
+        },
+        error: (err: HttpErrorResponse) => {
+          this.guardandoEditar.set(false);
+          this.errorEditar.set(mensajeError(err));
+        },
+      });
+  }
+
+  protected eliminar(): void {
+    const seleccionada = this.plataformaSeleccionada();
+    if (!seleccionada) return;
+
+    this.eliminando.set(true);
+    this.errorEliminar.set(null);
+
+    this.plataformaService.eliminar(seleccionada.code).subscribe({
+      next: () => {
+        this.eliminando.set(false);
+        this.router.navigateByUrl('/dashboard/plataformas/listar');
+      },
+      error: (err: HttpErrorResponse) => {
+        this.eliminando.set(false);
+        this.errorEliminar.set(mensajeError(err));
+      },
+    });
+  }
+
+  protected invalidoCrear(campo: 'bus_terminal_id' | 'anden' | 'lat' | 'lng'): boolean {
+    const control = this.formCrear.controls[campo];
+    return control.invalid && control.touched;
+  }
+
+  protected invalidoEditar(campo: 'anden' | 'lat' | 'lng'): boolean {
+    const control = this.formEditar.controls[campo];
+    return control.invalid && control.touched;
+  }
+}
+
+function mensajeError(err: HttpErrorResponse): string {
+  switch (err.status) {
+    case 0:
+      return 'No se pudo conectar con el servidor. Intenta mas tarde.';
+    case 400:
+      return 'Revisa los datos: el anden y las coordenadas son obligatorios.';
+    case 403:
+      return 'No tenes permisos sobre esa terminal.';
+    case 404:
+      return 'No se encontro la plataforma o la terminal indicada.';
+    default:
+      return 'Ocurrio un error inesperado. Intenta de nuevo.';
+  }
 }
 
 export const tituloPlataformas: ResolveFn<string> = (ruta) => {
