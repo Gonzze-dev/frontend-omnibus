@@ -65,6 +65,31 @@ $fila: $icono + 29px;
   color: var(--ab-body);
 }
 
+/* Titulo y bajada a la izquierda, boton de alta a la derecha:
+   lo usan los listados que tienen alta (ciudades, plataformas, terminales). */
+.crud__head--acciones {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.crud__agregar {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin-top: 2px;
+  border-radius: 50%;
+  background: var(--tono);
+  color: var(--ab-white);
+}
+
+.crud__agregar:hover { opacity: 0.9; }
+.crud__agregar:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 2px; }
+
 /* Marca las pantallas que son solo para super admin */
 .crud__super {
   display: inline-block;

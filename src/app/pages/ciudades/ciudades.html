@@ -1,17 +1,27 @@
 <app-topbar />
 
 <div class="ab-screen crud tono--azul">
-  <a class="crud__volver" routerLink="/dashboard/ciudades">
+  <a class="crud__volver" routerLink="/dashboard">
     <svg class="ab-icon" width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
       <path d="M15 7H1M1 7l5.5-5.5M1 7l5.5 5.5" stroke="currentColor" stroke-width="1.8"
             stroke-linecap="round" stroke-linejoin="round" />
     </svg>
-    Gestionar Ciudades
+    Dashboard
   </a>
 
-  <header class="crud__head">
-    <h1 class="crud__titulo">{{ vista().titulo }}</h1>
-    <p class="crud__bajada">{{ vista().bajada }}</p>
+  <header class="crud__head crud__head--acciones">
+    <div>
+      <h1 class="crud__titulo">{{ vista().titulo }}</h1>
+      <p class="crud__bajada">{{ vista().bajada }}</p>
+    </div>
+
+    @if (accion() === 'listar') {
+      <a class="crud__agregar" routerLink="/dashboard/ciudades/crear" aria-label="Cargar ciudad">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <path d="M10 3v14M3 10h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        </svg>
+      </a>
+    }
   </header>
 
   @switch (accion()) {
@@ -93,8 +103,6 @@
           </svg>
         </button>
       </nav>
-
-      <a class="ab-button crud__cargar" routerLink="/dashboard/ciudades/crear">Cargar ciudad</a>
     }
 
     @case ('crear') {
