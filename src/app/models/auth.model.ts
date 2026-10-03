@@ -72,3 +72,19 @@ export interface ResetPasswordRequest {
 export interface ResetPasswordResponse {
   message: string;
 }
+
+/**
+ * PUT /api/users/me: patch parcial, solo viajan los campos que cambiaron
+ * (el backend exige al menos uno y responde con el usuario actualizado).
+ */
+export interface UpdateProfileRequest {
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+  password?: string;
+}
+
+/** DELETE /api/users/me */
+export interface DeleteAccountResponse {
+  message: string;
+}

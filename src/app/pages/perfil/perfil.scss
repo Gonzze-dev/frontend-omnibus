@@ -55,3 +55,59 @@
 
 .perfil__eliminar:hover { text-decoration: underline; }
 .perfil__eliminar:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 4px; }
+
+.perfil__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.perfil__estado {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 59px;
+  font-size: var(--ab-fs-body);
+  color: var(--ab-body);
+}
+
+/* ---------------- Confirmar la baja de la cuenta ---------------- */
+.perfil__baja {
+  margin-top: 35px;
+}
+
+.perfil__baja-texto {
+  margin: 0 0 16px;
+  font-size: calc(var(--ab-fs-body) + 1px);
+  line-height: 1.5;
+  color: var(--ab-body);
+}
+
+.perfil__baja-acciones {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.perfil__cancelar {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ab-primary);
+  font-family: inherit;
+  font-weight: 600;
+  font-size: var(--ab-fs-body);
+  cursor: pointer;
+}
+
+.perfil__cancelar:hover { text-decoration: underline; }
+
+.perfil__baja-boton {
+  width: auto;
+  min-height: 48px;
+  padding: 12px 24px;
+  background: #B40036;
+  box-shadow: none;
+}

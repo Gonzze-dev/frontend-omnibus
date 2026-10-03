@@ -73,6 +73,16 @@ export class AuthService {
     });
   }
 
+  /**
+   * Reemplaza el usuario de la sesion. PUT /users/me no devuelve las
+   * terminales del admin, asi que se conservan las que ya habia.
+   */
+  actualizarUsuario(user: User): void {
+    const actualizado: User = { ...user, terminals: user.terminals ?? this._user()?.terminals };
+    this._user.set(actualizado);
+    guardar(USER_KEY, JSON.stringify(actualizado));
+  }
+
   clearSession(): void {
     this._accessToken.set(null);
     this._user.set(null);
