@@ -60,6 +60,17 @@ export interface DemoraColectivo {
   time_life: number;
 }
 
+/**
+ * Payload de LOCAL (models.AdminLocalNotificationPayload) y GLOBAL. GLOBAL
+ * acepta cualquier JSON con `time_life`; se muestra `message` (y `title` si viene).
+ */
+export interface AvisoAdmin {
+  id: string;
+  message?: string;
+  title?: string;
+  time_life: number;
+}
+
 export type TipoNotificacionPasajero = 'BUS_ARRIVAL' | 'BUS_DELAY' | 'LOCAL' | 'GLOBAL' | 'CAMERA';
 
 /** Mensaje que emite el hub en `receiveNotification`. */

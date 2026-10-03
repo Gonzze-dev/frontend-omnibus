@@ -131,7 +131,7 @@ export class Home {
     this.ticket.set(viaje.trip.ticket);
     this.terminalId.set(viaje.terminal.uuid);
     try {
-      await this.realtime.seguirViaje(viaje.group_key);
+      await this.realtime.seguirViaje(viaje.group_key, viaje.terminal.uuid);
     } catch {
       // La pantalla de espera avisa que no hay conexion en tiempo real;
       // el backend igual manda el mail cuando llega el colectivo.
