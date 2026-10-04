@@ -16,14 +16,18 @@
 
   @switch (accion()) {
     @case ('aviso') {
-      <form class="crud__form">
+      <form class="crud__form" [formGroup]="formAviso" (ngSubmit)="enviarAviso()" novalidate>
         <fieldset class="tipos">
           <legend class="ab-label tipos__titulo">Tipo de aviso</legend>
 
+          @if (errorTipos()) {
+            <p class="ab-form-error" role="alert">{{ errorTipos() }}</p>
+          }
+
           <div class="tipos__opciones">
-            @for (t of tipos; track t.nombre) {
+            @for (t of tipos(); track t.nombre) {
               <label class="tipo">
-                <input class="tipo__radio" type="radio" name="tipo-aviso" [value]="t.nombre" [checked]="$first" />
+                <input class="tipo__radio" type="radio" formControlName="tipo" [value]="t.nombre" />
                 <span class="tipo__nombre">{{ t.nombre }}</span>
                 <span class="tipo__detalle">{{ t.detalle }}</span>
               </label>
@@ -36,28 +40,52 @@
           </p>
         </fieldset>
 
-        <div class="ab-field">
-          <label class="ab-label" for="terminal-aviso">Terminal</label>
-          <select class="crud__select" id="terminal-aviso">
-            @for (t of terminales; track t.uuid) {
-              <option [value]="t.uuid">{{ t.name }}</option>
+        @if (!esGlobal()) {
+          <div class="ab-field">
+            <label class="ab-label" for="terminal-aviso">Terminal</label>
+            <select class="crud__select" id="terminal-aviso" formControlName="terminal"
+                    [attr.aria-invalid]="invalidoAviso('terminal')">
+              <option value="" disabled>Elegi una terminal</option>
+              @for (t of terminales(); track t.uuid) {
+                <option [value]="t.uuid">{{ t.name }}</option>
+              }
+            </select>
+            @if (invalidoAviso('terminal')) {
+              <p class="ab-field-error">Elegi una terminal.</p>
             }
-          </select>
-        </div>
+          </div>
+        }
 
         <div class="ab-field">
           <label class="ab-label" for="mensaje-aviso">Mensaje</label>
-          <textarea class="crud__textarea" id="mensaje-aviso"
+          <textarea class="crud__textarea" id="mensaje-aviso" formControlName="mensaje"
+                    [attr.aria-invalid]="invalidoAviso('mensaje')"
                     placeholder="Ej: El anden A3 permanece cerrado por mantenimiento."></textarea>
+          @if (invalidoAviso('mensaje')) {
+            <p class="ab-field-error">Escribi el mensaje del aviso.</p>
+          }
         </div>
 
         <div class="ab-field">
           <label class="ab-label" for="vida-aviso">Duracion (minutos)</label>
-          <input class="ab-input" id="vida-aviso" type="number" min="1" placeholder="12" />
+          <input class="ab-input" id="vida-aviso" type="number" min="1" placeholder="12"
+                 formControlName="vida" [attr.aria-invalid]="invalidoAviso('vida')" />
+          @if (invalidoAviso('vida')) {
+            <p class="ab-field-error">Ingresa una duracion de al menos 1 minuto.</p>
+          }
           <p class="crud__nota">Pasado ese tiempo el aviso deja de mostrarse a los pasajeros.</p>
         </div>
 
-        <button class="ab-button ab-button--lg" type="button">Enviar aviso</button>
+        @if (errorAviso()) {
+          <p class="ab-form-error" role="alert">{{ errorAviso() }}</p>
+        }
+        @if (avisoEnviado()) {
+          <p class="ab-form-ok" role="status">{{ avisoEnviado() }}</p>
+        }
+
+        <button class="ab-button ab-button--lg" type="submit" [disabled]="enviando()">
+          {{ enviando() ? 'Enviando...' : 'Enviar aviso' }}
+        </button>
       </form>
     }
 
@@ -71,7 +99,7 @@
         <div class="ab-field">
           <label class="ab-label" for="terminal-retraso">Terminal</label>
           <select class="crud__select" id="terminal-retraso">
-            @for (t of terminales; track t.uuid) {
+            @for (t of terminales(); track t.uuid) {
               <option [value]="t.uuid">{{ t.name }}</option>
             }
           </select>
