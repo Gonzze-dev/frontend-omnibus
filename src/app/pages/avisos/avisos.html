@@ -28,16 +28,11 @@
             @for (t of tipos(); track t.nombre) {
               <label class="tipo">
                 <input class="tipo__radio" type="radio" formControlName="tipo" [value]="t.nombre" />
-                <span class="tipo__nombre">{{ t.nombre }}</span>
+                <span class="tipo__nombre">{{ t.etiqueta }}</span>
                 <span class="tipo__detalle">{{ t.detalle }}</span>
               </label>
             }
           </div>
-
-          <p class="crud__nota tipos__nota">
-            Para avisar la demora de un colectivo puntual usa
-            <a class="ab-link" routerLink="/dashboard/notificaciones/retraso">Avisar un retraso</a>.
-          </p>
         </fieldset>
 
         @if (!esGlobal()) {
@@ -56,23 +51,61 @@
           </div>
         }
 
-        <div class="ab-field">
-          <label class="ab-label" for="mensaje-aviso">Mensaje</label>
-          <textarea class="crud__textarea" id="mensaje-aviso" formControlName="mensaje"
-                    [attr.aria-invalid]="invalidoAviso('mensaje')"
-                    placeholder="Ej: El anden A3 permanece cerrado por mantenimiento."></textarea>
-          @if (invalidoAviso('mensaje')) {
-            <p class="ab-field-error">Escribi el mensaje del aviso.</p>
-          }
-        </div>
+        @if (esRetraso()) {
+          <div class="ab-field">
+            <label class="ab-label" for="patente-retraso">Patente del colectivo</label>
+            <input class="ab-input" id="patente-retraso" type="text" placeholder="AB 123 CD"
+                   autocomplete="off" formControlName="patente"
+                   [attr.aria-invalid]="invalidoAviso('patente')" />
+            @if (invalidoAviso('patente')) {
+              <p class="ab-field-error">Ingresa la patente del colectivo.</p>
+            }
+          </div>
+
+          <div class="ab-field">
+            <label class="ab-label" for="fecha-retraso">Fecha del viaje</label>
+            <input class="ab-input" id="fecha-retraso" type="date" formControlName="fecha"
+                   [attr.aria-invalid]="invalidoAviso('fecha')" />
+            @if (invalidoAviso('fecha')) {
+              <p class="ab-field-error">Elegi la fecha del viaje.</p>
+            }
+            <p class="crud__nota">El viaje tiene que estar registrado en el sistema de pasajes para esa fecha y patente.</p>
+          </div>
+        } @else {
+          <div class="ab-field">
+            <label class="ab-label" for="mensaje-aviso">Mensaje</label>
+            <textarea class="crud__textarea" id="mensaje-aviso" formControlName="mensaje"
+                      [attr.aria-invalid]="invalidoAviso('mensaje')"
+                      placeholder="Ej: El anden A3 permanece cerrado por mantenimiento."></textarea>
+            @if (invalidoAviso('mensaje')) {
+              <p class="ab-field-error">Escribi el mensaje del aviso.</p>
+            }
+          </div>
+        }
 
         <div class="ab-field">
-          <label class="ab-label" for="vida-aviso">Duracion (minutos)</label>
-          <input class="ab-input" id="vida-aviso" type="number" min="1" placeholder="12"
-                 formControlName="vida" [attr.aria-invalid]="invalidoAviso('vida')" />
-          @if (invalidoAviso('vida')) {
-            <p class="ab-field-error">Ingresa una duracion de al menos 1 minuto.</p>
-          }
+          <!-- En un retraso, demora y duracion van lado a lado -->
+          <div [class.crud__fila]="esRetraso()">
+            @if (esRetraso()) {
+              <div class="ab-field">
+                <label class="ab-label" for="demora-retraso">Demora (minutos)</label>
+                <input class="ab-input" id="demora-retraso" type="number" min="1" placeholder="15"
+                       formControlName="demora" [attr.aria-invalid]="invalidoAviso('demora')" />
+                @if (invalidoAviso('demora')) {
+                  <p class="ab-field-error">Ingresa una demora de al menos 1 minuto.</p>
+                }
+              </div>
+            }
+
+            <div class="ab-field">
+              <label class="ab-label" for="vida-aviso">Duracion (minutos)</label>
+              <input class="ab-input" id="vida-aviso" type="number" min="1" placeholder="12"
+                     formControlName="vida" [attr.aria-invalid]="invalidoAviso('vida')" />
+              @if (invalidoAviso('vida')) {
+                <p class="ab-field-error">Ingresa una duracion de al menos 1 minuto.</p>
+              }
+            </div>
+          </div>
           <p class="crud__nota">Pasado ese tiempo el aviso deja de mostrarse a los pasajeros.</p>
         </div>
 
@@ -84,46 +117,8 @@
         }
 
         <button class="ab-button ab-button--lg" type="submit" [disabled]="enviando()">
-          {{ enviando() ? 'Enviando...' : 'Enviar aviso' }}
+          {{ enviando() ? 'Enviando...' : esRetraso() ? 'Avisar retraso' : 'Enviar aviso' }}
         </button>
-      </form>
-    }
-
-    @case ('retraso') {
-      <form class="crud__form">
-        <div class="ab-field">
-          <label class="ab-label" for="patente-retraso">Patente del colectivo</label>
-          <input class="ab-input" id="patente-retraso" type="text" placeholder="AB 123 CD" autocomplete="off" />
-        </div>
-
-        <div class="ab-field">
-          <label class="ab-label" for="terminal-retraso">Terminal</label>
-          <select class="crud__select" id="terminal-retraso">
-            @for (t of terminales(); track t.uuid) {
-              <option [value]="t.uuid">{{ t.name }}</option>
-            }
-          </select>
-        </div>
-
-        <div class="ab-field">
-          <label class="ab-label" for="fecha-retraso">Fecha del viaje</label>
-          <input class="ab-input" id="fecha-retraso" type="date" />
-          <p class="crud__nota">El viaje tiene que estar registrado en el sistema de pasajes para esa fecha y patente.</p>
-        </div>
-
-        <div class="crud__fila">
-          <div class="ab-field">
-            <label class="ab-label" for="demora-retraso">Demora (min)</label>
-            <input class="ab-input" id="demora-retraso" type="number" min="1" placeholder="15" />
-          </div>
-
-          <div class="ab-field">
-            <label class="ab-label" for="vida-retraso">Duracion (min)</label>
-            <input class="ab-input" id="vida-retraso" type="number" min="1" placeholder="12" />
-          </div>
-        </div>
-
-        <button class="ab-button ab-button--lg" type="button">Avisar retraso</button>
       </form>
     }
 

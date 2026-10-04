@@ -1,6 +1,6 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, ResolveFn, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Topbar } from '../../shared/topbar/topbar';
@@ -8,7 +8,7 @@ import { AuthService } from '../../services/auth.service';
 import { AvisoService } from '../../services/aviso.service';
 import { TerminalService } from '../../services/terminal.service';
 
-export type AccionAviso = 'aviso' | 'retraso' | 'eliminar';
+export type AccionAviso = 'aviso' | 'eliminar';
 
 interface VistaAviso {
   titulo: string;
@@ -20,26 +20,25 @@ const VISTAS: Record<AccionAviso, VistaAviso> = {
     titulo: 'Enviar aviso',
     bajada: 'Notificacion general para los pasajeros de una terminal.',
   },
-  retraso: {
-    titulo: 'Avisar un retraso',
-    bajada: 'Alerta de demora para un colectivo puntual.',
-  },
   eliminar: {
     titulo: 'Eliminar aviso',
     bajada: 'Baja de una notificacion ya enviada.',
   },
 };
 
-type TipoAviso = 'LOCAL' | 'GLOBAL';
+type TipoAviso = 'LOCAL' | 'GLOBAL' | 'BUS_DELAY';
 
 /**
- * Tipos que acepta el envio de avisos. De los que devuelve
- * GET /api/admin/notification-types se muestran solo estos: BUS_DELAY
- * tiene su propia pantalla porque pide patente y fecha del viaje.
+ * Tipos que acepta el envio de avisos, en el orden en que se muestran. Se
+ * ofrecen solo los que devuelve GET /api/admin/notification-types para el rol.
  */
-const DETALLE_TIPOS: Record<TipoAviso, string> = {
-  LOCAL: 'Aviso para los pasajeros de una sola terminal.',
-  GLOBAL: 'Aviso para todas las terminales. Solo super admin.',
+const OPCIONES_TIPOS: Record<TipoAviso, { etiqueta: string; detalle: string }> = {
+  LOCAL: { etiqueta: 'LOCAL', detalle: 'Aviso para los pasajeros de una sola terminal.' },
+  GLOBAL: { etiqueta: 'GLOBAL', detalle: 'Aviso para todas las terminales. Solo super admin.' },
+  BUS_DELAY: {
+    etiqueta: 'RETRASO',
+    detalle: 'Avisar un retraso de un colectivo puntual a sus pasajeros.',
+  },
 };
 
 interface OpcionTerminal {
@@ -56,7 +55,7 @@ const AVISO_EJEMPLO = {
 };
 
 /**
- * Pantallas de gestion de avisos. Las cuatro opciones de la
+ * Pantallas de gestion de avisos. Las opciones de la
  * gestion comparten este componente y cambian segun :accion.
  */
 @Component({
@@ -91,13 +90,18 @@ export class Avisos {
   protected readonly terminales = signal<OpcionTerminal[]>([]);
 
   // --- Envio de aviso ---
-  protected readonly tipos = signal<{ nombre: TipoAviso; detalle: string }[]>([]);
+  protected readonly tipos = signal<{ nombre: TipoAviso; etiqueta: string; detalle: string }[]>(
+    [],
+  );
   protected readonly errorTipos = signal<string | null>(null);
 
   protected readonly formAviso = this.fb.nonNullable.group({
     tipo: ['LOCAL' as TipoAviso, Validators.required],
     terminal: ['', Validators.required],
     mensaje: ['', [Validators.required, Validators.pattern(/\S/)]],
+    patente: ['', [Validators.required, Validators.pattern(/\S/)]],
+    fecha: ['', Validators.required],
+    demora: [15, [Validators.required, Validators.min(1)]],
     vida: [12, [Validators.required, Validators.min(1)]],
   });
   protected readonly enviando = signal(false);
@@ -111,13 +115,17 @@ export class Avisos {
   /** GLOBAL va a todas las terminales: no se elige terminal. */
   protected readonly esGlobal = computed(() => this.tipoElegido() === 'GLOBAL');
 
+  /** BUS_DELAY pide patente, fecha y demora en lugar de mensaje. */
+  protected readonly esRetraso = computed(() => this.tipoElegido() === 'BUS_DELAY');
+
   constructor() {
     this.cargarTerminales();
 
     effect(() => {
-      const control = this.formAviso.controls.terminal;
-      if (this.esGlobal()) control.disable();
-      else control.enable();
+      const { terminal, mensaje, patente, fecha, demora } = this.formAviso.controls;
+      habilitar(terminal, !this.esGlobal());
+      habilitar(mensaje, !this.esRetraso());
+      for (const control of [patente, fecha, demora]) habilitar(control, this.esRetraso());
     });
 
     effect(() => {
@@ -156,8 +164,10 @@ export class Avisos {
 
     this.avisoService.tipos().subscribe({
       next: (res) => {
-        const tipos = res.types.filter((t): t is TipoAviso => t in DETALLE_TIPOS);
-        this.tipos.set(tipos.map((nombre) => ({ nombre, detalle: DETALLE_TIPOS[nombre] })));
+        const tipos = (Object.keys(OPCIONES_TIPOS) as TipoAviso[]).filter((t) =>
+          res.types.includes(t),
+        );
+        this.tipos.set(tipos.map((nombre) => ({ nombre, ...OPCIONES_TIPOS[nombre] })));
 
         const tipo = this.formAviso.controls.tipo;
         if (tipos.length && !tipos.includes(tipo.value)) tipo.setValue(tipos[0]);
@@ -177,6 +187,11 @@ export class Avisos {
     this.avisoEnviado.set(null);
 
     const { tipo, terminal, mensaje, vida } = this.formAviso.getRawValue();
+    if (tipo === 'BUS_DELAY') {
+      this.enviarRetraso();
+      return;
+    }
+
     this.avisoService
       .enviar(
         { type: tipo, payload: { message: mensaje.trim(), time_life: vida } },
@@ -199,9 +214,52 @@ export class Avisos {
       });
   }
 
-  protected invalidoAviso(campo: 'terminal' | 'mensaje' | 'vida'): boolean {
+  private enviarRetraso(): void {
+    const { terminal, patente, fecha, demora, vida } = this.formAviso.getRawValue();
+    this.avisoService
+      .notificarRetraso({
+        type: 'BUS_DELAY',
+        license_patent: patente.trim(),
+        uuid_terminal: terminal || undefined,
+        start_date: fecha,
+        payload: { time_delay: demora, time_life: vida },
+      })
+      .subscribe({
+        next: () => {
+          this.enviando.set(false);
+          this.avisoEnviado.set('Retraso avisado a los pasajeros del colectivo.');
+          this.formAviso.controls.patente.reset();
+        },
+        error: (err: HttpErrorResponse) => {
+          this.enviando.set(false);
+          this.errorAviso.set(mensajeErrorRetraso(err));
+        },
+      });
+  }
+
+  protected invalidoAviso(
+    campo: 'terminal' | 'mensaje' | 'patente' | 'fecha' | 'demora' | 'vida',
+  ): boolean {
     const control = this.formAviso.controls[campo];
     return control.invalid && control.touched;
+  }
+}
+
+function habilitar(control: AbstractControl, activo: boolean): void {
+  if (activo) control.enable();
+  else control.disable();
+}
+
+function mensajeErrorRetraso(err: HttpErrorResponse): string {
+  switch (err.status) {
+    case 400:
+      return 'Revisa los datos: la patente, la fecha, la demora, la duracion y la terminal son obligatorias.';
+    case 409:
+      return 'No hay un viaje registrado para esa patente y fecha en la terminal.';
+    case 502:
+      return 'No se pudo verificar el viaje o entregar el aviso. Intenta de nuevo.';
+    default:
+      return mensajeError(err);
   }
 }
 

@@ -16,8 +16,8 @@ interface VistaCiudad {
 
 const VISTAS: Record<AccionCiudad, VistaCiudad> = {
   listar: {
-    titulo: 'Ver ciudades',
-    bajada: 'Listado completo con su codigo postal. Filtra para encontrar una puntual.',
+    titulo: 'Gestionar ciudades',
+    bajada: 'Gestionar ciudades te permite ver, crear, editar y eliminar ciudades del sistema.',
   },
   crear: {
     titulo: 'Cargar ciudad',

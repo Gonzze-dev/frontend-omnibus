@@ -2,7 +2,13 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { APP_CONFIG } from '../config';
-import { EnviarAvisoRequest, EnviarAvisoResponse, TiposAvisoResponse } from '../models/aviso.model';
+import {
+  EnviarAvisoRequest,
+  EnviarAvisoResponse,
+  NotificarRetrasoRequest,
+  NotificarRetrasoResponse,
+  TiposAvisoResponse,
+} from '../models/aviso.model';
 
 /** Envio de avisos manuales contra /api/admin (admin y super admin). */
 @Injectable({ providedIn: 'root' })
@@ -26,5 +32,10 @@ export class AvisoService {
     return this.http.post<EnviarAvisoResponse>(`${this.adminUrl}/notifications`, datos, {
       params: query,
     });
+  }
+
+  /** Avisa la demora de un colectivo puntual (BUS_DELAY). */
+  notificarRetraso(datos: NotificarRetrasoRequest): Observable<NotificarRetrasoResponse> {
+    return this.http.post<NotificarRetrasoResponse>(`${this.adminUrl}/notify-bus-delay`, datos);
   }
 }

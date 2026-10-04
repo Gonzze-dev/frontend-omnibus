@@ -35,6 +35,7 @@ export const routes: Routes = [
   { path: 'dashboard/terminales/:accion/:codigo', component: Terminales, title: tituloTerminales },
   { path: 'dashboard/terminales/:accion', component: Terminales, title: tituloTerminales },
   { path: 'dashboard/permisos/:accion', component: Permisos, title: tituloPermisos },
+  { path: 'dashboard/notificaciones/retraso', redirectTo: 'dashboard/notificaciones/aviso' },
   { path: 'dashboard/notificaciones/:accion', component: Avisos, title: tituloAvisos },
   { path: 'dashboard/:seccion', component: Gestion, title: tituloGestion },
   { path: '**', redirectTo: 'login' },

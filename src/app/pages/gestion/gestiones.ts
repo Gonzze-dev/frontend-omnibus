@@ -16,8 +16,7 @@ export type Glifo =
   | 'ascender'
   | 'descender'
   | 'escudo'
-  | 'enviar'
-  | 'retraso';
+  | 'enviar';
 
 export type Tono = 'azul' | 'indigo' | 'carmin' | 'tinta' | 'naranja';
 
@@ -144,20 +143,11 @@ export const SECCIONES: readonly Seccion[] = [
           {
             id: 'aviso',
             titulo: 'Enviar aviso',
-            bajada: 'Notificacion general para los pasajeros',
+            bajada: 'Notificacion general o retraso de un colectivo',
             icono: 'enviar',
             tono: 'naranja',
             endpoint: 'POST /api/admin/notifications',
             ruta: '/dashboard/notificaciones/aviso',
-          },
-          {
-            id: 'retraso',
-            titulo: 'Avisar un retraso',
-            bajada: 'Alerta de demora para un colectivo puntual',
-            icono: 'retraso',
-            tono: 'azul',
-            endpoint: 'POST /api/admin/notify-bus-delay',
-            ruta: '/dashboard/notificaciones/retraso',
           },
         ],
       },
