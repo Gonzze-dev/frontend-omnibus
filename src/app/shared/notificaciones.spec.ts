@@ -1,13 +1,19 @@
+import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Subject } from 'rxjs';
 import { NotificacionesStore } from './notificaciones';
 import { RealtimeService } from '../services/realtime.service';
+import { AuthService } from '../services/auth.service';
+import { User } from '../models/auth.model';
 import { NotificacionPasajero } from '../models/viaje.model';
 
 describe('NotificacionesStore', () => {
   let recibidas: Subject<NotificacionPasajero>;
   let eliminadas: Subject<string>;
   let store: NotificacionesStore;
+  let usuario: ReturnType<typeof signal<User | null>>;
+
+  const cuenta = (uuid: string) => ({ uuid, rol: 'user' }) as User;
 
   const llegada: NotificacionPasajero = {
     type: 'BUS_ARRIVAL',
@@ -32,6 +38,7 @@ describe('NotificacionesStore', () => {
     eliminadas = new Subject();
     TestBed.configureTestingModule({
       providers: [
+        { provide: AuthService, useValue: { user: usuario.asReadonly() } },
         {
           provide: RealtimeService,
           useValue: {
@@ -47,6 +54,7 @@ describe('NotificacionesStore', () => {
 
   beforeEach(() => {
     localStorage.clear();
+    usuario = signal<User | null>(cuenta('u-1'));
     store = crearStore();
   });
 
@@ -112,6 +120,41 @@ describe('NotificacionesStore', () => {
     recibidas.next(local);
     recibidas.next(global);
     expect(store.lista().map((n) => n.id)).toEqual(['n-global']);
+  });
+
+  it('lo limpiado en una cuenta no se oculta en otra del mismo navegador', () => {
+    recibidas.next(global);
+    store.limpiar();
+    expect(store.cantidad()).toBe(0);
+
+    // Cambio de sesion sin recargar: la conexion al hub sigue y no reenvia nada.
+    usuario.set(cuenta('u-2'));
+    expect(store.lista().map((n) => n.id)).toEqual(['n-global']);
+
+    store.limpiar();
+    usuario.set(cuenta('u-1'));
+    expect(store.cantidad()).toBe(0);
+
+    // Otra cuenta que entra despues de recargar tambien la ve.
+    usuario.set(cuenta('u-3'));
+    store = crearStore();
+    recibidas.next(global);
+    expect(store.lista().map((n) => n.id)).toEqual(['n-global']);
+  });
+
+  it('al arrancar poda del storage las descartadas vencidas de todas las cuentas', () => {
+    const ahora = Date.now();
+    localStorage.setItem('notificaciones_descartadas', JSON.stringify({ vieja: ahora + 60_000 }));
+    localStorage.setItem('notificaciones_descartadas:u-1', JSON.stringify({ vencida: ahora - 1, vigente: ahora + 60_000 }));
+    localStorage.setItem('notificaciones_descartadas:u-9', JSON.stringify({ vencida: ahora - 1 }));
+    localStorage.setItem('otra_cosa', 'x');
+
+    store = crearStore();
+
+    expect(localStorage.getItem('notificaciones_descartadas')).toBeNull();
+    expect(JSON.parse(localStorage.getItem('notificaciones_descartadas:u-1')!)).toEqual({ vigente: ahora + 60_000 });
+    expect(localStorage.getItem('notificaciones_descartadas:u-9')).toBeNull();
+    expect(localStorage.getItem('otra_cosa')).toBe('x');
   });
 
   it('saca las vencidas', () => {

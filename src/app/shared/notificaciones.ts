@@ -1,5 +1,6 @@
 import { DestroyRef, Injectable, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { AuthService } from '../services/auth.service';
 import { RealtimeService } from '../services/realtime.service';
 import {
   AvisoAdmin,
@@ -19,7 +20,11 @@ export interface Notificacion {
   vence: number;
 }
 
-/** Ids que el usuario limpio, para que el reenvio del hub no los traiga de vuelta. */
+/**
+ * Ids que el usuario limpio, para que el reenvio del hub no los traiga de vuelta.
+ * Va una clave por cuenta: si no, limpiar en una cuenta las ocultaba en todas
+ * las que se usen en el mismo navegador.
+ */
 const DESCARTADAS_KEY = 'notificaciones_descartadas';
 const REVISAR_VENCIDAS_MS = 30_000;
 
@@ -33,14 +38,31 @@ const REVISAR_VENCIDAS_MS = 30_000;
 @Injectable({ providedIn: 'root' })
 export class NotificacionesStore {
   private readonly realtime = inject(RealtimeService);
+  private readonly auth = inject(AuthService);
 
-  private readonly _lista = signal<Notificacion[]>([]);
-  private readonly descartadas = leerDescartadas();
+  /**
+   * Todo lo recibido, sin filtrar por cuenta. La conexion al hub sobrevive al
+   * cambio de sesion y no se reenvian las guardadas, asi que no se puede vaciar
+   * al cambiar de cuenta: se filtra con las descartadas de la cuenta actual.
+   */
+  private readonly _recibidas = signal<Notificacion[]>([]);
+  /** Descartadas por cuenta, cacheadas para no releer localStorage en cada calculo. */
+  private readonly _descartadas = signal(new Map<string, Map<string, number>>());
 
-  readonly lista = this._lista.asReadonly();
-  readonly cantidad = computed(() => this._lista().length);
+  private readonly claveCuenta = computed(() => descartadasKey(this.auth.user()?.uuid));
+  private readonly descartadas = computed(
+    () => this._descartadas().get(this.claveCuenta()) ?? leerDescartadas(this.claveCuenta()),
+  );
+
+  readonly lista = computed(() => {
+    const descartadas = this.descartadas();
+    return this._recibidas().filter((n) => !descartadas.has(n.id));
+  });
+  readonly cantidad = computed(() => this.lista().length);
 
   constructor() {
+    podarDescartadas();
+
     this.realtime.recibidas$
       .pipe(takeUntilDestroyed())
       .subscribe((msg) => this.agregar(msg));
@@ -57,31 +79,34 @@ export class NotificacionesStore {
     });
   }
 
+  /** Limpia solo para la cuenta con sesion iniciada. */
   limpiar(): void {
-    for (const n of this._lista()) {
-      this.descartadas.set(n.id, n.vence);
+    const clave = this.claveCuenta();
+    const descartadas = new Map(this.descartadas());
+    for (const n of this.lista()) {
+      descartadas.set(n.id, n.vence);
     }
-    guardarDescartadas(this.descartadas);
-    this._lista.set([]);
+    guardarDescartadas(clave, descartadas);
+    this._descartadas.update((porCuenta) => new Map(porCuenta).set(clave, descartadas));
   }
 
   private agregar(msg: NotificacionPasajero): void {
     const nueva = aNotificacion(msg);
-    if (!nueva || nueva.vence <= Date.now() || this.descartadas.has(nueva.id)) return;
+    if (!nueva || nueva.vence <= Date.now()) return;
 
-    this._lista.update((lista) =>
+    this._recibidas.update((lista) =>
       lista.some((n) => n.id === nueva.id) ? lista : [nueva, ...lista],
     );
   }
 
   private quitar(id: string): void {
-    this._lista.update((lista) => lista.filter((n) => n.id !== id));
+    this._recibidas.update((lista) => lista.filter((n) => n.id !== id));
   }
 
   private quitarVencidas(): void {
     const ahora = Date.now();
-    if (this._lista().some((n) => n.vence <= ahora)) {
-      this._lista.update((lista) => lista.filter((n) => n.vence > ahora));
+    if (this._recibidas().some((n) => n.vence <= ahora)) {
+      this._recibidas.update((lista) => lista.filter((n) => n.vence > ahora));
     }
   }
 }
@@ -137,10 +162,15 @@ function aNotificacion(msg: NotificacionPasajero): Notificacion | null {
   }
 }
 
-function leerDescartadas(): Map<string, number> {
+/** Sin sesion (no deberia pasar en las pantallas con campana) se usa una clave aparte. */
+function descartadasKey(userUuid: string | undefined): string {
+  return `${DESCARTADAS_KEY}:${userUuid ?? 'anonimo'}`;
+}
+
+function leerDescartadas(clave: string): Map<string, number> {
   const ahora = Date.now();
   try {
-    const guardadas = JSON.parse(localStorage.getItem(DESCARTADAS_KEY) ?? '{}') as Record<string, number>;
+    const guardadas = JSON.parse(localStorage.getItem(clave) ?? '{}') as Record<string, number>;
     // Las vencidas ya no las reenvia el hub: no hace falta recordarlas.
     return new Map(Object.entries(guardadas).filter(([, vence]) => vence > ahora));
   } catch {
@@ -148,10 +178,33 @@ function leerDescartadas(): Map<string, number> {
   }
 }
 
-function guardarDescartadas(descartadas: Map<string, number>): void {
+function guardarDescartadas(clave: string, descartadas: Map<string, number>): void {
   try {
-    localStorage.setItem(DESCARTADAS_KEY, JSON.stringify(Object.fromEntries(descartadas)));
+    if (descartadas.size === 0) {
+      localStorage.removeItem(clave);
+    } else {
+      localStorage.setItem(clave, JSON.stringify(Object.fromEntries(descartadas)));
+    }
   } catch {
     // Sin storage, lo limpiado puede volver a aparecer al recargar
+  }
+}
+
+/**
+ * Saca del storage las descartadas que ya vencieron, de todas las cuentas que
+ * usaron este navegador: si una no vuelve a entrar, nadie mas las limpiaria.
+ * Tambien borra la clave vieja sin uuid, de cuando era una sola para todos.
+ */
+function podarDescartadas(): void {
+  try {
+    localStorage.removeItem(DESCARTADAS_KEY);
+    const claves = Array.from({ length: localStorage.length }, (_, i) => localStorage.key(i));
+    for (const clave of claves) {
+      if (clave?.startsWith(`${DESCARTADAS_KEY}:`)) {
+        guardarDescartadas(clave, leerDescartadas(clave));
+      }
+    }
+  } catch {
+    // Sin storage no hay nada que podar
   }
 }
