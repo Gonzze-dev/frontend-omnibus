@@ -39,3 +39,40 @@ export interface NotificarRetrasoRequest {
 export interface NotificarRetrasoResponse {
   message: string;
 }
+
+/** Tipos de notificacion que guarda el backend (models.PassengerNotificationType). */
+export type TipoNotificacion = 'BUS_ARRIVAL' | 'BUS_DELAY' | 'LOCAL' | 'GLOBAL' | 'CAMERA';
+
+/** Notificacion del listado de admin (models.AdminNotificationListItem). */
+export interface NotificacionAdmin {
+  id: string;
+  type: TipoNotificacion;
+  /** null en las notificaciones globales. */
+  terminal: { uuid: string; name: string } | null;
+  date: string;
+  expiration: string;
+  expired: boolean;
+  /** Varia segun el tipo: message, license_patent, time_delay, anden... */
+  payload: Record<string, unknown>;
+}
+
+/** GET /api/admin/notifications (models.ListAdminNotificationsResponse). */
+export interface ListNotificacionesResponse {
+  notifications: NotificacionAdmin[];
+  page: number;
+  next: number | null;
+  prev: number | null;
+  elements: number;
+  total_elements: number;
+}
+
+export type EstadoNotificacion = 'all' | 'active' | 'expired';
+
+export interface ListNotificacionesParams {
+  page?: number;
+  limit?: number;
+  order?: 'ASC' | 'DESC';
+  type?: TipoNotificacion;
+  status?: EstadoNotificacion;
+  terminal_uuid?: string;
+}

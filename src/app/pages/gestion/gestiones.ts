@@ -58,45 +58,7 @@ export interface Seccion {
  * Los contadores son datos de ejemplo, como los del dashboard, hasta
  * que existan los endpoints de conteo.
  */
-export const SECCIONES: readonly Seccion[] = [
-  {
-    id: 'notificaciones',
-    titulo: 'Gestionar notificaciones',
-    bajada: 'Manda avisos a los pasajeros y revisa los que ya salieron.',
-    grupos: [
-      {
-        id: 'enviar',
-        titulo: 'Enviar',
-        opciones: [
-          {
-            id: 'aviso',
-            titulo: 'Enviar aviso',
-            bajada: 'Notificacion general o retraso de un colectivo',
-            icono: 'enviar',
-            tono: 'naranja',
-            endpoint: 'POST /api/admin/notifications',
-            ruta: '/dashboard/notificaciones/aviso',
-          },
-        ],
-      },
-      {
-        id: 'administrar',
-        titulo: 'Administrar',
-        opciones: [
-          {
-            id: 'eliminar',
-            titulo: 'Eliminar aviso',
-            bajada: 'Baja de una notificacion ya enviada',
-            icono: 'eliminar',
-            tono: 'carmin',
-            endpoint: 'DELETE /api/admin/notifications',
-            ruta: '/dashboard/notificaciones/eliminar',
-          },
-        ],
-      },
-    ],
-  },
-];
+export const SECCIONES: readonly Seccion[] = [];
 
 export function buscarSeccion(id: string | null): Seccion | undefined {
   return SECCIONES.find((s) => s.id === id);

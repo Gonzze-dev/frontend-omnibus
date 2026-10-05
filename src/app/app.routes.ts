@@ -37,6 +37,8 @@ export const routes: Routes = [
   { path: 'dashboard/permisos', component: Permisos, title: tituloPermisos },
   { path: 'dashboard/permisos/:accion', redirectTo: 'dashboard/permisos' },
   { path: 'dashboard/notificaciones/retraso', redirectTo: 'dashboard/notificaciones/aviso' },
+  { path: 'dashboard/notificaciones', pathMatch: 'full', redirectTo: 'dashboard/notificaciones/listar' },
+  { path: 'dashboard/notificaciones/:accion/:codigo', component: Avisos, title: tituloAvisos },
   { path: 'dashboard/notificaciones/:accion', component: Avisos, title: tituloAvisos },
   { path: 'dashboard/:seccion', component: Gestion, title: tituloGestion },
   { path: '**', redirectTo: 'login' },

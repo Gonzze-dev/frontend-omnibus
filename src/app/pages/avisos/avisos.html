@@ -1,20 +1,149 @@
 <app-topbar />
 
 <div class="ab-screen crud tono--naranja">
-  <a class="crud__volver" routerLink="/dashboard/notificaciones">
+  @if (accion() === 'listar') {
+    <a class="crud__volver" routerLink="/dashboard">
     <svg class="ab-icon" width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
       <path d="M15 7H1M1 7l5.5-5.5M1 7l5.5 5.5" stroke="currentColor" stroke-width="1.8"
             stroke-linecap="round" stroke-linejoin="round" />
     </svg>
-    Gestionar notificaciones
-  </a>
+      Dashboard
+    </a>
+  } @else {
+    <a class="crud__volver" routerLink="/dashboard/notificaciones/listar">
+    <svg class="ab-icon" width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
+      <path d="M15 7H1M1 7l5.5-5.5M1 7l5.5 5.5" stroke="currentColor" stroke-width="1.8"
+            stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+      Gestionar notificaciones
+    </a>
+  }
 
-  <header class="crud__head">
-    <h1 class="crud__titulo">{{ vista().titulo }}</h1>
-    <p class="crud__bajada">{{ vista().bajada }}</p>
+  <header class="crud__head crud__head--acciones">
+    <div>
+      <h1 class="crud__titulo">{{ vista().titulo }}</h1>
+      <p class="crud__bajada">{{ vista().bajada }}</p>
+    </div>
+
+    @if (accion() === 'listar') {
+      <a class="crud__agregar" routerLink="/dashboard/notificaciones/aviso" aria-label="Enviar aviso">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <path d="M10 3v14M3 10h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        </svg>
+      </a>
+    }
   </header>
 
   @switch (accion()) {
+    @case ('listar') {
+      <div class="crud__filtro">
+        <div class="ab-field">
+          <label class="ab-label" for="filtro-tipo">Tipo</label>
+          <select class="crud__select" id="filtro-tipo"
+                  [value]="filtroTipo()" (change)="filtrarTipo($any($event.target).value)">
+            <option value="">Todos</option>
+            @for (t of tiposFiltro; track t) {
+              <option [value]="t">{{ etiquetasTipo[t] }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="ab-field">
+          <label class="ab-label" for="filtro-estado">Estado</label>
+          <select class="crud__select" id="filtro-estado"
+                  [value]="filtroEstado()" (change)="filtrarEstado($any($event.target).value)">
+            <option value="all">Todos</option>
+            <option value="active">Activos</option>
+            <option value="expired">Vencidos</option>
+          </select>
+        </div>
+      </div>
+
+      @if (errorListado()) {
+        <p class="ab-form-error" role="alert">{{ errorListado() }}</p>
+      }
+
+      @if (cargandoListado()) {
+        <p class="tabla__vacio">Cargando avisos...</p>
+      } @else {
+        <ul class="tabla tabla--fija">
+          <li class="tabla__fila tabla__fila--cabecera">
+            <span>Tipo</span>
+            <span>Mensaje</span>
+            <span>Terminal</span>
+            <span>Estado</span>
+            <span></span>
+          </li>
+
+          @for (n of notificaciones(); track n.id) {
+            <li class="tabla__fila">
+              <span class="tabla__dato">
+                <span class="tabla__linea">{{ etiquetasTipo[n.type] ?? n.type }}</span>
+              </span>
+              <span class="tabla__dato">
+                <span class="tabla__linea" [title]="mensaje(n)">{{ mensaje(n) }}</span>
+                <span class="tabla__sub">{{ fecha(n.date) }}</span>
+              </span>
+              <span class="tabla__dato">
+                <span class="tabla__linea" [title]="terminal(n)">{{ terminal(n) }}</span>
+              </span>
+              <span class="tabla__dato">
+                <span class="estado" [class.estado--vencido]="n.expired">
+                  {{ n.expired ? 'Vencido' : 'Activo' }}
+                </span>
+                <span class="tabla__sub">Vence {{ fecha(n.expiration) }}</span>
+              </span>
+              <span class="tabla__acciones">
+                <a class="tabla__icono tabla__icono--carmin"
+                   [routerLink]="['/dashboard/notificaciones/eliminar', n.id]" aria-label="Eliminar aviso">
+                  <svg width="18" height="18" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+                    <path d="M3 5.5h16M8.5 5.5V3h5v2.5M5.5 5.5 6.5 19h9l1-13.5" stroke="currentColor"
+                          stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </a>
+              </span>
+            </li>
+          } @empty {
+            <li class="tabla__vacio">No hay avisos que coincidan con el filtro.</li>
+          }
+
+          @for (_ of relleno(); track $index) {
+            <li class="tabla__fila tabla__fila--relleno" aria-hidden="true">
+              <span class="tabla__dato">
+                <span class="tabla__linea">&nbsp;</span>
+              </span>
+            </li>
+          }
+        </ul>
+
+        <nav class="paginado" aria-label="Paginas del listado"
+             [class.paginado--oculto]="totalPaginas() === 1">
+          <button class="paginado__flecha" type="button" aria-label="Pagina anterior"
+                  [disabled]="pagina() === 1" (click)="irA(pagina() - 1)">
+            <svg width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
+              <path d="M10.5 1.5 4 7l6.5 5.5" stroke="currentColor" stroke-width="1.8"
+                    stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
+
+          @for (p of paginas(); track p) {
+            <button class="paginado__numero" type="button"
+                    [class.paginado__numero--activa]="p === pagina()"
+                    [attr.aria-current]="p === pagina() ? 'page' : null"
+                    (click)="irA(p)">{{ p }}</button>
+          }
+
+          <button class="paginado__flecha" type="button" aria-label="Pagina siguiente"
+                  [disabled]="pagina() === totalPaginas()" (click)="irA(pagina() + 1)">
+            <svg width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
+              <path d="M5.5 1.5 12 7l-6.5 5.5" stroke="currentColor" stroke-width="1.8"
+                    stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
+        </nav>
+      }
+    }
+
     @case ('aviso') {
       <form class="crud__form" [formGroup]="formAviso" (ngSubmit)="enviarAviso()" novalidate>
         <fieldset class="tipos">
@@ -123,41 +252,51 @@
     }
 
     @case ('eliminar') {
-      <div class="crud__form">
-        <div class="ab-field">
-          <label class="ab-label" for="id-eliminar">Identificador del aviso</label>
-          <input class="ab-input" id="id-eliminar" type="text" [value]="aviso.id"
-                 placeholder="98fb4a77-0a0f-44f0-8067-59e5b7df42ba" />
+      @if (cargandoSeleccionada()) {
+        <p class="tabla__vacio">Cargando aviso...</p>
+      } @else if (errorSeleccionada()) {
+        <p class="ab-form-error" role="alert">{{ errorSeleccionada() }}</p>
+      } @else if (seleccionada(); as n) {
+        <div class="confirmar">
+          <p class="confirmar__texto">
+            Vas a eliminar este aviso. Deja de verse en el momento para todos los pasajeros.
+          </p>
+
+          <dl class="resultado__lista">
+            <div class="resultado__fila">
+              <dt>Tipo</dt>
+              <dd>{{ etiquetasTipo[n.type] ?? n.type }}</dd>
+            </div>
+            <div class="resultado__fila">
+              <dt>Mensaje</dt>
+              <dd>{{ mensaje(n) }}</dd>
+            </div>
+            <div class="resultado__fila">
+              <dt>Terminal</dt>
+              <dd>{{ terminal(n) }}</dd>
+            </div>
+            <div class="resultado__fila">
+              <dt>Enviado</dt>
+              <dd>{{ fecha(n.date) }}</dd>
+            </div>
+            <div class="resultado__fila">
+              <dt>{{ n.expired ? 'Vencio' : 'Vence' }}</dt>
+              <dd>{{ fecha(n.expiration) }}</dd>
+            </div>
+          </dl>
+
+          @if (errorEliminar()) {
+            <p class="ab-form-error" role="alert">{{ errorEliminar() }}</p>
+          }
+
+          <div class="confirmar__acciones">
+            <a class="ab-link" routerLink="/dashboard/notificaciones/listar">Cancelar</a>
+            <button class="ab-button confirmar__boton" type="button" [disabled]="eliminando()" (click)="eliminar()">
+              {{ eliminando() ? 'Eliminando...' : 'Eliminar aviso' }}
+            </button>
+          </div>
         </div>
-
-        <button class="ab-button" type="button">Buscar</button>
-      </div>
-
-      <div class="confirmar">
-        <p class="confirmar__texto">
-          Vas a eliminar este aviso. Deja de verse en el momento para todos los pasajeros.
-        </p>
-
-        <dl class="resultado__lista">
-          <div class="resultado__fila">
-            <dt>Tipo</dt>
-            <dd>{{ aviso.tipo }}</dd>
-          </div>
-          <div class="resultado__fila">
-            <dt>Mensaje</dt>
-            <dd>{{ aviso.mensaje }}</dd>
-          </div>
-          <div class="resultado__fila">
-            <dt>Terminal</dt>
-            <dd>{{ aviso.terminal }}</dd>
-          </div>
-        </dl>
-
-        <div class="confirmar__acciones">
-          <a class="ab-link" routerLink="/dashboard/notificaciones">Cancelar</a>
-          <button class="ab-button confirmar__boton" type="button">Eliminar aviso</button>
-        </div>
-      </div>
+      }
     }
   }
 </div>

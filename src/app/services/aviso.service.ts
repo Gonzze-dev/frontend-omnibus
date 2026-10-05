@@ -5,12 +5,18 @@ import { APP_CONFIG } from '../config';
 import {
   EnviarAvisoRequest,
   EnviarAvisoResponse,
+  ListNotificacionesParams,
+  ListNotificacionesResponse,
+  NotificacionAdmin,
   NotificarRetrasoRequest,
   NotificarRetrasoResponse,
   TiposAvisoResponse,
 } from '../models/aviso.model';
 
-/** Envio de avisos manuales contra /api/admin (admin y super admin). */
+/**
+ * Envio, listado y baja de avisos contra /api/admin (admin y super admin).
+ * El backend filtra por rol: el admin solo ve las de sus terminales.
+ */
 @Injectable({ providedIn: 'root' })
 export class AvisoService {
   private readonly http = inject(HttpClient);
@@ -37,5 +43,29 @@ export class AvisoService {
   /** Avisa la demora de un colectivo puntual (BUS_DELAY). */
   notificarRetraso(datos: NotificarRetrasoRequest): Observable<NotificarRetrasoResponse> {
     return this.http.post<NotificarRetrasoResponse>(`${this.adminUrl}/notify-bus-delay`, datos);
+  }
+
+  listar(params: ListNotificacionesParams = {}): Observable<ListNotificacionesResponse> {
+    let query = new HttpParams();
+    if (params.page) query = query.set('page', params.page);
+    if (params.limit) query = query.set('limit', params.limit);
+    if (params.order) query = query.set('order', params.order);
+    if (params.type) query = query.set('type', params.type);
+    if (params.status) query = query.set('status', params.status);
+    if (params.terminal_uuid) query = query.set('terminal_uuid', params.terminal_uuid);
+
+    return this.http.get<ListNotificacionesResponse>(`${this.adminUrl}/notifications`, {
+      params: query,
+    });
+  }
+
+  obtener(id: string): Observable<NotificacionAdmin> {
+    return this.http.get<NotificacionAdmin>(`${this.adminUrl}/notifications/${id}`);
+  }
+
+  eliminar(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.adminUrl}/notifications`, {
+      params: new HttpParams().set('notification_id', id),
+    });
   }
 }

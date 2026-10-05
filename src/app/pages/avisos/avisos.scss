@@ -1,2 +1,22 @@
 /* Avisos: gestion de notificaciones con los estilos comunes del dashboard. */
 @use '../../../styles/crud' as *;
+
+/* Tipo | Mensaje | Terminal | Estado | acciones */
+.tabla {
+  --cols: 0.7fr 1.8fr 1.2fr 1fr auto;
+}
+
+.estado {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  background: rgba(0, 128, 72, 0.12);
+  color: #00703f;
+}
+
+.estado--vencido {
+  background: rgba(116, 118, 133, 0.15);
+  color: #5a5c6b;
+}
