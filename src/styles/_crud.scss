@@ -87,6 +87,8 @@ $fila: $icono + 29px;
   color: var(--ab-white);
 }
 
+.crud__agregar--primario { background: var(--ab-primary); }
+
 .crud__agregar:hover { opacity: 0.9; }
 .crud__agregar:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 2px; }
 
