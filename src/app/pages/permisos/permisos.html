@@ -1,421 +1,310 @@
 <app-topbar />
 
 <div class="ab-screen crud tono--tinta">
-  <a class="crud__volver" routerLink="/dashboard/permisos">
+  <a class="crud__volver" routerLink="/dashboard">
     <svg class="ab-icon" width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
       <path d="M15 7H1M1 7l5.5-5.5M1 7l5.5 5.5" stroke="currentColor" stroke-width="1.8"
             stroke-linecap="round" stroke-linejoin="round" />
     </svg>
-    Control de Permisos
+    Dashboard
   </a>
 
   <header class="crud__head">
-    <h1 class="crud__titulo">{{ vista().titulo }}</h1>
-    <p class="crud__bajada">{{ vista().bajada }}</p>
-    @if (vista().soloSuper) {
-      <span class="crud__super">solo super admin</span>
-    }
+    <h1 class="crud__titulo">Control de Permisos</h1>
+    <p class="crud__bajada">Busca una cuenta y cambiale el rol dentro del sistema.</p>
   </header>
 
-  @switch (accion()) {
-    @case ('unificado-test') {
-      <form class="crud__filtro" (submit)="$event.preventDefault(); buscar()">
-        <div class="ab-field">
-          <label class="ab-label" for="usuario-filtro">Buscar usuario</label>
-          <input class="ab-input" id="usuario-filtro" type="search" autocomplete="off"
-                 placeholder="Nombre o correo"
-                 [value]="textoBusqueda()" (input)="textoBusqueda.set($any($event.target).value)" />
-        </div>
-        <button class="ab-button crud__filtro-boton" type="submit">Buscar</button>
-      </form>
+  <form class="crud__filtro" (submit)="$event.preventDefault(); buscar()">
+    <div class="ab-field">
+      <label class="ab-label" for="usuario-filtro">Buscar usuario</label>
+      <input class="ab-input" id="usuario-filtro" type="search" autocomplete="off"
+             placeholder="Nombre o correo"
+             [value]="textoBusqueda()" (input)="textoBusqueda.set($any($event.target).value)" />
+    </div>
+    <button class="ab-button crud__filtro-boton" type="submit">Buscar</button>
+  </form>
 
-      @if (errorListado()) {
-        <p class="ab-form-error" role="alert">{{ errorListado() }}</p>
-      }
+  @if (errorListado()) {
+    <p class="ab-form-error" role="alert">{{ errorListado() }}</p>
+  }
 
-      @if (cargandoListado()) {
-        <p class="tabla__vacio">Cargando usuarios...</p>
-      } @else {
-        <ul class="tabla tabla--fija usuarios">
-          <li class="tabla__fila tabla__fila--cabecera">
-            <span>Usuario</span>
-            <span>Rol</span>
-            <span></span>
-          </li>
+  @if (cargandoListado()) {
+    <p class="tabla__vacio">Cargando usuarios...</p>
+  } @else {
+    <ul class="tabla tabla--fija usuarios">
+      <li class="tabla__fila tabla__fila--cabecera">
+        <span>Usuario</span>
+        <span>Rol</span>
+        <span></span>
+      </li>
 
-          @for (u of usuarios(); track u.uuid) {
-            <li class="tabla__item">
-              <!-- Solo un admin tiene terminales a cargo: su fila se despliega para verlas.
-                   El click en la fila es un atajo; la flecha es el boton accesible. -->
-              <div class="tabla__fila usuario"
-                   [class.usuario--desplegable]="esAdmin(u)"
-                   [class.usuario--abierto]="abierto() === u.uuid"
-                   (click)="esAdmin(u) && desplegar(u.uuid)">
-                <span class="tabla__dato">
-                  <span class="tabla__linea">{{ u.first_name }} {{ u.last_name }}</span>
-                  <span class="tabla__sub">{{ u.email }}</span>
-                </span>
-                <span class="resultado__rol">{{ u.rol }}</span>
-                <span class="tabla__acciones">
-                  @if (puedePromover(u)) {
-                    <button class="tabla__icono usuario__promover" type="button"
-                            [attr.aria-label]="'Subir el rol de ' + u.first_name + ' ' + u.last_name"
-                            (click)="$event.stopPropagation(); abrirPromocion(u)">
-                      <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                        <path d="M10 3v14M3 10h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                      </svg>
-                    </button>
-                  }
-                  @if (puedeDegradar(u)) {
-                    <button class="tabla__icono tabla__icono--carmin usuario__degradar" type="button"
-                            [attr.aria-label]="'Bajar a usuario a ' + u.first_name + ' ' + u.last_name"
-                            (click)="$event.stopPropagation(); abrirDegradacion(u)">
-                      <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                        <path d="M3 10h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                      </svg>
-                    </button>
-                  }
-                  @if (esAdmin(u)) {
-                    <button class="tabla__icono" type="button"
-                            [attr.aria-expanded]="abierto() === u.uuid" [attr.aria-controls]="'terminales-' + u.uuid"
-                            aria-label="Ver terminales a cargo"
-                            (click)="$event.stopPropagation(); desplegar(u.uuid)">
-                      <span class="tabla__flecha" [class.tabla__flecha--abierta]="abierto() === u.uuid">
-                        <svg width="14" height="16" viewBox="0 0 14 16" fill="none" aria-hidden="true">
-                          <path d="M1.5 5.5 7 11l5.5-5.5" stroke="currentColor" stroke-width="1.8"
-                                stroke-linecap="round" stroke-linejoin="round" />
-                        </svg>
-                      </span>
-                    </button>
-                  }
-                </span>
-              </div>
-
-              @if (abierto() === u.uuid) {
-                <ul class="tabla__panel" [id]="'terminales-' + u.uuid">
-                  <li class="tabla__fila tabla__fila--titulo">Terminales a cargo</li>
-                  @for (t of u.terminals; track t.uuid) {
-                    <li class="tabla__fila">
-                      <span class="tabla__dato">
-                        <span class="tabla__linea">{{ t.name }}</span>
-                      </span>
-                      <span></span>
-                      <span class="tabla__acciones">
-                        @if (puedeQuitarTerminal(u, t)) {
-                          <button class="tabla__icono tabla__icono--carmin usuario__degradar" type="button"
-                                  [attr.aria-label]="'Quitarle ' + t.name + ' a ' + u.first_name + ' ' + u.last_name"
-                                  (click)="abrirQuitarTerminal(u, t)">
-                            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                              <path d="M3 10h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                            </svg>
-                          </button>
-                        }
-                      </span>
-                    </li>
-                  } @empty {
-                    <li class="tabla__vacio">No tiene terminales asignadas.</li>
-                  }
-                </ul>
-              }
-            </li>
-          } @empty {
-            <li class="tabla__vacio">No hay usuarios que coincidan con la busqueda.</li>
-          }
-
-          @for (_ of relleno(); track $index) {
-            <li class="tabla__fila tabla__fila--relleno" aria-hidden="true">
-              <span class="tabla__dato">
-                <span class="tabla__linea">&nbsp;</span>
-              </span>
-            </li>
-          }
-        </ul>
-
-        <nav class="paginado" aria-label="Paginas del listado"
-             [class.paginado--oculto]="totalPaginas() === 1">
-          <button class="paginado__flecha" type="button" aria-label="Pagina anterior"
-                  [disabled]="pagina() === 1" (click)="irA(pagina() - 1)">
-            <svg width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
-              <path d="M10.5 1.5 4 7l6.5 5.5" stroke="currentColor" stroke-width="1.8"
-                    stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-          </button>
-
-          @for (p of paginas(); track p) {
-            <button class="paginado__numero" type="button"
-                    [class.paginado__numero--activa]="p === pagina()"
-                    [attr.aria-current]="p === pagina() ? 'page' : null"
-                    (click)="irA(p)">{{ p }}</button>
-          }
-
-          <button class="paginado__flecha" type="button" aria-label="Pagina siguiente"
-                  [disabled]="pagina() === totalPaginas()" (click)="irA(pagina() + 1)">
-            <svg width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
-              <path d="M5.5 1.5 12 7l-6.5 5.5" stroke="currentColor" stroke-width="1.8"
-                    stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-          </button>
-        </nav>
-      }
-
-      @if (exito()) {
-        <app-toast [mensaje]="exito()!" (cerrado)="exito.set(null)" />
-      }
-
-      <!-- Popup para subir el rol. Escape o un click afuera lo cierran. -->
-      <dialog #dialogo class="popup" aria-labelledby="popup-titulo"
-              (cancel)="$event.preventDefault(); cerrarPromocion()"
-              (click)="clickEnPopup($event)">
-        @if (objetivo(); as u) {
-          <div class="popup__contenido">
-            <header class="popup__head">
-              <h2 class="popup__titulo" id="popup-titulo">
-                @if (modo() === 'degradar') {
-                  Bajar a usuario
-                } @else if (modo() === 'quitar-terminal') {
-                  Quitar terminal
-                } @else {
-                  {{ paso() === 'rol' ? 'Subir rol' : 'Promover a admin' }}
-                }
-              </h2>
-              <button class="tabla__icono" type="button" aria-label="Cerrar" (click)="cerrarPromocion()">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                  <path d="M1.5 1.5l11 11M12.5 1.5l-11 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-                </svg>
-              </button>
-            </header>
-
-            <p class="popup__usuario">
-              <span class="popup__nombre">{{ u.first_name }} {{ u.last_name }}</span>
+      @for (u of usuarios(); track u.uuid) {
+        <li class="tabla__item">
+          <!-- Solo un admin tiene terminales a cargo: su fila se despliega para verlas.
+               El click en la fila es un atajo; la flecha es el boton accesible. -->
+          <div class="tabla__fila usuario"
+               [class.usuario--desplegable]="esAdmin(u)"
+               [class.usuario--abierto]="abierto() === u.uuid"
+               (click)="esAdmin(u) && desplegar(u.uuid)">
+            <span class="tabla__dato">
+              <span class="tabla__linea">{{ u.first_name }} {{ u.last_name }}</span>
               <span class="tabla__sub">{{ u.email }}</span>
-            </p>
-
-            @if (modo() === 'degradar') {
-              <!-- Solo super admin sobre otro super admin: confirmacion -->
-              <p class="popup__texto">
-                ¿Seguro que queres bajar a esta persona a usuario? Pierde el manejo de terminales y de roles.
-              </p>
-            } @else if (modo() === 'quitar-terminal') {
-              <p class="popup__texto">
-                ¿Seguro que queres sacarle <strong>{{ terminalAQuitar()?.name }}</strong>?
-                @if (u.terminals.length <= 1) {
-                  Es su unica terminal: la cuenta vuelve a ser un usuario comun.
-                } @else {
-                  Sigue siendo admin de sus otras terminales.
-                }
-              </p>
-            } @else if (paso() === 'rol') {
-              <!-- Solo super admin: elige a que rol subirlo -->
-              <div class="popup__opciones">
-                <button class="popup__opcion" type="button" (click)="elegirAdmin()" [disabled]="promoviendo()">
-                  <span class="popup__opcion-titulo">Admin</span>
-                  <span class="popup__opcion-bajada">
-                    {{ esAdmin(u) ? 'Sumarle otra terminal a su cargo.' : 'Le da acceso a ciudades, plataformas y avisos de una terminal.' }}
-                  </span>
+            </span>
+            <span class="resultado__rol">{{ u.rol }}</span>
+            <span class="tabla__acciones">
+              @if (puedePromover(u)) {
+                <button class="tabla__icono usuario__promover" type="button"
+                        [attr.aria-label]="'Subir el rol de ' + u.first_name + ' ' + u.last_name"
+                        (click)="$event.stopPropagation(); abrirPromocion(u)">
+                  <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                    <path d="M10 3v14M3 10h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                  </svg>
                 </button>
-                <button class="popup__opcion" type="button" (click)="promoverSuper()" [disabled]="promoviendo()">
-                  <span class="popup__opcion-titulo">Super admin</span>
-                  <span class="popup__opcion-bajada">Maneja terminales y roles. Pierde las terminales que tenga asignadas.</span>
+              }
+              @if (puedeDegradar(u)) {
+                <button class="tabla__icono tabla__icono--carmin usuario__degradar" type="button"
+                        [attr.aria-label]="'Bajar a usuario a ' + u.first_name + ' ' + u.last_name"
+                        (click)="$event.stopPropagation(); abrirDegradacion(u)">
+                  <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                    <path d="M3 10h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                  </svg>
                 </button>
-              </div>
-            } @else {
-              <div class="ab-field popup__terminales">
-                <label class="ab-label" for="terminal-promocion">Terminal a su cargo</label>
-
-                @if (cargandoTerminales()) {
-                  <p class="tabla__vacio">Cargando terminales...</p>
-                } @else if (terminalesOfrecidas().length === 0) {
-                  <p class="tabla__vacio">
-                    {{ soySuper() ? 'Ya administra todas las terminales.' : 'No tenes terminales para asignarle.' }}
-                  </p>
-                } @else {
-                  <!-- Combobox: se escribe para filtrar y se elige de la lista -->
-                  <div class="combo" [class.combo--abierto]="listaTerminalesAbierta()">
-                    <input class="ab-input combo__input" id="terminal-promocion" type="text" autocomplete="off"
-                           role="combobox" aria-autocomplete="list" aria-controls="terminal-opciones"
-                           [attr.aria-expanded]="listaTerminalesAbierta()"
-                           [attr.aria-activedescendant]="listaTerminalesAbierta() && terminalesFiltradas()[resaltada()]
-                             ? 'terminal-opcion-' + terminalesFiltradas()[resaltada()].uuid : null"
-                           placeholder="Buscar o elegir una terminal"
-                           [value]="textoTerminal()"
-                           (input)="escribirTerminal($any($event.target).value)"
-                           (focus)="listaTerminalesAbierta.set(true)"
-                           (click)="listaTerminalesAbierta.set(true)"
-                           (blur)="listaTerminalesAbierta.set(false)"
-                           (keydown)="teclaTerminal($event)" />
-                    <svg class="combo__flecha" width="14" height="16" viewBox="0 0 14 16" fill="none" aria-hidden="true">
+              }
+              @if (esAdmin(u)) {
+                <button class="tabla__icono" type="button"
+                        [attr.aria-expanded]="abierto() === u.uuid" [attr.aria-controls]="'terminales-' + u.uuid"
+                        aria-label="Ver terminales a cargo"
+                        (click)="$event.stopPropagation(); desplegar(u.uuid)">
+                  <span class="tabla__flecha" [class.tabla__flecha--abierta]="abierto() === u.uuid">
+                    <svg width="14" height="16" viewBox="0 0 14 16" fill="none" aria-hidden="true">
                       <path d="M1.5 5.5 7 11l5.5-5.5" stroke="currentColor" stroke-width="1.8"
                             stroke-linecap="round" stroke-linejoin="round" />
                     </svg>
-                  </div>
+                  </span>
+                </button>
+              }
+            </span>
+          </div>
 
-                  @if (listaTerminalesAbierta()) {
-                    <!-- mousedown con preventDefault: el input no pierde el foco antes del click -->
-                    <ul class="combo__lista" id="terminal-opciones" role="listbox" aria-label="Terminales">
-                      @for (t of terminalesFiltradas(); track t.uuid; let i = $index) {
-                        <li class="combo__opcion" role="option" [id]="'terminal-opcion-' + t.uuid"
-                            [class.combo__opcion--resaltada]="i === resaltada()"
-                            [class.combo__opcion--elegida]="terminalElegida() === t.uuid"
-                            [attr.aria-selected]="terminalElegida() === t.uuid"
-                            (mousedown)="$event.preventDefault()"
-                            (mouseenter)="resaltada.set(i)"
-                            (click)="elegirTerminal(t)">
-                          {{ t.name }}
-                        </li>
-                      } @empty {
-                        <li class="combo__vacio">No hay terminales que coincidan.</li>
-                      }
-                    </ul>
-                  }
-                }
-              </div>
-            }
+          @if (abierto() === u.uuid) {
+            <ul class="tabla__panel" [id]="'terminales-' + u.uuid">
+              <li class="tabla__fila tabla__fila--titulo">Terminales a cargo</li>
+              @for (t of u.terminals; track t.uuid) {
+                <li class="tabla__fila">
+                  <span class="tabla__dato">
+                    <span class="tabla__linea">{{ t.name }}</span>
+                  </span>
+                  <span></span>
+                  <span class="tabla__acciones">
+                    @if (puedeQuitarTerminal(u, t)) {
+                      <button class="tabla__icono tabla__icono--carmin usuario__degradar" type="button"
+                              [attr.aria-label]="'Quitarle ' + t.name + ' a ' + u.first_name + ' ' + u.last_name"
+                              (click)="abrirQuitarTerminal(u, t)">
+                        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                          <path d="M3 10h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                        </svg>
+                      </button>
+                    }
+                  </span>
+                </li>
+              } @empty {
+                <li class="tabla__vacio">No tiene terminales asignadas.</li>
+              }
+            </ul>
+          }
+        </li>
+      } @empty {
+        <li class="tabla__vacio">No hay usuarios que coincidan con la busqueda.</li>
+      }
 
-            @if (errorPromocion()) {
-              <p class="ab-form-error" role="alert">{{ errorPromocion() }}</p>
-            }
+      @for (_ of relleno(); track $index) {
+        <li class="tabla__fila tabla__fila--relleno" aria-hidden="true">
+          <span class="tabla__dato">
+            <span class="tabla__linea">&nbsp;</span>
+          </span>
+        </li>
+      }
+    </ul>
 
+    <nav class="paginado" aria-label="Paginas del listado"
+         [class.paginado--oculto]="totalPaginas() === 1">
+      <button class="paginado__flecha" type="button" aria-label="Pagina anterior"
+              [disabled]="pagina() === 1" (click)="irA(pagina() - 1)">
+        <svg width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
+          <path d="M10.5 1.5 4 7l6.5 5.5" stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </button>
+
+      @for (p of paginas(); track p) {
+        <button class="paginado__numero" type="button"
+                [class.paginado__numero--activa]="p === pagina()"
+                [attr.aria-current]="p === pagina() ? 'page' : null"
+                (click)="irA(p)">{{ p }}</button>
+      }
+
+      <button class="paginado__flecha" type="button" aria-label="Pagina siguiente"
+              [disabled]="pagina() === totalPaginas()" (click)="irA(pagina() + 1)">
+        <svg width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
+          <path d="M5.5 1.5 12 7l-6.5 5.5" stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </button>
+    </nav>
+  }
+
+  @if (exito()) {
+    <app-toast [mensaje]="exito()!" (cerrado)="exito.set(null)" />
+  }
+
+  <!-- Popup para subir el rol. Escape o un click afuera lo cierran. -->
+  <dialog #dialogo class="popup" aria-labelledby="popup-titulo"
+          (cancel)="$event.preventDefault(); cerrarPromocion()"
+          (click)="clickEnPopup($event)">
+    @if (objetivo(); as u) {
+      <div class="popup__contenido">
+        <header class="popup__head">
+          <h2 class="popup__titulo" id="popup-titulo">
             @if (modo() === 'degradar') {
-              <div class="popup__acciones">
-                <button class="ab-link popup__volver" type="button" (click)="cerrarPromocion()" [disabled]="promoviendo()">
-                  Cancelar
-                </button>
-                <button class="ab-button popup__confirmar popup__confirmar--peligro" type="button"
-                        [disabled]="promoviendo()" (click)="degradarSuper()">
-                  {{ promoviendo() ? 'Bajando...' : 'Quitar privilegios' }}
-                </button>
-              </div>
+              Bajar a usuario
             } @else if (modo() === 'quitar-terminal') {
-              <div class="popup__acciones">
-                <button class="ab-link popup__volver" type="button" (click)="cerrarPromocion()" [disabled]="promoviendo()">
-                  Cancelar
-                </button>
-                <button class="ab-button popup__confirmar popup__confirmar--peligro" type="button"
-                        [disabled]="promoviendo()" (click)="quitarTerminal()">
-                  {{ promoviendo() ? 'Quitando...' : 'Quitar terminal' }}
-                </button>
+              Quitar terminal
+            } @else {
+              {{ paso() === 'rol' ? 'Subir rol' : 'Promover a admin' }}
+            }
+          </h2>
+          <button class="tabla__icono" type="button" aria-label="Cerrar" (click)="cerrarPromocion()">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+              <path d="M1.5 1.5l11 11M12.5 1.5l-11 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+            </svg>
+          </button>
+        </header>
+
+        <p class="popup__usuario">
+          <span class="popup__nombre">{{ u.first_name }} {{ u.last_name }}</span>
+          <span class="tabla__sub">{{ u.email }}</span>
+        </p>
+
+        @if (modo() === 'degradar') {
+          <!-- Solo super admin sobre otro super admin: confirmacion -->
+          <p class="popup__texto">
+            ¿Seguro que queres bajar a esta persona a usuario? Pierde el manejo de terminales y de roles.
+          </p>
+        } @else if (modo() === 'quitar-terminal') {
+          <p class="popup__texto">
+            ¿Seguro que queres sacarle <strong>{{ terminalAQuitar()?.name }}</strong>?
+            @if (u.terminals.length <= 1) {
+              Es su unica terminal: la cuenta vuelve a ser un usuario comun.
+            } @else {
+              Sigue siendo admin de sus otras terminales.
+            }
+          </p>
+        } @else if (paso() === 'rol') {
+          <!-- Solo super admin: elige a que rol subirlo -->
+          <div class="popup__opciones">
+            <button class="popup__opcion" type="button" (click)="elegirAdmin()" [disabled]="promoviendo()">
+              <span class="popup__opcion-titulo">Admin</span>
+              <span class="popup__opcion-bajada">
+                {{ esAdmin(u) ? 'Sumarle otra terminal a su cargo.' : 'Le da acceso a ciudades, plataformas y avisos de una terminal.' }}
+              </span>
+            </button>
+            <button class="popup__opcion" type="button" (click)="promoverSuper()" [disabled]="promoviendo()">
+              <span class="popup__opcion-titulo">Super admin</span>
+              <span class="popup__opcion-bajada">Maneja terminales y roles. Pierde las terminales que tenga asignadas.</span>
+            </button>
+          </div>
+        } @else {
+          <div class="ab-field popup__terminales">
+            <label class="ab-label" for="terminal-promocion">Terminal a su cargo</label>
+
+            @if (cargandoTerminales()) {
+              <p class="tabla__vacio">Cargando terminales...</p>
+            } @else if (terminalesOfrecidas().length === 0) {
+              <p class="tabla__vacio">
+                {{ soySuper() ? 'Ya administra todas las terminales.' : 'No tenes terminales para asignarle.' }}
+              </p>
+            } @else {
+              <!-- Combobox: se escribe para filtrar y se elige de la lista -->
+              <div class="combo" [class.combo--abierto]="listaTerminalesAbierta()">
+                <input class="ab-input combo__input" id="terminal-promocion" type="text" autocomplete="off"
+                       role="combobox" aria-autocomplete="list" aria-controls="terminal-opciones"
+                       [attr.aria-expanded]="listaTerminalesAbierta()"
+                       [attr.aria-activedescendant]="listaTerminalesAbierta() && terminalesFiltradas()[resaltada()]
+                         ? 'terminal-opcion-' + terminalesFiltradas()[resaltada()].uuid : null"
+                       placeholder="Buscar o elegir una terminal"
+                       [value]="textoTerminal()"
+                       (input)="escribirTerminal($any($event.target).value)"
+                       (focus)="listaTerminalesAbierta.set(true)"
+                       (click)="listaTerminalesAbierta.set(true)"
+                       (blur)="listaTerminalesAbierta.set(false)"
+                       (keydown)="teclaTerminal($event)" />
+                <svg class="combo__flecha" width="14" height="16" viewBox="0 0 14 16" fill="none" aria-hidden="true">
+                  <path d="M1.5 5.5 7 11l5.5-5.5" stroke="currentColor" stroke-width="1.8"
+                        stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
               </div>
-            } @else if (paso() === 'terminal') {
-              <div class="popup__acciones">
-                @if (soySuper()) {
-                  <button class="ab-link popup__volver" type="button" (click)="volverARol()" [disabled]="promoviendo()">
-                    Volver
-                  </button>
-                }
-                <button class="ab-button popup__confirmar" type="button"
-                        [class.popup__confirmar--cargando]="promoviendo()"
-                        [disabled]="!terminalElegida() || promoviendo()" (click)="promoverAdmin()">
-                  {{ promoviendo() ? 'Promoviendo...' : 'Promover a admin' }}
-                </button>
-              </div>
+
+              @if (listaTerminalesAbierta()) {
+                <!-- mousedown con preventDefault: el input no pierde el foco antes del click -->
+                <ul class="combo__lista" id="terminal-opciones" role="listbox" aria-label="Terminales">
+                  @for (t of terminalesFiltradas(); track t.uuid; let i = $index) {
+                    <li class="combo__opcion" role="option" [id]="'terminal-opcion-' + t.uuid"
+                        [class.combo__opcion--resaltada]="i === resaltada()"
+                        [class.combo__opcion--elegida]="terminalElegida() === t.uuid"
+                        [attr.aria-selected]="terminalElegida() === t.uuid"
+                        (mousedown)="$event.preventDefault()"
+                        (mouseenter)="resaltada.set(i)"
+                        (click)="elegirTerminal(t)">
+                      {{ t.name }}
+                    </li>
+                  } @empty {
+                    <li class="combo__vacio">No hay terminales que coincidan.</li>
+                  }
+                </ul>
+              }
             }
           </div>
         }
-      </dialog>
-    }
 
-    @case ('buscar') {
-      <div class="crud__form">
-        <div class="ab-field">
-          <label class="ab-label" for="email-buscar">Email</label>
-          <input class="ab-input" id="email-buscar" type="email" autocomplete="off"
-                 placeholder="usuario@gmail.com" [value]="usuario.email" />
-        </div>
+        @if (errorPromocion()) {
+          <p class="ab-form-error" role="alert">{{ errorPromocion() }}</p>
+        }
 
-        <button class="ab-button" type="button">Buscar</button>
-      </div>
-
-      <div class="resultado">
-        <h2 class="resultado__titulo">Resultado</h2>
-        <dl class="resultado__lista">
-          <div class="resultado__fila">
-            <dt>Nombre</dt>
-            <dd>{{ usuario.first_name }} {{ usuario.last_name }}</dd>
+        @if (modo() === 'degradar') {
+          <div class="popup__acciones">
+            <button class="ab-link popup__volver" type="button" (click)="cerrarPromocion()" [disabled]="promoviendo()">
+              Cancelar
+            </button>
+            <button class="ab-button popup__confirmar popup__confirmar--peligro" type="button"
+                    [disabled]="promoviendo()" (click)="degradarSuper()">
+              {{ promoviendo() ? 'Bajando...' : 'Quitar privilegios' }}
+            </button>
           </div>
-          <div class="resultado__fila">
-            <dt>Email</dt>
-            <dd>{{ usuario.email }}</dd>
+        } @else if (modo() === 'quitar-terminal') {
+          <div class="popup__acciones">
+            <button class="ab-link popup__volver" type="button" (click)="cerrarPromocion()" [disabled]="promoviendo()">
+              Cancelar
+            </button>
+            <button class="ab-button popup__confirmar popup__confirmar--peligro" type="button"
+                    [disabled]="promoviendo()" (click)="quitarTerminal()">
+              {{ promoviendo() ? 'Quitando...' : 'Quitar terminal' }}
+            </button>
           </div>
-          <div class="resultado__fila">
-            <dt>DNI</dt>
-            <dd>{{ usuario.dni }}</dd>
-          </div>
-          <div class="resultado__fila">
-            <dt>Identificador</dt>
-            <dd>{{ usuario.uuid }}</dd>
-          </div>
-          <div class="resultado__fila">
-            <dt>Rol actual</dt>
-            <dd><span class="resultado__rol">{{ usuario.rol }}</span></dd>
-          </div>
-        </dl>
-      </div>
-    }
-
-    @case ('promover') {
-      <form class="crud__form">
-        <div class="ab-field">
-          <label class="ab-label" for="email-promover">Email del usuario</label>
-          <input class="ab-input" id="email-promover" type="email" placeholder="usuario@gmail.com" autocomplete="off" />
-        </div>
-
-        <div class="ab-field">
-          <label class="ab-label" for="terminal-promover">Terminal a su cargo</label>
-          <select class="crud__select" id="terminal-promover">
-            @for (t of terminales; track t.uuid) {
-              <option [value]="t.uuid">{{ t.name }}</option>
+        } @else if (paso() === 'terminal') {
+          <div class="popup__acciones">
+            @if (soySuper()) {
+              <button class="ab-link popup__volver" type="button" (click)="volverARol()" [disabled]="promoviendo()">
+                Volver
+              </button>
             }
-          </select>
-          <p class="crud__nota">Si la cuenta ya era admin de otras terminales, se le suma esta sin quitarle las anteriores.</p>
-        </div>
-
-        <button class="ab-button ab-button--lg" type="button">Promover a admin</button>
-      </form>
+            <button class="ab-button popup__confirmar" type="button"
+                    [class.popup__confirmar--cargando]="promoviendo()"
+                    [disabled]="!terminalElegida() || promoviendo()" (click)="promoverAdmin()">
+              {{ promoviendo() ? 'Promoviendo...' : 'Promover a admin' }}
+            </button>
+          </div>
+        }
+      </div>
     }
-
-    @case ('degradar') {
-      <form class="crud__form">
-        <div class="ab-field">
-          <label class="ab-label" for="email-degradar">Email del admin</label>
-          <input class="ab-input" id="email-degradar" type="email" placeholder="admin@gmail.com" autocomplete="off" />
-        </div>
-
-        <div class="ab-field">
-          <label class="ab-label" for="terminal-degradar">Terminal que se le quita</label>
-          <select class="crud__select" id="terminal-degradar">
-            @for (t of terminales; track t.uuid) {
-              <option [value]="t.uuid">{{ t.name }}</option>
-            }
-          </select>
-          <p class="crud__nota">Si no le queda ninguna terminal a cargo, la cuenta vuelve a ser un usuario comun.</p>
-        </div>
-
-        <button class="ab-button ab-button--lg crud__peligro" type="button">Quitar rol de admin</button>
-      </form>
-    }
-
-    @case ('promover-super') {
-      <form class="crud__form">
-        <div class="ab-field">
-          <label class="ab-label" for="email-promover-super">Email del usuario</label>
-          <input class="ab-input" id="email-promover-super" type="email" placeholder="usuario@gmail.com" autocomplete="off" />
-          <p class="crud__nota">Un super admin no queda atado a terminales: si era admin, pierde las que tenia asignadas.</p>
-        </div>
-
-        <button class="ab-button ab-button--lg" type="button">Promover a super admin</button>
-      </form>
-    }
-
-    @case ('degradar-super') {
-      <form class="crud__form">
-        <div class="ab-field">
-          <label class="ab-label" for="email-degradar-super">Email del super admin</label>
-          <input class="ab-input" id="email-degradar-super" type="email" placeholder="superadmin@gmail.com" autocomplete="off" />
-          <p class="crud__nota">La cuenta vuelve directamente a usuario comun, sin pasar por admin.</p>
-        </div>
-
-        <button class="ab-button ab-button--lg crud__peligro" type="button">Quitar rol de super admin</button>
-      </form>
-    }
-  }
+  </dialog>
 </div>
