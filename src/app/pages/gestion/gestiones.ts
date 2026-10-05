@@ -77,6 +77,15 @@ export const SECCIONES: readonly Seccion[] = [
             endpoint: 'GET /api/admin/users/by-email',
             ruta: '/dashboard/permisos/buscar',
           },
+          {
+            id: 'unificado-test',
+            titulo: 'Usuarios (unificado test)',
+            bajada: 'Listado paginado con busqueda y promocion de roles',
+            icono: 'lista',
+            tono: 'tinta',
+            endpoint: 'GET /api/admin/users',
+            ruta: '/dashboard/permisos/unificado-test',
+          },
         ],
       },
       {

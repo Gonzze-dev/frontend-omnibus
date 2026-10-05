@@ -1,2 +1,246 @@
 /* Permisos: control de roles con los estilos comunes del dashboard. */
 @use '../../../styles/crud' as *;
+
+/* Listado de usuarios: Usuario | Rol | acciones (+ y flecha) */
+.usuarios { --cols: 1fr auto auto; }
+
+/* Celdas de dos lineas (nombre y email): dos renglones + el gap, el padding y el borde */
+.usuarios.tabla--fija { --fila: calc(2 * var(--ab-lh-body) + 31px); }
+
+/* El rol queda pegado a la derecha, alineado entre filas */
+.usuarios .resultado__rol { justify-self: end; }
+
+/* Las acciones ocupan siempre el ancho de dos iconos, asi el rol no se
+   corre entre filas que tienen + y flecha y filas que no tienen nada. */
+.usuarios .tabla__acciones { min-width: calc(2 * #{$icono} + 8px); }
+
+.usuarios .tabla__icono {
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.usuarios .tabla__icono:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 2px; }
+
+/* Fila de un admin: toda la fila despliega sus terminales */
+.usuario--desplegable { cursor: pointer; }
+.usuario--desplegable:hover { background: color-mix(in srgb, var(--tono) 5%, transparent); }
+.usuario--abierto { background: color-mix(in srgb, var(--tono) 7%, transparent); }
+
+/* El + resalta un poco mas que la flecha: es la accion de la fila */
+.usuarios .usuario__promover {
+  border: 1.5px solid color-mix(in srgb, var(--tono) 35%, transparent);
+}
+
+/* El - es destructivo: mismo borde que el +, en carmin */
+.usuarios .usuario__degradar {
+  border: 1.5px solid rgba(180, 0, 54, 0.35);
+}
+
+/* Encabezado del panel con las terminales del admin abierto */
+.tabla__fila--titulo {
+  display: flex;
+  font-weight: 600;
+  font-size: var(--ab-fs-label);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ab-placeholder);
+}
+
+/* ---------------- Popup de promocion ---------------- */
+.popup {
+  width: min(400px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  padding: 0;
+  border: 0;
+  border-radius: var(--ab-r-card);
+  background: var(--ab-white);
+  box-shadow: var(--ab-shadow-card);
+  color: var(--ab-ink);
+}
+
+.popup::backdrop { background: rgba(25, 27, 34, 0.45); }
+
+.popup__contenido {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+}
+
+.popup__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.popup__titulo {
+  margin: 0;
+  font-family: Manrope, Inter, sans-serif;
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 700;
+}
+
+.popup__head .tabla__icono {
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.popup__usuario {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: var(--ab-r-input);
+  background: var(--ab-card);
+}
+
+.popup__nombre { font-weight: 600; }
+
+/* Paso 1 (super admin): tarjetas para elegir el rol */
+.popup__opciones {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.popup__opcion {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  border: 1px solid var(--ab-line);
+  border-radius: var(--ab-r-button);
+  background: var(--ab-white);
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.popup__opcion:hover:not(:disabled) {
+  border-color: var(--tono);
+  background: color-mix(in srgb, var(--tono) 5%, transparent);
+}
+
+.popup__opcion:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 2px; }
+.popup__opcion:disabled { opacity: 0.7; cursor: progress; }
+
+.popup__opcion-titulo { font-weight: 700; }
+
+.popup__opcion-bajada {
+  font-size: var(--ab-fs-body);
+  color: var(--ab-body);
+}
+
+/* Paso 2: terminal a asignar */
+.popup__terminales {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Combobox: input con aspecto de select y la lista debajo */
+.combo { position: relative; }
+
+.combo__input {
+  padding-right: 40px;
+  cursor: pointer;
+}
+
+.combo__input:focus { cursor: text; }
+
+.combo__flecha {
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  transform: translateY(-50%);
+  color: var(--ab-placeholder);
+  pointer-events: none;
+  transition: transform 0.15s ease;
+}
+
+.combo--abierto .combo__flecha { transform: translateY(-50%) rotate(180deg); }
+
+/* La lista va en el flujo (no flotando) para que el <dialog> no la recorte */
+.combo__lista {
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid var(--ab-line);
+  border-radius: var(--ab-r-input);
+  background: var(--ab-white);
+  box-shadow: var(--ab-shadow-card);
+}
+
+.combo__opcion {
+  padding: 10px 12px;
+  border-radius: var(--ab-r-input);
+  cursor: pointer;
+}
+
+.combo__opcion--resaltada { background: color-mix(in srgb, var(--tono) 8%, transparent); }
+
+.combo__opcion--elegida {
+  font-weight: 600;
+  color: var(--tono);
+}
+
+.combo__vacio {
+  padding: 10px 12px;
+  color: var(--ab-placeholder);
+}
+
+.popup__acciones {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+}
+
+.popup__volver {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.popup__confirmar {
+  width: auto;
+  min-height: 48px;
+  padding: 12px 20px;
+  font-size: var(--ab-fs-body);
+}
+
+/* Deshabilitado por falta de terminal elegida, no porque este cargando */
+.popup__confirmar:disabled:not(.popup__confirmar--cargando) {
+  opacity: 1;
+  background: var(--ab-field);
+  box-shadow: none;
+  color: var(--ab-placeholder);
+  cursor: not-allowed;
+}
+
+/* Confirmacion destructiva: carmin en vez del gradiente azul */
+.popup__confirmar--peligro {
+  background: $carmin;
+  box-shadow: none;
+}
+
+.popup__texto {
+  margin: 0;
+  font-size: var(--ab-fs-body);
+  line-height: var(--ab-lh-body);
+  color: var(--ab-body);
+}
