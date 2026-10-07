@@ -11,10 +11,13 @@
    dashboard y en el menu de gestion.
    ============================================================ */
 
+@use 'pantalla' as *;
+
 .crud {
   min-height: calc(100dvh - var(--ab-topbar-h));
   padding-top: 20px;
   padding-bottom: 64px;
+  @include pantalla-card;
 }
 
 /* Tonos heredados del dashboard para no romper la continuidad */

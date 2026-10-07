@@ -2,11 +2,14 @@
    Ver perfil (Figma "Info perfil", nodo 27:518)
    ============================================================ */
 
+@use '../../../styles/pantalla' as *;
+
 .perfil {
   display: flex;
   flex-direction: column;
   min-height: calc(100dvh - var(--ab-topbar-h));
   padding-bottom: 34px;
+  @include pantalla-card;
 }
 
 .perfil__head {

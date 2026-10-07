@@ -2,12 +2,15 @@
    Dashboard admin (Figma nodo 37:312)
    ============================================================ */
 
+@use '../../../styles/pantalla' as *;
+
 .panel {
   --tinta: #131B2E;  /* titulos de las cards */
 
   min-height: calc(100dvh - var(--ab-topbar-h));
   padding-top: 44px;
   padding-bottom: 64px;
+  @include pantalla-card;
 }
 
 /* El dashboard es mas ancho que el resto de las pantallas para que

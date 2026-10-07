@@ -1,7 +1,20 @@
+@use '../../../styles/pantalla' as *;
+
 /* ---------------- Hero ---------------- */
 .home__body {
   min-height: calc(100dvh - var(--ab-topbar-h));
   padding-bottom: 56px;
+  @include pantalla-card;
+}
+
+/* Dentro de la card el titulo no necesita tanto aire arriba */
+@media (min-width: 768px) {
+  .home__body {
+    padding-top: 8px;
+    padding-bottom: 48px;
+  }
+
+  .hero { margin-top: 24px; }
 }
 
 .hero {
