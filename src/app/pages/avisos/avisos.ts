@@ -8,6 +8,7 @@ import { AuthService } from '../../services/auth.service';
 import { AvisoService } from '../../services/aviso.service';
 import { TerminalService } from '../../services/terminal.service';
 import { PlataformaService } from '../../services/plataforma.service';
+import { UserService } from '../../services/user.service';
 import { PlataformaEnGrupo } from '../../models/plataforma.model';
 import {
   EstadoNotificacion,
@@ -95,6 +96,7 @@ export class Avisos {
   private readonly avisoService = inject(AvisoService);
   private readonly terminalService = inject(TerminalService);
   private readonly plataformaService = inject(PlataformaService);
+  private readonly userService = inject(UserService);
   private readonly fb = inject(FormBuilder);
 
   private readonly parametros = toSignal(this.ruta.paramMap, {
@@ -326,8 +328,16 @@ export class Avisos {
     const user = this.auth.user();
 
     if (user?.rol === 'admin') {
+      // El login no trae las terminales del admin: se muestran las de la sesion
+      // (si las hay) y se confirman con GET /users/me, que si las devuelve.
       this.terminales.set(user.terminals ?? []);
       this.elegirUnicaTerminal();
+      this.userService.obtenerPerfil().subscribe({
+        next: (perfil) => {
+          this.terminales.set(perfil.terminals ?? []);
+          this.elegirUnicaTerminal();
+        },
+      });
       return;
     }
 
