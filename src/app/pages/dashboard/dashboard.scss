@@ -84,10 +84,15 @@
   background: #F2F3FF;
 }
 
+/* Caja de tamaño fijo: cada glifo tiene su propio alto (16 a 23px) y,
+   si la caja dependiera de el, la etiqueta y el numero quedarian a
+   distinta altura en cada card. */
 .metrica__icono {
   display: flex;
-  width: fit-content;
-  padding: 16px;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
   border-radius: var(--ab-r-card);
   background: color-mix(in srgb, var(--tono) 10%, transparent);
   color: var(--tono);
