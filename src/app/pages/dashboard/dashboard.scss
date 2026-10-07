@@ -10,6 +10,16 @@
   padding-bottom: 64px;
 }
 
+/* El dashboard es mas ancho que el resto de las pantallas para que
+   las tres metricas entren en fila con aire entre ellas */
+@media (min-width: 768px) {
+  .panel { max-width: 760px; }
+}
+
+@media (min-width: 1024px) {
+  .panel { max-width: 1000px; }
+}
+
 /* Cada metrica y cada acceso toma su color de un tono */
 .tono--azul    { --tono: #0050CB; }
 .tono--indigo  { --tono: #4648D4; }
@@ -46,6 +56,20 @@
   margin: 38px 10px 0;
   padding: 0;
   list-style: none;
+}
+
+/* En pantallas anchas las metricas van una al lado de la otra */
+@media (min-width: 768px) {
+  .metricas {
+    flex-direction: row;
+    gap: 40px;
+    margin-inline: 0;
+  }
+
+  .metricas > .metrica {
+    flex: 1 1 0;
+    min-width: 0;
+  }
 }
 
 .metrica {

@@ -13,7 +13,7 @@
           <ng-container *ngTemplateOutlet="glifo; context: { $implicit: m.icono, escala: escala.metrica }" />
         </span>
         <span class="metrica__etiqueta">{{ m.etiqueta }}</span>
-        <span class="metrica__valor">{{ formatear(m.valor) }}</span>
+        <span class="metrica__valor">{{ formatear(m.valor()) }}</span>
       </li>
     }
   </ul>
