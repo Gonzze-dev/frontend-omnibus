@@ -220,12 +220,9 @@
         } @else if (esRetraso()) {
           <div class="ab-field">
             <label class="ab-label" for="patente-retraso">Patente del colectivo</label>
-            <div class="patente-fila">
-              <input class="ab-input" id="patente-retraso" type="text" placeholder="AB 123 CD"
-                     autocomplete="off" formControlName="patente"
-                     [attr.aria-invalid]="invalidoAviso('patente')" />
-              <app-patente-camara (patenteLeida)="onPatenteLeida($event)" />
-            </div>
+            <input class="ab-input" id="patente-retraso" type="text" placeholder="AB 123 CD"
+                   autocomplete="off" formControlName="patente"
+                   [attr.aria-invalid]="invalidoAviso('patente')" />
             @if (invalidoAviso('patente')) {
               <p class="ab-field-error">Ingresa la patente del colectivo.</p>
             }
