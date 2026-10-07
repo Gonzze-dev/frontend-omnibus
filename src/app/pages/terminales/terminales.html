@@ -16,11 +16,12 @@
     </div>
 
     @if (accion() === 'listar') {
-      <a class="crud__agregar crud__agregar--primario" routerLink="/dashboard/terminales/crear" aria-label="Cargar terminal">
+      <button class="crud__agregar crud__agregar--primario" type="button" aria-label="Cargar terminal"
+              (click)="abrirAlta()">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
           <path d="M10 3v14M3 10h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
         </svg>
-      </a>
+      </button>
     }
   </header>
 
@@ -112,52 +113,6 @@
           </button>
         </nav>
       }
-    }
-
-    @case ('crear') {
-      <form class="crud__form" [formGroup]="formCrear" (ngSubmit)="crear()" novalidate>
-        <div class="ab-field">
-          <label class="ab-label" for="nombre-crear">Nombre</label>
-          <input class="ab-input" id="nombre-crear" type="text" placeholder="Ej: Terminal Retiro BS AS" autocomplete="off"
-                 formControlName="name" [attr.aria-invalid]="invalidoCrear('name')" />
-          @if (invalidoCrear('name')) {
-            <p class="ab-field-error">Ingresa el nombre.</p>
-          }
-        </div>
-
-        <div class="ab-field">
-          <label class="ab-label" for="ciudad-crear">Ciudad</label>
-          <select class="crud__select" id="ciudad-crear" formControlName="postal_code"
-                   [attr.aria-invalid]="invalidoCrear('postal_code')">
-            <option value="" disabled>Elegi una ciudad</option>
-            @for (c of ciudades(); track c.postal_code) {
-              <option [value]="c.postal_code">{{ c.name }} ({{ c.postal_code }})</option>
-            }
-          </select>
-          @if (invalidoCrear('postal_code')) {
-            <p class="ab-field-error">Elegi una ciudad.</p>
-          }
-        </div>
-
-        <div class="ab-field">
-          <label class="ab-label" for="externo-crear">Id externo</label>
-          <input class="ab-input" id="externo-crear" type="text"
-                 placeholder="447ab6ac-488a-4ccc-90f1-6ddbf561f6e6" autocomplete="off"
-                 formControlName="external_terminal_id" [attr.aria-invalid]="invalidoCrear('external_terminal_id')" />
-          <p class="crud__nota">Es el id de la terminal en el sistema de pasajes. No puede estar en uso por otra terminal.</p>
-          @if (invalidoCrear('external_terminal_id')) {
-            <p class="ab-field-error">Ingresa un id externo valido (uuid).</p>
-          }
-        </div>
-
-        @if (errorCrear()) {
-          <p class="ab-form-error" role="alert">{{ errorCrear() }}</p>
-        }
-
-        <button class="ab-button ab-button--lg" type="submit" [disabled]="guardandoCrear()">
-          {{ guardandoCrear() ? 'Cargando...' : 'Cargar terminal' }}
-        </button>
-      </form>
     }
 
     @case ('editar') {
@@ -257,6 +212,75 @@
           {{ eliminando() ? 'Eliminando...' : 'Eliminar terminal' }}
         </button>
       </div>
+    </div>
+  }
+</dialog>
+
+<!-- Popup con el formulario de alta. Escape o un click afuera lo cierran. -->
+<dialog #dialogoAlta class="popup" aria-labelledby="alta-titulo"
+        (cancel)="$event.preventDefault(); cerrarAlta()"
+        (click)="clickEnPopupAlta($event)">
+  @if (altaAbierta()) {
+    <div class="popup__contenido">
+      <header class="popup__head">
+        <h2 class="popup__titulo" id="alta-titulo">Cargar terminal</h2>
+        <button class="popup__cerrar" type="button" aria-label="Cerrar" [disabled]="guardandoCrear()" (click)="cerrarAlta()">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <path d="M1.5 1.5l11 11M12.5 1.5l-11 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+          </svg>
+        </button>
+      </header>
+
+      <p class="popup__texto">Alta de una terminal nueva en una ciudad.</p>
+
+      <form class="crud__form" [formGroup]="formCrear" (ngSubmit)="crear()" novalidate>
+        <div class="ab-field">
+          <label class="ab-label" for="nombre-crear">Nombre</label>
+          <input class="ab-input" id="nombre-crear" type="text" placeholder="Ej: Terminal Retiro BS AS" autocomplete="off"
+                 formControlName="name" [attr.aria-invalid]="invalidoCrear('name')" />
+          @if (invalidoCrear('name')) {
+            <p class="ab-field-error">Ingresa el nombre.</p>
+          }
+        </div>
+
+        <div class="ab-field">
+          <label class="ab-label" for="ciudad-crear">Ciudad</label>
+          <select class="crud__select" id="ciudad-crear" formControlName="postal_code"
+                   [attr.aria-invalid]="invalidoCrear('postal_code')">
+            <option value="" disabled>Elegi una ciudad</option>
+            @for (c of ciudades(); track c.postal_code) {
+              <option [value]="c.postal_code">{{ c.name }} ({{ c.postal_code }})</option>
+            }
+          </select>
+          @if (invalidoCrear('postal_code')) {
+            <p class="ab-field-error">Elegi una ciudad.</p>
+          }
+        </div>
+
+        <div class="ab-field">
+          <label class="ab-label" for="externo-crear">Id externo</label>
+          <input class="ab-input" id="externo-crear" type="text"
+                 placeholder="447ab6ac-488a-4ccc-90f1-6ddbf561f6e6" autocomplete="off"
+                 formControlName="external_terminal_id" [attr.aria-invalid]="invalidoCrear('external_terminal_id')" />
+          <p class="crud__nota">Es el id de la terminal en el sistema de pasajes. No puede estar en uso por otra terminal.</p>
+          @if (invalidoCrear('external_terminal_id')) {
+            <p class="ab-field-error">Ingresa un id externo valido (uuid).</p>
+          }
+        </div>
+
+        @if (errorCrear()) {
+          <p class="ab-form-error" role="alert">{{ errorCrear() }}</p>
+        }
+
+        <div class="popup__acciones">
+          <button class="popup__cancelar" type="button" [disabled]="guardandoCrear()" (click)="cerrarAlta()">
+            Cancelar
+          </button>
+          <button class="ab-button popup__boton" type="submit" [disabled]="guardandoCrear()">
+            {{ guardandoCrear() ? 'Cargando...' : 'Cargar terminal' }}
+          </button>
+        </div>
+      </form>
     </div>
   }
 </dialog>

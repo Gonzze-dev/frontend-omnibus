@@ -1,4 +1,4 @@
-import { Component, ElementRef, computed, effect, inject, signal, viewChild } from '@angular/core';
+import { Component, ElementRef, computed, effect, inject, signal, untracked, viewChild } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, ResolveFn, RouterLink } from '@angular/router';
@@ -124,7 +124,9 @@ export class Terminales {
     Array.from({ length: Math.max(0, POR_PAGINA - (this.terminales().length || 1)) }),
   );
 
-  // --- Alta ---
+  // --- Alta (popup sobre el listado) ---
+  private readonly dialogoAlta = viewChild<ElementRef<HTMLDialogElement>>('dialogoAlta');
+  protected readonly altaAbierta = signal(false);
   protected readonly formCrear = this.fb.nonNullable.group({
     name: ['', Validators.required],
     postal_code: ['', Validators.required],
@@ -164,9 +166,17 @@ export class Terminales {
       } else if (accion === 'editar') {
         this.cargarSeleccionada(this.codigo());
       } else if (accion === 'crear') {
-        this.formCrear.reset();
-        this.errorCrear.set(null);
+        // La URL vieja de alta sigue andando: muestra el listado con el popup abierto
+        this.router.navigateByUrl('/dashboard/terminales', { replaceUrl: true });
+        untracked(() => this.abrirAlta());
       }
+    });
+
+    effect(() => {
+      const dialogo = this.dialogoAlta()?.nativeElement;
+      if (!dialogo) return;
+      if (this.altaAbierta() && !dialogo.open) dialogo.showModal();
+      if (!this.altaAbierta() && dialogo.open) dialogo.close();
     });
 
     // El <dialog> nativo se abre con showModal() para tener fondo, foco
@@ -241,6 +251,23 @@ export class Terminales {
     this.router.navigate(['/dashboard/terminales/editar', uuid]);
   }
 
+  protected abrirAlta(): void {
+    this.formCrear.reset();
+    this.errorCrear.set(null);
+    this.altaAbierta.set(true);
+  }
+
+  protected cerrarAlta(): void {
+    if (this.guardandoCrear()) return;
+    this.altaAbierta.set(false);
+    this.errorCrear.set(null);
+  }
+
+  /** Un click en el fondo (fuera del contenido) cierra el popup de alta. */
+  protected clickEnPopupAlta(event: MouseEvent): void {
+    if (event.target === event.currentTarget) this.cerrarAlta();
+  }
+
   protected crear(): void {
     if (this.formCrear.invalid) {
       this.formCrear.markAllAsTouched();
@@ -260,7 +287,8 @@ export class Terminales {
       .subscribe({
         next: () => {
           this.guardandoCrear.set(false);
-          this.router.navigateByUrl('/dashboard/terminales');
+          this.altaAbierta.set(false);
+          this.cargarTerminales();
         },
         error: (err: HttpErrorResponse) => {
           this.guardandoCrear.set(false);
