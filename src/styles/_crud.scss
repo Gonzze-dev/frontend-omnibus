@@ -499,12 +499,20 @@ $fila: $icono + 29px;
   border-radius: var(--ab-r-button);
   background: var(--ab-white);
   cursor: pointer;
-  transition: border-color 0.15s ease, background 0.15s ease;
+  transform-origin: center;
+  transition: border-color 0.1s, background-color 0.1s, transform 0.1s;
 }
 
 .tipo:has(.tipo__radio:checked) {
   border-color: var(--tono);
   background: color-mix(in srgb, var(--tono) 8%, transparent);
+}
+
+/* Mismo realce que las filas seleccionables de las tablas */
+.tipo:hover {
+  background: color-mix(in srgb, var(--tono) 15%, white);
+  transform: scale(1.04);
+  z-index: 1;
 }
 
 .tipo:has(.tipo__radio:focus-visible) {
