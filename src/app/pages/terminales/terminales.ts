@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, ElementRef, computed, effect, inject, signal, viewChild } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, ResolveFn, RouterLink } from '@angular/router';
@@ -9,7 +9,7 @@ import { CiudadService } from '../../services/ciudad.service';
 import { Terminal } from '../../models/terminal.model';
 import { Ciudad } from '../../models/ciudad.model';
 
-export type AccionTerminal = 'listar' | 'crear' | 'editar' | 'eliminar';
+export type AccionTerminal = 'listar' | 'crear' | 'editar';
 
 interface VistaTerminal {
   titulo: string;
@@ -18,8 +18,8 @@ interface VistaTerminal {
 
 const VISTAS: Record<AccionTerminal, VistaTerminal> = {
   listar: {
-    titulo: 'Ver terminales',
-    bajada: 'Listado completo con su ciudad e id externo. Filtra para encontrar una puntual.',
+    titulo: 'Gestionar terminales',
+    bajada: 'Gestionar terminales te permite ver, crear, editar y eliminar terminales del sistema.',
   },
   crear: {
     titulo: 'Cargar terminal',
@@ -28,10 +28,6 @@ const VISTAS: Record<AccionTerminal, VistaTerminal> = {
   editar: {
     titulo: 'Editar terminal',
     bajada: 'Cambia el nombre, la ciudad o el id externo.',
-  },
-  eliminar: {
-    titulo: 'Eliminar terminal',
-    bajada: 'Baja definitiva del sistema.',
   },
 };
 
@@ -70,7 +66,7 @@ export class Terminales {
     return accion && accion in VISTAS ? accion : 'listar';
   });
 
-  /** Uuid de la terminal a editar/eliminar, si la ruta lo trae. */
+  /** Uuid de la terminal a editar, si la ruta lo trae. */
   private readonly codigo = computed(() => this.parametros().get('codigo'));
 
   protected readonly vista = computed(() => VISTAS[this.accion()]);
@@ -148,8 +144,12 @@ export class Terminales {
   protected readonly guardandoEditar = signal(false);
   protected readonly errorEditar = signal<string | null>(null);
 
-  // --- Baja ---
+  // --- Edicion: terminal elegida ---
   protected readonly terminalSeleccionada = signal<Terminal | null>(null);
+
+  // --- Baja (popup sobre el listado) ---
+  private readonly dialogoBaja = viewChild<ElementRef<HTMLDialogElement>>('dialogoBaja');
+  protected readonly aEliminar = signal<Terminal | null>(null);
   protected readonly eliminando = signal(false);
   protected readonly errorEliminar = signal<string | null>(null);
 
@@ -161,12 +161,21 @@ export class Terminales {
 
       if (accion === 'listar') {
         this.cargarTerminales();
-      } else if (accion === 'editar' || accion === 'eliminar') {
+      } else if (accion === 'editar') {
         this.cargarSeleccionada(this.codigo());
       } else if (accion === 'crear') {
         this.formCrear.reset();
         this.errorCrear.set(null);
       }
+    });
+
+    // El <dialog> nativo se abre con showModal() para tener fondo, foco
+    // atrapado y cierre con Escape sin escribirlos a mano.
+    effect(() => {
+      const dialogo = this.dialogoBaja()?.nativeElement;
+      if (!dialogo) return;
+      if (this.aEliminar() && !dialogo.open) dialogo.showModal();
+      if (!this.aEliminar() && dialogo.open) dialogo.close();
     });
   }
 
@@ -195,7 +204,6 @@ export class Terminales {
   private cargarSeleccionada(uuid: string | null): void {
     this.terminalSeleccionada.set(null);
     this.errorSeleccionada.set(null);
-    this.errorEliminar.set(null);
 
     if (!uuid) {
       this.errorSeleccionada.set('No se indico que terminal usar.');
@@ -292,8 +300,24 @@ export class Terminales {
       });
   }
 
+  protected confirmarBaja(terminal: Terminal): void {
+    this.errorEliminar.set(null);
+    this.aEliminar.set(terminal);
+  }
+
+  protected cancelarBaja(): void {
+    if (this.eliminando()) return;
+    this.aEliminar.set(null);
+    this.errorEliminar.set(null);
+  }
+
+  /** Un click en el fondo (fuera del contenido) cierra el popup. */
+  protected clickEnPopup(event: MouseEvent): void {
+    if (event.target === event.currentTarget) this.cancelarBaja();
+  }
+
   protected eliminar(): void {
-    const seleccionada = this.terminalSeleccionada();
+    const seleccionada = this.aEliminar();
     if (!seleccionada) return;
 
     this.eliminando.set(true);
@@ -302,7 +326,11 @@ export class Terminales {
     this.terminalService.eliminar(seleccionada.uuid).subscribe({
       next: () => {
         this.eliminando.set(false);
-        this.router.navigateByUrl('/dashboard/terminales/listar');
+        this.aEliminar.set(null);
+        // Se saca la terminal del listado sin volver a pedirlo al backend
+        this.todasLasTerminales.update((terminales) =>
+          terminales.filter((t) => t.uuid !== seleccionada.uuid),
+        );
       },
       error: (err: HttpErrorResponse) => {
         this.eliminando.set(false);

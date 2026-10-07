@@ -18,8 +18,8 @@ interface VistaPlataforma {
 
 const VISTAS: Record<AccionPlataforma, VistaPlataforma> = {
   listar: {
-    titulo: 'Ver plataformas',
-    bajada: 'Abri una terminal para ver sus andenes y sus coordenadas.',
+    titulo: 'Gestionar plataformas',
+    bajada: 'Gestionar plataformas te permite ver, crear, editar y eliminar las plataformas de cada terminal.',
   },
   crear: {
     titulo: 'Cargar plataforma',

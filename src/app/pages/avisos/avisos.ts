@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
+import { Component, ElementRef, computed, effect, inject, signal, untracked, viewChild } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, ResolveFn, Router, RouterLink } from '@angular/router';
@@ -17,7 +17,7 @@ import {
   TipoNotificacion,
 } from '../../models/aviso.model';
 
-export type AccionAviso = 'listar' | 'aviso' | 'eliminar';
+export type AccionAviso = 'listar' | 'aviso';
 
 interface VistaAviso {
   titulo: string;
@@ -32,10 +32,6 @@ const VISTAS: Record<AccionAviso, VistaAviso> = {
   aviso: {
     titulo: 'Enviar aviso',
     bajada: 'Notificacion para los pasajeros de una terminal, o el arribo de un colectivo si fallo la camara.',
-  },
-  eliminar: {
-    titulo: 'Eliminar aviso',
-    bajada: 'Baja de una notificacion ya enviada.',
   },
 };
 
@@ -109,9 +105,6 @@ export class Avisos {
     return accion && accion in VISTAS ? accion : 'listar';
   });
 
-  /** Id de la notificacion a eliminar, si la ruta lo trae. */
-  private readonly codigo = computed(() => this.parametros().get('codigo'));
-
   protected readonly vista = computed(() => VISTAS[this.accion()]);
 
   // --- Listado ---
@@ -138,10 +131,9 @@ export class Avisos {
     Array.from({ length: Math.max(0, POR_PAGINA - (this.notificaciones().length || 1)) }),
   );
 
-  // --- Baja ---
-  protected readonly seleccionada = signal<NotificacionAdmin | null>(null);
-  protected readonly cargandoSeleccionada = signal(false);
-  protected readonly errorSeleccionada = signal<string | null>(null);
+  // --- Baja (popup sobre el listado) ---
+  private readonly dialogoBaja = viewChild<ElementRef<HTMLDialogElement>>('dialogoBaja');
+  protected readonly aEliminar = signal<NotificacionAdmin | null>(null);
   protected readonly eliminando = signal(false);
   protected readonly errorEliminar = signal<string | null>(null);
 
@@ -214,7 +206,15 @@ export class Avisos {
       const accion = this.accion();
       if (accion === 'listar') untracked(() => this.cargarNotificaciones());
       else if (accion === 'aviso') this.prepararAviso();
-      else if (accion === 'eliminar') this.cargarSeleccionada(this.codigo());
+    });
+
+    // El <dialog> nativo se abre con showModal() para tener fondo, foco
+    // atrapado y cierre con Escape sin escribirlos a mano.
+    effect(() => {
+      const dialogo = this.dialogoBaja()?.nativeElement;
+      if (!dialogo) return;
+      if (this.aEliminar() && !dialogo.open) dialogo.showModal();
+      if (!this.aEliminar() && dialogo.open) dialogo.close();
     });
   }
 
@@ -262,31 +262,24 @@ export class Avisos {
     this.cargarNotificaciones();
   }
 
-  private cargarSeleccionada(id: string | null): void {
-    this.seleccionada.set(null);
-    this.errorSeleccionada.set(null);
+  protected confirmarBaja(notificacion: NotificacionAdmin): void {
     this.errorEliminar.set(null);
+    this.aEliminar.set(notificacion);
+  }
 
-    if (!id) {
-      this.errorSeleccionada.set('No se indico que aviso eliminar.');
-      return;
-    }
+  protected cancelarBaja(): void {
+    if (this.eliminando()) return;
+    this.aEliminar.set(null);
+    this.errorEliminar.set(null);
+  }
 
-    this.cargandoSeleccionada.set(true);
-    this.avisoService.obtener(id).subscribe({
-      next: (notificacion) => {
-        this.cargandoSeleccionada.set(false);
-        this.seleccionada.set(notificacion);
-      },
-      error: (err: HttpErrorResponse) => {
-        this.cargandoSeleccionada.set(false);
-        this.errorSeleccionada.set(mensajeErrorListado(err));
-      },
-    });
+  /** Un click en el fondo (fuera del contenido) cierra el popup. */
+  protected clickEnPopup(event: MouseEvent): void {
+    if (event.target === event.currentTarget) this.cancelarBaja();
   }
 
   protected eliminar(): void {
-    const seleccionada = this.seleccionada();
+    const seleccionada = this.aEliminar();
     if (!seleccionada) return;
 
     this.eliminando.set(true);
@@ -295,7 +288,13 @@ export class Avisos {
     this.avisoService.eliminar(seleccionada.id).subscribe({
       next: () => {
         this.eliminando.set(false);
-        this.router.navigateByUrl('/dashboard/notificaciones/listar');
+        this.aEliminar.set(null);
+        // El listado se pagina en el backend: se vuelve a pedir la pagina,
+        // o la anterior si el aviso borrado era el unico de esta.
+        if (this.notificaciones().length === 1 && this.pagina() > 1) {
+          this.pagina.update((p) => p - 1);
+        }
+        this.cargarNotificaciones();
       },
       error: (err: HttpErrorResponse) => {
         this.eliminando.set(false);
