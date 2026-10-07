@@ -7,6 +7,7 @@ import {
   ListTerminalesParams,
   ListTerminalesResponse,
   Terminal,
+  TerminalExterna,
   UpdateTerminalRequest,
 } from '../models/terminal.model';
 
@@ -44,5 +45,10 @@ export class TerminalService {
 
   eliminar(uuid: string): Observable<void> {
     return this.http.delete<void>(`${this.terminalsUrl}/${uuid}`);
+  }
+
+  /** Terminales del sistema de pasajes, para elegir el id externo. */
+  listarExternas(): Observable<TerminalExterna[]> {
+    return this.http.get<TerminalExterna[]>(`${APP_CONFIG.apiUrl}/super/get-external-terminals`);
   }
 }

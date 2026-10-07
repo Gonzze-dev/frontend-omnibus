@@ -6,6 +6,12 @@ export interface Terminal {
   name: string;
 }
 
+/** Terminal del sistema de pasajes (GET /api/super/get-external-terminals). */
+export interface TerminalExterna {
+  uuid: string;
+  name: string;
+}
+
 /** POST /api/super/terminals */
 export interface CreateTerminalRequest {
   external_terminal_id: string;

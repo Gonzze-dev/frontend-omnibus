@@ -372,6 +372,29 @@ $fila: $icono + 29px;
   color: var(--ab-placeholder);
 }
 
+/* Datos de solo lectura dentro de un formulario: etiqueta arriba y valor como texto */
+.crud__datos {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 24px;
+  margin: 0;
+}
+
+.crud__dato {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.crud__valor {
+  margin: 0;
+  font-size: var(--ab-fs-input);
+  line-height: 1.3;
+  color: var(--ab-ink);
+  overflow-wrap: anywhere;
+}
+
 .crud__cargar { margin-top: 20px; }
 
 /* Accion destructiva: el mismo boton pero en carmin */

@@ -196,26 +196,25 @@
 
         <div class="ab-field">
           <label class="ab-label" for="ciudad-crear">Ciudad</label>
-          <select class="crud__select" id="ciudad-crear" formControlName="postal_code"
-                   [attr.aria-invalid]="invalidoCrear('postal_code')">
-            <option value="" disabled>Elegi una ciudad</option>
-            @for (c of ciudades(); track c.postal_code) {
-              <option [value]="c.postal_code">{{ c.name }} ({{ c.postal_code }})</option>
-            }
-          </select>
+          <app-select-buscador inputId="ciudad-crear" formControlName="postal_code"
+                               placeholder="Busca una ciudad por nombre o codigo postal"
+                               [opciones]="opcionesCiudades()" [invalido]="invalidoCrear('postal_code')" />
           @if (invalidoCrear('postal_code')) {
             <p class="ab-field-error">Elegi una ciudad.</p>
           }
         </div>
 
         <div class="ab-field">
-          <label class="ab-label" for="externo-crear">Id externo</label>
-          <input class="ab-input" id="externo-crear" type="text"
-                 placeholder="447ab6ac-488a-4ccc-90f1-6ddbf561f6e6" autocomplete="off"
-                 formControlName="external_terminal_id" [attr.aria-invalid]="invalidoCrear('external_terminal_id')" />
-          <p class="crud__nota">Es el id de la terminal en el sistema de pasajes. No puede estar en uso por otra terminal.</p>
+          <label class="ab-label" for="externo-crear">Terminal externa</label>
+          <app-select-buscador inputId="externo-crear" formControlName="external_terminal_id"
+                               placeholder="Busca una terminal externa"
+                               [opciones]="opcionesExternas()" [invalido]="invalidoCrear('external_terminal_id')" />
+          <p class="crud__nota">Es la terminal en el sistema de pasajes. No puede estar asignada a otra terminal.</p>
+          @if (errorExternas()) {
+            <p class="ab-field-error">{{ errorExternas() }}</p>
+          }
           @if (invalidoCrear('external_terminal_id')) {
-            <p class="ab-field-error">Ingresa un id externo valido (uuid).</p>
+            <p class="ab-field-error">Elegi una terminal externa.</p>
           }
         </div>
 
@@ -251,7 +250,7 @@
         </button>
       </header>
 
-      <p class="popup__texto">Cambia el nombre, la ciudad o el id externo.</p>
+      <p class="popup__texto">Cambia el nombre, la ciudad o la terminal externa.</p>
 
       @if (cargandoSeleccionada()) {
         <p class="popup__texto">Cargando terminal...</p>
@@ -270,23 +269,24 @@
 
           <div class="ab-field">
             <label class="ab-label" for="ciudad-editar">Ciudad</label>
-            <select class="crud__select" id="ciudad-editar" formControlName="postal_code"
-                     [attr.aria-invalid]="invalidoEditar('postal_code')">
-              @for (c of ciudades(); track c.postal_code) {
-                <option [value]="c.postal_code">{{ c.name }} ({{ c.postal_code }})</option>
-              }
-            </select>
+            <app-select-buscador inputId="ciudad-editar" formControlName="postal_code"
+                               placeholder="Busca una ciudad por nombre o codigo postal"
+                               [opciones]="opcionesCiudades()" [invalido]="invalidoEditar('postal_code')" />
             @if (invalidoEditar('postal_code')) {
               <p class="ab-field-error">Elegi una ciudad.</p>
             }
           </div>
 
           <div class="ab-field">
-            <label class="ab-label" for="externo-editar">Id externo</label>
-            <input class="ab-input" id="externo-editar" type="text" autocomplete="off"
-                   formControlName="external_terminal_id" [attr.aria-invalid]="invalidoEditar('external_terminal_id')" />
+            <label class="ab-label" for="externo-editar">Terminal externa</label>
+            <app-select-buscador inputId="externo-editar" formControlName="external_terminal_id"
+                               placeholder="Busca una terminal externa"
+                               [opciones]="opcionesExternas()" [invalido]="invalidoEditar('external_terminal_id')" />
+            @if (errorExternas()) {
+              <p class="ab-field-error">{{ errorExternas() }}</p>
+            }
             @if (invalidoEditar('external_terminal_id')) {
-              <p class="ab-field-error">Ingresa un id externo valido (uuid).</p>
+              <p class="ab-field-error">Elegi una terminal externa.</p>
             }
           </div>
 

@@ -285,16 +285,17 @@
         <p class="ab-form-error" role="alert">{{ errorSeleccionada() }}</p>
       } @else if (plataformaSeleccionada(); as plataforma) {
         <form class="crud__form" [formGroup]="formEditar" (ngSubmit)="guardarEdicion()" novalidate>
-          <div class="ab-field">
-            <label class="ab-label" for="code-editar">Codigo</label>
-            <input class="ab-input" id="code-editar" type="number" [value]="plataforma.code" disabled />
-            <p class="crud__nota">El codigo identifica al anden y no se puede cambiar.</p>
-          </div>
-
-          <div class="ab-field">
-            <label class="ab-label">Terminal</label>
-            <input class="ab-input" type="text" [value]="plataforma.terminal" disabled />
-          </div>
+          <!-- Codigo y terminal no se editan: se muestran como texto, no como inputs -->
+          <dl class="crud__datos">
+            <div class="crud__dato">
+              <dt class="ab-label">Codigo</dt>
+              <dd class="crud__valor">{{ plataforma.code }}</dd>
+            </div>
+            <div class="crud__dato">
+              <dt class="ab-label">Terminal</dt>
+              <dd class="crud__valor">{{ plataforma.terminal }}</dd>
+            </div>
+          </dl>
 
           <div class="ab-field">
             <label class="ab-label" for="anden-editar">Anden</label>

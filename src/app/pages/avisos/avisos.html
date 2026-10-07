@@ -165,19 +165,29 @@
         </fieldset>
 
         @if (!esGlobal()) {
-          <div class="ab-field">
-            <label class="ab-label" for="terminal-aviso">Terminal</label>
-            <select class="crud__select" id="terminal-aviso" formControlName="terminal"
-                    [attr.aria-invalid]="invalidoAviso('terminal')">
-              <option value="" disabled>Elegi una terminal</option>
-              @for (t of terminales(); track t.uuid) {
-                <option [value]="t.uuid">{{ t.name }}</option>
+          @if (terminalUnica(); as unica) {
+            <!-- La unica terminal del admin queda elegida sola: se muestra como texto -->
+            <dl class="crud__datos">
+              <div class="crud__dato">
+                <dt class="ab-label">Terminal</dt>
+                <dd class="crud__valor">{{ unica.name }}</dd>
+              </div>
+            </dl>
+          } @else {
+            <div class="ab-field">
+              <label class="ab-label" for="terminal-aviso">Terminal</label>
+              <select class="crud__select" id="terminal-aviso" formControlName="terminal"
+                      [attr.aria-invalid]="invalidoAviso('terminal')">
+                <option value="" disabled>Elegi una terminal</option>
+                @for (t of terminales(); track t.uuid) {
+                  <option [value]="t.uuid">{{ t.name }}</option>
+                }
+              </select>
+              @if (invalidoAviso('terminal')) {
+                <p class="ab-field-error">Elegi una terminal.</p>
               }
-            </select>
-            @if (invalidoAviso('terminal')) {
-              <p class="ab-field-error">Elegi una terminal.</p>
-            }
-          </div>
+            </div>
+          }
         }
 
         @if (esArribo()) {

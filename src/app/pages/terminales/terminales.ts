@@ -4,9 +4,10 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, ResolveFn, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Topbar } from '../../shared/topbar/topbar';
+import { OpcionBuscador, SelectBuscador } from '../../shared/select-buscador/select-buscador';
 import { TerminalService } from '../../services/terminal.service';
 import { CiudadService } from '../../services/ciudad.service';
-import { Terminal } from '../../models/terminal.model';
+import { Terminal, TerminalExterna } from '../../models/terminal.model';
 import { Ciudad } from '../../models/ciudad.model';
 
 export type AccionTerminal = 'listar' | 'crear' | 'editar';
@@ -27,12 +28,9 @@ const VISTAS: Record<AccionTerminal, VistaTerminal> = {
   },
   editar: {
     titulo: 'Editar terminal',
-    bajada: 'Cambia el nombre, la ciudad o el id externo.',
+    bajada: 'Cambia el nombre, la ciudad o la terminal externa.',
   },
 };
-
-const UUID_PATTERN =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** Filas que entran en una pagina del listado. */
 const POR_PAGINA = 10;
@@ -46,7 +44,7 @@ const LIMITE_BACKEND = 500;
  */
 @Component({
   selector: 'app-terminales',
-  imports: [Topbar, RouterLink, ReactiveFormsModule],
+  imports: [Topbar, RouterLink, ReactiveFormsModule, SelectBuscador],
   templateUrl: './terminales.html',
   styleUrl: './terminales.scss',
 })
@@ -72,6 +70,28 @@ export class Terminales {
   protected readonly vista = computed(() => VISTAS[this.accion()]);
 
   protected readonly ciudades = signal<Ciudad[]>([]);
+
+  /** Terminales del sistema de pasajes para elegir el id externo. */
+  protected readonly externas = signal<TerminalExterna[]>([]);
+  protected readonly errorExternas = signal<string | null>(null);
+
+  protected readonly opcionesCiudades = computed<OpcionBuscador[]>(() =>
+    this.ciudades().map((c) => ({ valor: c.postal_code, etiqueta: `${c.name} (${c.postal_code})` })),
+  );
+
+  protected readonly opcionesExternas = computed<OpcionBuscador[]>(() =>
+    this.externas().map((e) => ({ valor: e.uuid, etiqueta: e.name, deshabilitada: this.externaOcupada(e) })),
+  );
+
+  /** Ids externos ya asignados a alguna terminal, para no ofrecerlos de nuevo. */
+  private readonly externasEnUso = computed(
+    () =>
+      new Set(
+        this.todasLasTerminales()
+          .map((t) => t.external_terminal_id)
+          .filter((id): id is string => !!id),
+      ),
+  );
 
   /** Texto del filtro del listado: nombre, codigo postal o identificadores. */
   protected readonly filtro = signal('');
@@ -130,7 +150,7 @@ export class Terminales {
   protected readonly formCrear = this.fb.nonNullable.group({
     name: ['', Validators.required],
     postal_code: ['', Validators.required],
-    external_terminal_id: ['', [Validators.required, Validators.pattern(UUID_PATTERN)]],
+    external_terminal_id: ['', Validators.required],
   });
   protected readonly guardandoCrear = signal(false);
   protected readonly errorCrear = signal<string | null>(null);
@@ -139,7 +159,7 @@ export class Terminales {
   protected readonly formEditar = this.fb.nonNullable.group({
     name: ['', Validators.required],
     postal_code: ['', Validators.required],
-    external_terminal_id: ['', [Validators.required, Validators.pattern(UUID_PATTERN)]],
+    external_terminal_id: ['', Validators.required],
   });
   protected readonly cargandoSeleccionada = signal(false);
   protected readonly errorSeleccionada = signal<string | null>(null);
@@ -159,6 +179,7 @@ export class Terminales {
 
   constructor() {
     this.cargarCiudades();
+    this.cargarExternas();
 
     effect(() => {
       const accion = this.accion();
@@ -205,6 +226,24 @@ export class Terminales {
     this.ciudadService.listar({ limit: LIMITE_BACKEND, order: 'ASC' }).subscribe({
       next: (res) => this.ciudades.set(res.cities),
     });
+  }
+
+  private cargarExternas(): void {
+    this.errorExternas.set(null);
+    this.terminalService.listarExternas().subscribe({
+      next: (externas) =>
+        this.externas.set([...externas].sort((a, b) => a.name.localeCompare(b.name))),
+      error: () => this.errorExternas.set('No se pudieron cargar las terminales del sistema de pasajes.'),
+    });
+  }
+
+  /**
+   * Una terminal externa ya asignada a otra terminal no se puede volver a
+   * elegir. En la edicion se permite la que ya tiene la terminal seleccionada.
+   */
+  private externaOcupada(externa: TerminalExterna): boolean {
+    const propia = this.terminalSeleccionada()?.external_terminal_id;
+    return this.externasEnUso().has(externa.uuid) && externa.uuid !== propia;
   }
 
   private cargarTerminales(): void {
@@ -277,6 +316,7 @@ export class Terminales {
   }
 
   protected abrirAlta(): void {
+    this.terminalSeleccionada.set(null);
     this.formCrear.reset();
     this.errorCrear.set(null);
     this.altaAbierta.set(true);
@@ -307,7 +347,7 @@ export class Terminales {
       .crear({
         name: name.trim(),
         postal_code,
-        external_terminal_id: external_terminal_id.trim(),
+        external_terminal_id,
       })
       .subscribe({
         next: () => {
@@ -339,7 +379,7 @@ export class Terminales {
       .actualizar(seleccionada.uuid, {
         name: name.trim(),
         postal_code,
-        external_terminal_id: external_terminal_id.trim(),
+        external_terminal_id,
       })
       .subscribe({
         next: () => {
@@ -409,11 +449,11 @@ function mensajeError(err: HttpErrorResponse): string {
     case 0:
       return 'No se pudo conectar con el servidor. Intenta mas tarde.';
     case 400:
-      return 'Revisa los datos: faltan campos o el id externo no es valido.';
+      return 'Revisa los datos: faltan campos o la terminal externa no es valida.';
     case 404:
       return 'No se encontro la terminal o la ciudad indicada.';
     case 409:
-      return 'Ese id externo ya esta en uso por otra terminal.';
+      return 'Esa terminal externa ya esta asignada a otra terminal.';
     default:
       return 'Ocurrio un error inesperado. Intenta de nuevo.';
   }

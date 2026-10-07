@@ -1,0 +1,31 @@
+<div class="buscador">
+  <input #campo class="buscador__input" type="text" role="combobox" autocomplete="off"
+         [id]="inputId()" [placeholder]="placeholder()" [value]="texto()" [disabled]="deshabilitado()"
+         [attr.aria-expanded]="abierto()" [attr.aria-controls]="listaId"
+         [attr.aria-activedescendant]="abierto() && activa() >= 0 ? listaId + '-' + activa() : null"
+         [attr.aria-invalid]="invalido()"
+         (focus)="abrir()" (click)="abrir()"
+         (input)="escribir($any($event.target).value)"
+         (keydown)="teclear($event)" />
+
+  <svg class="buscador__flecha" width="12" height="8" viewBox="0 0 12 8" fill="none" aria-hidden="true">
+    <path d="M1 1.5 6 6.5l5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+  </svg>
+
+  @if (abierto()) {
+    <ul #lista class="buscador__lista" role="listbox" popover="manual" [id]="listaId">
+      @for (o of filtradas(); track o.valor; let i = $index) {
+        <li class="buscador__opcion" role="option" [id]="listaId + '-' + i"
+            [class.buscador__opcion--activa]="i === activa()"
+            [class.buscador__opcion--elegida]="o.valor === valor()"
+            [attr.aria-selected]="o.valor === valor()"
+            [attr.aria-disabled]="o.deshabilitada || null"
+            (mousedown)="$event.preventDefault()"
+            (mouseenter)="!o.deshabilitada && activa.set(i)"
+            (click)="elegir(o)">{{ o.etiqueta }}</li>
+      } @empty {
+        <li class="buscador__vacio">Sin coincidencias.</li>
+      }
+    </ul>
+  }
+</div>

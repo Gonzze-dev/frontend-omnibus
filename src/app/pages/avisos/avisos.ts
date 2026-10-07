@@ -143,6 +143,12 @@ export class Avisos {
    */
   protected readonly terminales = signal<OpcionTerminal[]>([]);
 
+  /** Con una sola terminal no hay nada que elegir: se muestra como dato fijo. */
+  protected readonly terminalUnica = computed(() => {
+    const terminales = this.terminales();
+    return terminales.length === 1 ? terminales[0] : null;
+  });
+
   // --- Envio de aviso ---
   protected readonly tipos = signal<{ nombre: TipoAviso; etiqueta: string; detalle: string }[]>(
     [],
