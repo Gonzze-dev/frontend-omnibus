@@ -39,6 +39,7 @@ export class PatenteCamara implements OnDestroy {
     void this.conectarVideo();
   }
   @ViewChild('archivo') private readonly archivoRef?: ElementRef<HTMLInputElement>;
+  @ViewChild('camaraNativa') private readonly camaraNativaRef?: ElementRef<HTMLInputElement>;
 
   @Output() readonly patenteLeida = new EventEmitter<string>();
 
@@ -76,6 +77,17 @@ export class PatenteCamara implements OnDestroy {
   protected reintentar(): void {
     this.reiniciar();
     if (!this.stream && !this.sinCamaraEnVivo()) void this.iniciarCamara();
+  }
+
+  /** Boton blanco: saca la foto, vuelve a la camara tras un error o abre la camara nativa. */
+  protected disparar(): void {
+    if (this.paso() === 'error') {
+      this.reintentar();
+    } else if (this.sinCamaraEnVivo()) {
+      this.camaraNativaRef?.nativeElement.click();
+    } else {
+      this.sacarFoto();
+    }
   }
 
   protected sacarFoto(): void {
@@ -179,6 +191,7 @@ export class PatenteCamara implements OnDestroy {
     }
 
     this.limpiarVistaPrevia();
+    this.error.set(null);
     this.vistaPrevia.set(URL.createObjectURL(imagen));
     this.paso.set('leyendo');
 

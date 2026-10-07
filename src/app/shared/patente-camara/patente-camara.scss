@@ -30,52 +30,70 @@
   background: rgba(19, 27, 46, 0.7);
 }
 
+/* Panel alto y negro, como la app de camara de un celular. */
 .camara__panel {
   position: relative;
-  width: min(100%, 520px);
-  max-height: 100%;
-  overflow-y: auto;
-  padding: var(--ab-card-pad-sm);
-  border-radius: var(--ab-r-card);
-  background: var(--ab-white);
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 420px);
+  height: min(100%, 820px);
+  overflow: hidden;
+  border-radius: 28px;
+  background: #000;
+  color: #fff;
   box-shadow: var(--ab-shadow-dark);
 }
 
+.camara__barra-superior,
+.camara__controles {
+  display: grid;
+  grid-template-columns: 56px 1fr 56px;
+  align-items: center;
+  justify-items: center;
+  flex-shrink: 0;
+}
+
+.camara__barra-superior { padding: 14px 12px; }
+.camara__controles { padding: 20px 16px 28px; }
+
+.camara__hueco { width: 44px; height: 44px; }
+
 .camara__cerrar {
-  position: absolute;
-  top: 16px;
-  right: 16px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   padding: 0;
   border: 0;
   border-radius: 999px;
-  background: var(--ab-field);
-  color: var(--ab-ink);
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
   cursor: pointer;
 }
 
+.camara__cerrar:hover { background: rgba(255, 255, 255, 0.22); }
+
 .camara__titulo {
-  margin: 0 0 16px;
-  font-weight: 700;
-  font-size: var(--ab-fs-h3);
-  line-height: var(--ab-lh-h3);
-  color: var(--ab-ink);
+  margin: 0;
+  font-weight: 600;
+  font-size: var(--ab-fs-body);
+  line-height: var(--ab-lh-body);
+  color: #fff;
   text-align: center;
 }
 
 .camara__visor {
   position: relative;
+  flex: 1;
+  min-height: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  aspect-ratio: 4 / 3;
-  border-radius: var(--ab-r-card);
-  background: var(--ab-ink);
+  border-radius: 18px;
+  margin: 0 6px;
+  background: #111;
 }
 
 .camara__video,
@@ -87,26 +105,26 @@
   object-fit: cover;
 }
 
-.camara__foto { object-fit: contain; background: var(--ab-ink); }
+.camara__foto { object-fit: contain; background: #000; }
 
 /* Marco con la proporcion de una patente argentina (aprox. 3:1). */
 .camara__marco {
   position: absolute;
-  left: 15%;
-  right: 15%;
+  left: 10%;
+  right: 10%;
   top: 50%;
   aspect-ratio: 3 / 1;
   transform: translateY(-50%);
-  border: 3px solid var(--ab-white);
+  border: 3px solid #fff;
   border-radius: 8px;
-  box-shadow: 0 0 0 9999px rgba(19, 27, 46, 0.35);
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.4);
   pointer-events: none;
 }
 
 .camara__aviso {
   margin: 0;
   padding: 24px;
-  color: var(--ab-white);
+  color: #fff;
   font-size: var(--ab-fs-body);
   line-height: var(--ab-lh-body);
   text-align: center;
@@ -114,9 +132,9 @@
 
 .camara__estado {
   position: absolute;
-  inset: auto 0 16px;
+  inset: 16px 0 auto;
   margin: 0;
-  color: var(--ab-white);
+  color: #fff;
   font-weight: 600;
   font-size: var(--ab-fs-body);
   line-height: var(--ab-lh-body);
@@ -128,38 +146,72 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(19, 27, 46, 0.55);
+  background: rgba(0, 0, 0, 0.55);
 }
 
-.camara__ayuda,
-.camara__error {
-  margin: 12px 0 0;
+/* Ayuda o error flotando en la parte baja del visor. */
+.camara__mensaje {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 16px;
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
   font-size: var(--ab-fs-body);
   line-height: var(--ab-lh-body);
   text-align: center;
 }
 
-.camara__ayuda { color: var(--ab-body); }
-.camara__error { color: var(--ab-danger); }
-
-.camara__acciones {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  margin-top: 16px;
-}
+.camara__mensaje--error { background: color-mix(in srgb, var(--ab-danger) 85%, #000); }
 
 .camara__subir {
-  padding: 4px 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  padding: 0;
   border: 0;
-  background: none;
-  color: var(--ab-primary);
-  font-weight: 600;
-  font-size: var(--ab-fs-body);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
   cursor: pointer;
 }
 
-.camara__subir:hover { text-decoration: underline; }
+.camara__subir:hover:not(:disabled) { background: rgba(255, 255, 255, 0.24); }
+
+/* Obturador: aro blanco con un circulo blanco grande adentro. */
+.camara__obturador {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 76px;
+  height: 76px;
+  padding: 0;
+  border: 4px solid #fff;
+  border-radius: 999px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.camara__obturador-centro {
+  width: 60px;
+  height: 60px;
+  border-radius: 999px;
+  background: #fff;
+  transition: transform 0.12s ease;
+}
+
+.camara__obturador:active:not(:disabled) .camara__obturador-centro { transform: scale(0.88); }
+
+.camara__subir:disabled,
+.camara__obturador:disabled { opacity: 0.4; cursor: default; }
+
+.camara__cerrar:focus-visible,
+.camara__subir:focus-visible,
+.camara__obturador:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
 
 .camara__archivo { display: none; }
