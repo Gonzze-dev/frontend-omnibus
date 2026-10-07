@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, effect, ElementRef, inject, OnInit, signal, viewChild } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import {
   AbstractControl,
@@ -23,6 +23,8 @@ type Campo = 'nombre' | 'apellido' | 'email' | 'password' | 'confirmar';
 })
 export class Perfil implements OnInit {
   private readonly userService = inject(UserService);
+
+  private readonly dialogoBaja = viewChild<ElementRef<HTMLDialogElement>>('dialogoBaja');
 
   /** La contraseña es opcional: vacia significa "no cambiarla". */
   protected readonly form = inject(FormBuilder).nonNullable.group(
@@ -52,6 +54,17 @@ export class Perfil implements OnInit {
 
   protected readonly mostrarPassword = signal(false);
   protected readonly mostrarConfirmar = signal(false);
+
+  constructor() {
+    // El <dialog> nativo se abre con showModal() para tener fondo, foco
+    // atrapado y cierre con Escape sin escribirlos a mano.
+    effect(() => {
+      const dialogo = this.dialogoBaja()?.nativeElement;
+      if (!dialogo) return;
+      if (this.confirmandoBaja() && !dialogo.open) dialogo.showModal();
+      if (!this.confirmandoBaja() && dialogo.open) dialogo.close();
+    });
+  }
 
   ngOnInit(): void {
     this.cargarPerfil();
@@ -123,8 +136,14 @@ export class Perfil implements OnInit {
   }
 
   protected cancelarBaja(): void {
+    if (this.eliminando()) return;
     this.confirmandoBaja.set(false);
     this.errorEliminar.set(null);
+  }
+
+  /** Un click en el fondo (fuera del contenido) cierra el popup. */
+  protected clickEnPopup(event: MouseEvent): void {
+    if (event.target === event.currentTarget) this.cancelarBaja();
   }
 
   protected invalido(campo: Campo): boolean {

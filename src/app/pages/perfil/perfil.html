@@ -85,27 +85,39 @@
       </button>
     </form>
 
-    @if (confirmandoBaja()) {
-      <div class="perfil__baja" role="alertdialog" aria-labelledby="baja-texto">
-        <p class="perfil__baja-texto" id="baja-texto">
-          Vas a eliminar tu cuenta de forma permanente. La accion no se puede deshacer.
-        </p>
-
-        @if (errorEliminar()) {
-          <p class="ab-form-error" role="alert">{{ errorEliminar() }}</p>
-        }
-
-        <div class="perfil__baja-acciones">
-          <button class="perfil__cancelar" type="button" [disabled]="eliminando()" (click)="cancelarBaja()">
-            Cancelar
-          </button>
-          <button class="ab-button perfil__baja-boton" type="button" [disabled]="eliminando()" (click)="eliminarCuenta()">
-            {{ eliminando() ? 'Eliminando...' : 'Eliminar cuenta' }}
-          </button>
-        </div>
-      </div>
-    } @else {
-      <button class="perfil__eliminar" type="button" (click)="confirmandoBaja.set(true)">Eliminar cuenta</button>
-    }
+    <button class="perfil__eliminar" type="button" (click)="confirmandoBaja.set(true)">Eliminar cuenta</button>
   }
 </div>
+
+<!-- Popup para confirmar la baja. Escape o un click afuera lo cierran. -->
+<dialog #dialogoBaja class="popup" role="alertdialog" aria-labelledby="baja-titulo" aria-describedby="baja-texto"
+        (cancel)="$event.preventDefault(); cancelarBaja()"
+        (click)="clickEnPopup($event)">
+  <div class="popup__contenido">
+    <header class="popup__head">
+      <h2 class="popup__titulo" id="baja-titulo">Eliminar cuenta</h2>
+      <button class="popup__cerrar" type="button" aria-label="Cerrar" [disabled]="eliminando()" (click)="cancelarBaja()">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <path d="M1.5 1.5l11 11M12.5 1.5l-11 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+        </svg>
+      </button>
+    </header>
+
+    <p class="popup__texto" id="baja-texto">
+      ¿Seguro que queres eliminar tu cuenta? Se borra de forma permanente y la accion no se puede deshacer.
+    </p>
+
+    @if (errorEliminar()) {
+      <p class="ab-form-error" role="alert">{{ errorEliminar() }}</p>
+    }
+
+    <div class="popup__acciones">
+      <button class="popup__cancelar" type="button" [disabled]="eliminando()" (click)="cancelarBaja()">
+        Cancelar
+      </button>
+      <button class="ab-button popup__eliminar" type="button" [disabled]="eliminando()" (click)="eliminarCuenta()">
+        {{ eliminando() ? 'Eliminando...' : 'Eliminar cuenta' }}
+      </button>
+    </div>
+  </div>
+</dialog>

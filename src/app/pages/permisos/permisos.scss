@@ -24,9 +24,32 @@
 .usuarios .tabla__icono:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 2px; }
 
 /* Fila de un admin: toda la fila despliega sus terminales */
-.usuario--desplegable { cursor: pointer; }
-.usuario--desplegable:hover { background: color-mix(in srgb, var(--tono) 5%, transparent); }
+.usuarios {
+  /* El agrandado de la fila seleccionada no se puede recortar */
+  overflow: visible;
+}
+
+/* El contenedor ya no recorta el contenido, asi que el redondeado
+   de las esquinas lo ponen la cabecera y la ultima fila. */
+.usuarios .tabla__fila--cabecera { border-top-left-radius: var(--ab-r-card); border-top-right-radius: var(--ab-r-card); }
+.usuarios > .tabla__item:last-child > :last-child { border-bottom-left-radius: var(--ab-r-card); border-bottom-right-radius: var(--ab-r-card); }
+
+.usuario--desplegable {
+  position: relative;
+  cursor: pointer;
+  transform-origin: center;
+  transition: background-color 0.1s, color 0.1s, transform 0.1s;
+}
+
 .usuario--abierto { background: color-mix(in srgb, var(--tono) 7%, transparent); }
+
+/* Mismo hover que las filas de ciudades y terminales */
+.usuario--desplegable:hover {
+  background: color-mix(in srgb, #0050CB 15%, white);
+  color: var(--ab-ink);
+  transform: scale(1.04);
+  z-index: 1;
+}
 
 /* El + resalta un poco mas que la flecha: es la accion de la fila */
 .usuarios .usuario__promover {

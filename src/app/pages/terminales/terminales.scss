@@ -26,7 +26,8 @@
 
 .tabla__fila--seleccionable:hover,
 .tabla__fila--seleccionable:focus-visible {
-  background: color-mix(in srgb, var(--tono) 15%, white);
+  /* Mismo azul que el hover de ciudades, aunque la pantalla sea carmin */
+  background: color-mix(in srgb, #0050CB 15%, white);
   color: var(--ab-ink);
   transform: scale(1.04);
   z-index: 1;
