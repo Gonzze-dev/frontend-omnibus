@@ -98,7 +98,7 @@ export class Dashboard implements OnInit {
   protected readonly accesos: readonly Acceso[] = [
     { id: 'ciudades', titulo: 'Gestionar Ciudades', bajada: 'Mapa y sedes', icono: 'sede', marca: 'ciudad', tono: 'azul', soloSuper: true },
     { id: 'plataformas', titulo: 'Gestionar Plataformas', bajada: 'Sistemas base', icono: 'plataforma', marca: 'plataforma', tono: 'indigo' },
-    { id: 'terminales', titulo: 'Gestionar terminales', bajada: 'Sistema base', icono: 'monitor', marca: 'terminal', tono: 'carmin', soloSuper: true },
+    { id: 'terminales', titulo: 'Gestionar terminales', bajada: 'Sistema base', icono: 'terminal', marca: 'terminal', tono: 'carmin', soloSuper: true },
     { id: 'permisos', titulo: 'Control de Permisos', bajada: 'Roles', icono: 'permisos', marca: 'roles', tono: 'tinta' },
     { id: 'notificaciones', titulo: 'Gestionar notificaciones', bajada: 'Avisos y retrasos', icono: 'avisos', marca: 'avisos', tono: 'naranja' },
   ];
