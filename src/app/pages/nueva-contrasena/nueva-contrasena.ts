@@ -67,6 +67,9 @@ export class NuevaContrasena {
     this.auth.resetPassword(this.token, this.form.getRawValue().password).subscribe({
       next: () => {
         this.cargando.set(false);
+        // El backend invalida los refresh tokens del usuario: si habia sesion
+        // abierta ya no sirve, y sin ella el login no redirige al inicio.
+        this.auth.descartarSesion();
         // El login avisa que el cambio salio bien con ?cambio=ok
         this.router.navigate(['/login'], { queryParams: { cambio: 'ok' } });
       },

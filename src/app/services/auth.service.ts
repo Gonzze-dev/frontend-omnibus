@@ -97,11 +97,16 @@ export class AuthService {
   }
 
   clearSession(): void {
+    this.descartarSesion();
+    this.router.navigate(['/login']);
+  }
+
+  /** Borra la sesion local sin navegar (quien llama decide a donde ir). */
+  descartarSesion(): void {
     this._accessToken.set(null);
     this._user.set(null);
     borrar(TOKEN_KEY);
     borrar(USER_KEY);
-    this.router.navigate(['/login']);
   }
 
   /**
