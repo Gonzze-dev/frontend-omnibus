@@ -1,4 +1,4 @@
-import { Component, ElementRef, computed, effect, inject, signal, viewChild } from '@angular/core';
+import { Component, ElementRef, computed, effect, inject, signal, untracked, viewChild } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, ResolveFn, RouterLink } from '@angular/router';
@@ -130,7 +130,9 @@ export class Plataformas {
     Array.from({ length: Math.max(0, POR_PAGINA - (this.grupos().length || 1)) }),
   );
 
-  // --- Alta ---
+  // --- Alta (popup sobre el listado) ---
+  private readonly dialogoAlta = viewChild<ElementRef<HTMLDialogElement>>('dialogoAlta');
+  protected readonly altaAbierta = signal(false);
   protected readonly formCrear = this.fb.nonNullable.group({
     bus_terminal_id: ['', Validators.required],
     anden: ['', Validators.required],
@@ -151,7 +153,9 @@ export class Plataformas {
   protected readonly guardandoEditar = signal(false);
   protected readonly errorEditar = signal<string | null>(null);
 
-  // --- Edicion: anden elegido ---
+  // --- Edicion: anden elegido (popup sobre el listado) ---
+  private readonly dialogoEdicion = viewChild<ElementRef<HTMLDialogElement>>('dialogoEdicion');
+  protected readonly edicionAbierta = signal(false);
   protected readonly plataformaSeleccionada = signal<{
     code: number;
     anden: string;
@@ -175,10 +179,14 @@ export class Plataformas {
       if (accion === 'listar') {
         this.cargarPlataformas();
       } else if (accion === 'editar') {
-        this.cargarSeleccionada(this.codigo());
+        // La URL vieja de edicion sigue andando: muestra el listado con el popup abierto
+        const codigo = this.codigo();
+        this.router.navigateByUrl('/dashboard/plataformas', { replaceUrl: true });
+        untracked(() => this.abrirEdicion(codigo));
       } else if (accion === 'crear') {
-        this.formCrear.reset({ lat: 0, lng: 0 });
-        this.errorCrear.set(null);
+        // La URL vieja de alta sigue andando: muestra el listado con el popup abierto
+        this.router.navigateByUrl('/dashboard/plataformas', { replaceUrl: true });
+        untracked(() => this.abrirAlta());
       }
     });
 
@@ -189,6 +197,20 @@ export class Plataformas {
       if (!dialogo) return;
       if (this.aEliminar() && !dialogo.open) dialogo.showModal();
       if (!this.aEliminar() && dialogo.open) dialogo.close();
+    });
+
+    effect(() => {
+      const dialogo = this.dialogoAlta()?.nativeElement;
+      if (!dialogo) return;
+      if (this.altaAbierta() && !dialogo.open) dialogo.showModal();
+      if (!this.altaAbierta() && dialogo.open) dialogo.close();
+    });
+
+    effect(() => {
+      const dialogo = this.dialogoEdicion()?.nativeElement;
+      if (!dialogo) return;
+      if (this.edicionAbierta() && !dialogo.open) dialogo.showModal();
+      if (!this.edicionAbierta() && dialogo.open) dialogo.close();
     });
   }
 
@@ -264,8 +286,38 @@ export class Plataformas {
     this.abierta.set(null);
   }
 
-  protected irAEditar(code: number): void {
-    this.router.navigate(['/dashboard/plataformas/editar', code]);
+  protected abrirAlta(): void {
+    this.formCrear.reset({ lat: 0, lng: 0 });
+    this.errorCrear.set(null);
+    this.altaAbierta.set(true);
+  }
+
+  protected cerrarAlta(): void {
+    if (this.guardandoCrear()) return;
+    this.altaAbierta.set(false);
+    this.errorCrear.set(null);
+  }
+
+  /** Un click en el fondo (fuera del contenido) cierra el popup de alta. */
+  protected clickEnPopupAlta(event: MouseEvent): void {
+    if (event.target === event.currentTarget) this.cerrarAlta();
+  }
+
+  protected abrirEdicion(code: number | null): void {
+    this.errorEditar.set(null);
+    this.edicionAbierta.set(true);
+    this.cargarSeleccionada(code);
+  }
+
+  protected cerrarEdicion(): void {
+    if (this.guardandoEditar()) return;
+    this.edicionAbierta.set(false);
+    this.errorEditar.set(null);
+  }
+
+  /** Un click en el fondo (fuera del contenido) cierra el popup de edicion. */
+  protected clickEnPopupEdicion(event: MouseEvent): void {
+    if (event.target === event.currentTarget) this.cerrarEdicion();
   }
 
   /** Una terminal abierta a la vez: volver a tocarla la cierra. */
@@ -288,7 +340,8 @@ export class Plataformas {
       .subscribe({
         next: () => {
           this.guardandoCrear.set(false);
-          this.router.navigateByUrl('/dashboard/plataformas');
+          this.altaAbierta.set(false);
+          this.cargarPlataformas();
         },
         error: (err: HttpErrorResponse) => {
           this.guardandoCrear.set(false);
@@ -315,7 +368,8 @@ export class Plataformas {
       .subscribe({
         next: () => {
           this.guardandoEditar.set(false);
-          this.router.navigateByUrl('/dashboard/plataformas');
+          this.edicionAbierta.set(false);
+          this.cargarPlataformas();
         },
         error: (err: HttpErrorResponse) => {
           this.guardandoEditar.set(false);

@@ -16,11 +16,11 @@
     </div>
 
     @if (accion() === 'listar') {
-      <a class="crud__agregar" routerLink="/dashboard/plataformas/crear" aria-label="Cargar plataforma">
+      <button class="crud__agregar" type="button" aria-label="Cargar plataforma" (click)="abrirAlta()">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
           <path d="M10 3v14M3 10h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
         </svg>
-      </a>
+      </button>
     }
   </header>
 
@@ -69,8 +69,8 @@
                 <ul class="tabla__panel" [id]="'andenes-' + g.uuid">
                   @for (p of g.platforms; track p.code) {
                     <li class="tabla__fila tabla__fila--seleccionable"
-                        [routerLink]="['/dashboard/plataformas/editar', p.code]"
-                        (keydown.enter)="irAEditar(p.code)"
+                        (click)="abrirEdicion(p.code)"
+                        (keydown.enter)="abrirEdicion(p.code)"
                         tabindex="0" role="button" aria-label="Editar plataforma">
                       <span class="tabla__dato">
                         <span class="tabla__linea">{{ p.anden }}</span>
@@ -135,109 +135,6 @@
         </nav>
       }
     }
-
-    @case ('crear') {
-      <form class="crud__form" [formGroup]="formCrear" (ngSubmit)="crear()" novalidate>
-        <div class="ab-field">
-          <label class="ab-label" for="terminal-crear">Terminal</label>
-          <select class="crud__select" id="terminal-crear" formControlName="bus_terminal_id"
-                   [attr.aria-invalid]="invalidoCrear('bus_terminal_id')">
-            <option value="" disabled>Elegi una terminal</option>
-            @for (t of terminales(); track t.uuid) {
-              <option [value]="t.uuid">{{ t.name }}</option>
-            }
-          </select>
-          @if (invalidoCrear('bus_terminal_id')) {
-            <p class="ab-field-error">Elegi una terminal.</p>
-          }
-        </div>
-
-        <div class="ab-field">
-          <label class="ab-label" for="anden-crear">Anden</label>
-          <input class="ab-input" id="anden-crear" type="text" placeholder="Ej: A20" autocomplete="off"
-                 formControlName="anden" [attr.aria-invalid]="invalidoCrear('anden')" />
-          @if (invalidoCrear('anden')) {
-            <p class="ab-field-error">Ingresa el anden.</p>
-          }
-        </div>
-
-        <div class="crud__fila">
-          <div class="ab-field">
-            <label class="ab-label" for="lat-crear">Latitud</label>
-            <input class="ab-input" id="lat-crear" type="number" step="any" placeholder="-34.6037"
-                   formControlName="lat" [attr.aria-invalid]="invalidoCrear('lat')" />
-          </div>
-
-          <div class="ab-field">
-            <label class="ab-label" for="lng-crear">Longitud</label>
-            <input class="ab-input" id="lng-crear" type="number" step="any" placeholder="-58.3816"
-                   formControlName="lng" [attr.aria-invalid]="invalidoCrear('lng')" />
-          </div>
-        </div>
-
-        <p class="crud__nota">El codigo del anden lo asigna el sistema al crearlo.</p>
-
-        @if (errorCrear()) {
-          <p class="ab-form-error" role="alert">{{ errorCrear() }}</p>
-        }
-
-        <button class="ab-button ab-button--lg" type="submit" [disabled]="guardandoCrear()">
-          {{ guardandoCrear() ? 'Cargando...' : 'Cargar plataforma' }}
-        </button>
-      </form>
-    }
-
-    @case ('editar') {
-      @if (cargandoSeleccionada()) {
-        <p class="tabla__vacio">Cargando plataforma...</p>
-      } @else if (errorSeleccionada()) {
-        <p class="ab-form-error" role="alert">{{ errorSeleccionada() }}</p>
-      } @else if (plataformaSeleccionada(); as plataforma) {
-        <form class="crud__form" [formGroup]="formEditar" (ngSubmit)="guardarEdicion()" novalidate>
-          <div class="ab-field">
-            <label class="ab-label" for="code-editar">Codigo</label>
-            <input class="ab-input" id="code-editar" type="number" [value]="plataforma.code" disabled />
-            <p class="crud__nota">El codigo identifica al anden y no se puede cambiar.</p>
-          </div>
-
-          <div class="ab-field">
-            <label class="ab-label">Terminal</label>
-            <input class="ab-input" type="text" [value]="plataforma.terminal" disabled />
-          </div>
-
-          <div class="ab-field">
-            <label class="ab-label" for="anden-editar">Anden</label>
-            <input class="ab-input" id="anden-editar" type="text" autocomplete="off"
-                   formControlName="anden" [attr.aria-invalid]="invalidoEditar('anden')" />
-            @if (invalidoEditar('anden')) {
-              <p class="ab-field-error">Ingresa el anden.</p>
-            }
-          </div>
-
-          <div class="crud__fila">
-            <div class="ab-field">
-              <label class="ab-label" for="lat-editar">Latitud</label>
-              <input class="ab-input" id="lat-editar" type="number" step="any"
-                     formControlName="lat" [attr.aria-invalid]="invalidoEditar('lat')" />
-            </div>
-
-            <div class="ab-field">
-              <label class="ab-label" for="lng-editar">Longitud</label>
-              <input class="ab-input" id="lng-editar" type="number" step="any"
-                     formControlName="lng" [attr.aria-invalid]="invalidoEditar('lng')" />
-            </div>
-          </div>
-
-          @if (errorEditar()) {
-            <p class="ab-form-error" role="alert">{{ errorEditar() }}</p>
-          }
-
-          <button class="ab-button ab-button--lg" type="submit" [disabled]="guardandoEditar()">
-            {{ guardandoEditar() ? 'Guardando...' : 'Guardar cambios' }}
-          </button>
-        </form>
-      }
-    }
   }
 </div>
 
@@ -287,6 +184,155 @@
           {{ eliminando() ? 'Eliminando...' : 'Eliminar plataforma' }}
         </button>
       </div>
+    </div>
+  }
+</dialog>
+
+<!-- Popup con el formulario de alta. Escape o un click afuera lo cierran. -->
+<dialog #dialogoAlta class="popup" aria-labelledby="alta-titulo"
+        (cancel)="$event.preventDefault(); cerrarAlta()"
+        (click)="clickEnPopupAlta($event)">
+  @if (altaAbierta()) {
+    <div class="popup__contenido">
+      <header class="popup__head">
+        <h2 class="popup__titulo" id="alta-titulo">Cargar plataforma</h2>
+        <button class="popup__cerrar" type="button" aria-label="Cerrar" [disabled]="guardandoCrear()" (click)="cerrarAlta()">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <path d="M1.5 1.5l11 11M12.5 1.5l-11 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+          </svg>
+        </button>
+      </header>
+
+      <p class="popup__texto">Alta de un anden nuevo en una terminal.</p>
+
+      <form class="crud__form" [formGroup]="formCrear" (ngSubmit)="crear()" novalidate>
+        <div class="ab-field">
+          <label class="ab-label" for="terminal-crear">Terminal</label>
+          <select class="crud__select" id="terminal-crear" formControlName="bus_terminal_id"
+                   [attr.aria-invalid]="invalidoCrear('bus_terminal_id')">
+            <option value="" disabled>Elegi una terminal</option>
+            @for (t of terminales(); track t.uuid) {
+              <option [value]="t.uuid">{{ t.name }}</option>
+            }
+          </select>
+          @if (invalidoCrear('bus_terminal_id')) {
+            <p class="ab-field-error">Elegi una terminal.</p>
+          }
+        </div>
+
+        <div class="ab-field">
+          <label class="ab-label" for="anden-crear">Anden</label>
+          <input class="ab-input" id="anden-crear" type="text" placeholder="Ej: A20" autocomplete="off"
+                 formControlName="anden" [attr.aria-invalid]="invalidoCrear('anden')" />
+          @if (invalidoCrear('anden')) {
+            <p class="ab-field-error">Ingresa el anden.</p>
+          }
+        </div>
+
+        <div class="crud__fila">
+          <div class="ab-field">
+            <label class="ab-label" for="lat-crear">Latitud</label>
+            <input class="ab-input" id="lat-crear" type="number" step="any" placeholder="-34.6037"
+                   formControlName="lat" [attr.aria-invalid]="invalidoCrear('lat')" />
+          </div>
+
+          <div class="ab-field">
+            <label class="ab-label" for="lng-crear">Longitud</label>
+            <input class="ab-input" id="lng-crear" type="number" step="any" placeholder="-58.3816"
+                   formControlName="lng" [attr.aria-invalid]="invalidoCrear('lng')" />
+          </div>
+        </div>
+
+        <p class="crud__nota">El codigo del anden lo asigna el sistema al crearlo.</p>
+
+        @if (errorCrear()) {
+          <p class="ab-form-error" role="alert">{{ errorCrear() }}</p>
+        }
+
+        <div class="popup__acciones">
+          <button class="popup__cancelar" type="button" [disabled]="guardandoCrear()" (click)="cerrarAlta()">
+            Cancelar
+          </button>
+          <button class="ab-button popup__boton" type="submit" [disabled]="guardandoCrear()">
+            {{ guardandoCrear() ? 'Cargando...' : 'Cargar plataforma' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  }
+</dialog>
+
+<!-- Popup con el formulario de edicion. Escape o un click afuera lo cierran. -->
+<dialog #dialogoEdicion class="popup" aria-labelledby="edicion-titulo"
+        (cancel)="$event.preventDefault(); cerrarEdicion()"
+        (click)="clickEnPopupEdicion($event)">
+  @if (edicionAbierta()) {
+    <div class="popup__contenido">
+      <header class="popup__head">
+        <h2 class="popup__titulo" id="edicion-titulo">Editar plataforma</h2>
+        <button class="popup__cerrar" type="button" aria-label="Cerrar" [disabled]="guardandoEditar()" (click)="cerrarEdicion()">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <path d="M1.5 1.5l11 11M12.5 1.5l-11 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+          </svg>
+        </button>
+      </header>
+
+      <p class="popup__texto">Cambia el anden o sus coordenadas.</p>
+
+      @if (cargandoSeleccionada()) {
+        <p class="popup__texto">Cargando plataforma...</p>
+      } @else if (errorSeleccionada()) {
+        <p class="ab-form-error" role="alert">{{ errorSeleccionada() }}</p>
+      } @else if (plataformaSeleccionada(); as plataforma) {
+        <form class="crud__form" [formGroup]="formEditar" (ngSubmit)="guardarEdicion()" novalidate>
+          <div class="ab-field">
+            <label class="ab-label" for="code-editar">Codigo</label>
+            <input class="ab-input" id="code-editar" type="number" [value]="plataforma.code" disabled />
+            <p class="crud__nota">El codigo identifica al anden y no se puede cambiar.</p>
+          </div>
+
+          <div class="ab-field">
+            <label class="ab-label">Terminal</label>
+            <input class="ab-input" type="text" [value]="plataforma.terminal" disabled />
+          </div>
+
+          <div class="ab-field">
+            <label class="ab-label" for="anden-editar">Anden</label>
+            <input class="ab-input" id="anden-editar" type="text" autocomplete="off"
+                   formControlName="anden" [attr.aria-invalid]="invalidoEditar('anden')" />
+            @if (invalidoEditar('anden')) {
+              <p class="ab-field-error">Ingresa el anden.</p>
+            }
+          </div>
+
+          <div class="crud__fila">
+            <div class="ab-field">
+              <label class="ab-label" for="lat-editar">Latitud</label>
+              <input class="ab-input" id="lat-editar" type="number" step="any"
+                     formControlName="lat" [attr.aria-invalid]="invalidoEditar('lat')" />
+            </div>
+
+            <div class="ab-field">
+              <label class="ab-label" for="lng-editar">Longitud</label>
+              <input class="ab-input" id="lng-editar" type="number" step="any"
+                     formControlName="lng" [attr.aria-invalid]="invalidoEditar('lng')" />
+            </div>
+          </div>
+
+          @if (errorEditar()) {
+            <p class="ab-form-error" role="alert">{{ errorEditar() }}</p>
+          }
+
+          <div class="popup__acciones">
+            <button class="popup__cancelar" type="button" [disabled]="guardandoEditar()" (click)="cerrarEdicion()">
+              Cancelar
+            </button>
+            <button class="ab-button popup__boton" type="submit" [disabled]="guardandoEditar()">
+              {{ guardandoEditar() ? 'Guardando...' : 'Guardar cambios' }}
+            </button>
+          </div>
+        </form>
+      }
     </div>
   }
 </dialog>
