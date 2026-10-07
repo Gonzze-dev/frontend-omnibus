@@ -43,7 +43,9 @@
 }
 
 .topbar__menu:focus-visible,
-.topbar__bell:focus-visible {
+.topbar__bell:focus-visible,
+.topbar__link:focus-visible,
+.topbar__logout:focus-visible {
   outline: 2px solid var(--ab-primary);
   outline-offset: 2px;
 }
@@ -65,4 +67,57 @@
   font-weight: 700;
   font-size: 10px;
   line-height: 15px;
+}
+
+/* ============================================================
+   Menu en linea (tablet y escritorio)
+   En celulares queda oculto y se usa el drawer.
+   ============================================================ */
+.topbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.topbar__nav,
+.topbar__logout { display: none; }
+
+.topbar__nav {
+  align-items: center;
+  gap: 8px;
+}
+
+.topbar__link {
+  padding: 8px 14px;
+  border-radius: var(--ab-r-card);
+  color: var(--ab-primary);
+  font-weight: 600;
+  font-size: var(--ab-fs-body);
+  line-height: var(--ab-lh-body);
+  text-decoration: none;
+}
+
+.topbar__link:hover,
+.topbar__link--active { background: var(--ab-card); }
+
+.topbar__logout {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ab-primary);
+  font-family: inherit;
+  font-weight: 600;
+  font-size: var(--ab-fs-body);
+  line-height: var(--ab-lh-body);
+  cursor: pointer;
+}
+
+.topbar__logout:hover { text-decoration: underline; }
+
+@media (min-width: 768px) {
+  .topbar__menu,
+  .topbar__drawer { display: none; }
+
+  .topbar__nav,
+  .topbar__logout { display: flex; }
 }

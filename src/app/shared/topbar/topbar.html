@@ -1,4 +1,5 @@
-<app-sidebar [(open)]="menuOpen" />
+<!-- El drawer solo existe en celulares: desde 768px los links van en la barra. -->
+<app-sidebar class="topbar__drawer" [(open)]="menuOpen" />
 
 <header class="topbar">
   <button
@@ -14,14 +15,27 @@
     </svg>
   </button>
 
-  <a class="topbar__bell" routerLink="/notificaciones" aria-label="Ver notificaciones">
-    <svg class="ab-icon" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-      <path d="M10 2a5 5 0 0 0-5 5v3l-1.5 3h13L15 10V7a5 5 0 0 0-5-5Z"
-            stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" />
-      <path d="M8 16a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
-    </svg>
-    @if (pendientes() > 0) {
-      <span class="topbar__badge">{{ pendientes() }}</span>
+  <nav class="topbar__nav" aria-label="Menu principal">
+    <a class="topbar__link" routerLink="/home" routerLinkActive="topbar__link--active">Inicio</a>
+    <a class="topbar__link" routerLink="/perfil" routerLinkActive="topbar__link--active">Ver perfil</a>
+    <!-- Solo administradores: la ruta tambien esta protegida por soloRoles. -->
+    @if (esAdmin()) {
+      <a class="topbar__link" routerLink="/dashboard" routerLinkActive="topbar__link--active">Dashboard</a>
     }
-  </a>
+  </nav>
+
+  <div class="topbar__actions">
+    <a class="topbar__bell" routerLink="/notificaciones" aria-label="Ver notificaciones">
+      <svg class="ab-icon" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <path d="M10 2a5 5 0 0 0-5 5v3l-1.5 3h13L15 10V7a5 5 0 0 0-5-5Z"
+              stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" />
+        <path d="M8 16a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+      </svg>
+      @if (pendientes() > 0) {
+        <span class="topbar__badge">{{ pendientes() }}</span>
+      }
+    </a>
+
+    <button class="topbar__logout" type="button" (click)="cerrarSesion()">Cerrar Sesion</button>
+  </div>
 </header>
