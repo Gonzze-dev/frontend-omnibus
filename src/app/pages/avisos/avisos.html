@@ -165,43 +165,23 @@
         </fieldset>
 
         @if (!esGlobal()) {
-          @if (terminalUnica(); as unica) {
-            <!-- La unica terminal del admin queda elegida sola: se muestra como texto -->
-            <dl class="crud__datos">
-              <div class="crud__dato">
-                <dt class="ab-label">Terminal</dt>
-                <dd class="crud__valor">{{ unica.name }}</dd>
-              </div>
-            </dl>
-          } @else {
-            <div class="ab-field">
-              <label class="ab-label" for="terminal-aviso">Terminal</label>
-              <select class="crud__select" id="terminal-aviso" formControlName="terminal"
-                      [attr.aria-invalid]="invalidoAviso('terminal')">
-                <option value="" disabled>Elegi una terminal</option>
-                @for (t of terminales(); track t.uuid) {
-                  <option [value]="t.uuid">{{ t.name }}</option>
-                }
-              </select>
-              @if (invalidoAviso('terminal')) {
-                <p class="ab-field-error">Elegi una terminal.</p>
-              }
-            </div>
-          }
+          <div class="ab-field">
+            <label class="ab-label" for="terminal-aviso">Terminal</label>
+            <app-select-buscador inputId="terminal-aviso" formControlName="terminal"
+                                 placeholder="Busca una terminal"
+                                 [opciones]="opcionesTerminales()" [invalido]="invalidoAviso('terminal')" />
+            @if (invalidoAviso('terminal')) {
+              <p class="ab-field-error">Elegi una terminal.</p>
+            }
+          </div>
         }
 
         @if (esArribo()) {
           <div class="ab-field">
             <label class="ab-label" for="anden-arribo">Anden</label>
-            <select class="crud__select" id="anden-arribo" formControlName="anden"
-                    [attr.aria-invalid]="invalidoAviso('anden')">
-              <option value="" disabled>
-                {{ cargandoAndenes() ? 'Cargando andenes...' : andenes().length ? 'Elegi un anden' : 'La terminal no tiene andenes' }}
-              </option>
-              @for (a of andenes(); track a.code) {
-                <option [value]="a.code">{{ a.anden }}</option>
-              }
-            </select>
+            <app-select-buscador inputId="anden-arribo" formControlName="anden"
+                                 [placeholder]="cargandoAndenes() ? 'Cargando andenes...' : andenes().length ? 'Busca un anden' : 'La terminal no tiene andenes'"
+                                 [opciones]="opcionesAndenes()" [invalido]="invalidoAviso('anden')" />
             @if (errorAndenes()) {
               <p class="ab-field-error" role="alert">{{ errorAndenes() }}</p>
             } @else if (invalidoAviso('anden')) {

@@ -5,6 +5,7 @@ import { ActivatedRoute, ResolveFn, Router, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Topbar } from '../../shared/topbar/topbar';
 import { PatenteCamara } from '../../shared/patente-camara/patente-camara';
+import { OpcionBuscador, SelectBuscador } from '../../shared/select-buscador/select-buscador';
 import { AuthService } from '../../services/auth.service';
 import { AvisoService } from '../../services/aviso.service';
 import { TerminalService } from '../../services/terminal.service';
@@ -82,7 +83,7 @@ const FECHA = new Intl.DateTimeFormat('es-AR', { dateStyle: 'short', timeStyle: 
  */
 @Component({
   selector: 'app-avisos',
-  imports: [Topbar, RouterLink, ReactiveFormsModule, PatenteCamara],
+  imports: [Topbar, RouterLink, ReactiveFormsModule, PatenteCamara, SelectBuscador],
   templateUrl: './avisos.html',
   styleUrl: './avisos.scss',
 })
@@ -143,11 +144,9 @@ export class Avisos {
    */
   protected readonly terminales = signal<OpcionTerminal[]>([]);
 
-  /** Con una sola terminal no hay nada que elegir: se muestra como dato fijo. */
-  protected readonly terminalUnica = computed(() => {
-    const terminales = this.terminales();
-    return terminales.length === 1 ? terminales[0] : null;
-  });
+  protected readonly opcionesTerminales = computed<OpcionBuscador[]>(() =>
+    this.terminales().map((t) => ({ valor: t.uuid, etiqueta: t.name })),
+  );
 
   // --- Envio de aviso ---
   protected readonly tipos = signal<{ nombre: TipoAviso; etiqueta: string; detalle: string }[]>(
@@ -190,6 +189,10 @@ export class Avisos {
   protected readonly andenes = signal<PlataformaEnGrupo[]>([]);
   protected readonly cargandoAndenes = signal(false);
   protected readonly errorAndenes = signal<string | null>(null);
+
+  protected readonly opcionesAndenes = computed<OpcionBuscador[]>(() =>
+    this.andenes().map((a) => ({ valor: String(a.code), etiqueta: a.anden })),
+  );
 
   constructor() {
     this.cargarTerminales();
