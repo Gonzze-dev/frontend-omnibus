@@ -41,10 +41,17 @@ export const routes: Routes = [
     canMatch: [soloAutenticados, soloRoles('admin', 'super_admin')],
     children: [
       { path: '', component: Dashboard, title: 'Dashboard' },
-      { path: 'ciudades', component: Ciudades, title: tituloCiudades },
-      { path: 'ciudades/listar', redirectTo: 'ciudades' },
-      { path: 'ciudades/:accion/:codigo', component: Ciudades, title: tituloCiudades },
-      { path: 'ciudades/:accion', component: Ciudades, title: tituloCiudades },
+      // El ABM de ciudades es solo de super_admin: un admin no ve la card ni puede entrar por URL.
+      {
+        path: 'ciudades',
+        canMatch: [soloRoles('super_admin')],
+        children: [
+          { path: '', pathMatch: 'full', component: Ciudades, title: tituloCiudades },
+          { path: 'listar', redirectTo: '' },
+          { path: ':accion/:codigo', component: Ciudades, title: tituloCiudades },
+          { path: ':accion', component: Ciudades, title: tituloCiudades },
+        ],
+      },
       { path: 'plataformas', component: Plataformas, title: tituloPlataformas },
       { path: 'plataformas/listar', redirectTo: 'plataformas' },
       { path: 'plataformas/:accion/:codigo', component: Plataformas, title: tituloPlataformas },

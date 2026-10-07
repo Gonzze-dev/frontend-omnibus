@@ -96,7 +96,7 @@ export class Dashboard implements OnInit {
    * endpoints de avisos y retrasos, que no tenian card.
    */
   protected readonly accesos: readonly Acceso[] = [
-    { id: 'ciudades', titulo: 'Gestionar Ciudades', bajada: 'Mapa y sedes', icono: 'sede', marca: 'ciudad', tono: 'azul' },
+    { id: 'ciudades', titulo: 'Gestionar Ciudades', bajada: 'Mapa y sedes', icono: 'sede', marca: 'ciudad', tono: 'azul', soloSuper: true },
     { id: 'plataformas', titulo: 'Gestionar Plataformas', bajada: 'Sistemas base', icono: 'ajustes', marca: 'plataforma', tono: 'indigo' },
     { id: 'terminales', titulo: 'Gestionar terminales', bajada: 'Sistema base', icono: 'monitor', marca: 'terminal', tono: 'carmin', soloSuper: true },
     { id: 'permisos', titulo: 'Control de Permisos', bajada: 'Roles', icono: 'permisos', marca: 'roles', tono: 'tinta' },
