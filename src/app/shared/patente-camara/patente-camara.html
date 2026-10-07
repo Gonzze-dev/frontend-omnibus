@@ -43,7 +43,7 @@
 
         @if (error()) {
           <p class="camara__mensaje camara__mensaje--error" role="alert">
-            {{ error() }} Toca el boton blanco para sacar otra.
+            {{ error() }} Toca el boton de reintentar para sacar otra.
           </p>
         } @else if (paso() === 'camara' && !iniciando()) {
           <p class="camara__mensaje">Encuadra la patente y saca la foto de frente.</p>
@@ -63,7 +63,18 @@
                 [disabled]="iniciando() || paso() === 'leyendo'"
                 (click)="disparar()"
                 [attr.aria-label]="paso() === 'error' ? 'Sacar otra foto' : 'Sacar foto'">
-          <span class="camara__obturador-centro" aria-hidden="true"></span>
+          @if (paso() === 'error') {
+            <!-- Tras un error el obturador pasa a ser un boton de reintentar. -->
+            <svg class="camara__reintentar" width="48" height="48" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+              <path d="M9.9 18.87A15 15 0 0 1 38.1 18.87M31.35 14.94L38.1 18.87L40.75 11.52"
+                    stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="M38.1 29.13A15 15 0 0 1 9.9 29.13M16.65 33.06L9.9 29.13L7.25 36.48"
+                    stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+              <circle cx="24" cy="24" r="4" fill="currentColor" />
+            </svg>
+          } @else {
+            <span class="camara__obturador-centro" aria-hidden="true"></span>
+          }
         </button>
 
         <span class="camara__hueco" aria-hidden="true"></span>

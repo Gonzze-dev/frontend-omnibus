@@ -193,7 +193,14 @@
   transition: transform 0.12s ease;
 }
 
-.camara__obturador:active:not(:disabled) .camara__obturador-centro { transform: scale(0.88); }
+/* Reintentar: dos flechas en circulo con un punto en el medio. */
+.camara__reintentar {
+  color: #fff;
+  transition: transform 0.12s ease;
+}
+
+.camara__obturador:active:not(:disabled) .camara__obturador-centro,
+.camara__obturador:active:not(:disabled) .camara__reintentar { transform: scale(0.88); }
 
 .camara__subir:disabled,
 .camara__obturador:disabled { opacity: 0.4; cursor: default; }
