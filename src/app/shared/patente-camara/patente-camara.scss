@@ -105,6 +105,8 @@
   object-fit: cover;
 }
 
+.camara__video--espejado { transform: scaleX(-1); }
+
 .camara__foto { object-fit: contain; background: #000; }
 
 .camara__aviso {

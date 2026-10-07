@@ -23,7 +23,7 @@
 
       <div class="camara__visor">
         @if (!sinCamaraEnVivo()) {
-          <video #video class="camara__video"
+          <video #video class="camara__video" [class.camara__video--espejado]="espejado()"
                  muted playsinline></video>
         } @else if (!vistaPrevia()) {
           <p class="camara__aviso">

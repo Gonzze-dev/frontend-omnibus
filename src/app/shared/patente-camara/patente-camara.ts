@@ -51,6 +51,8 @@ export class PatenteCamara implements OnDestroy {
   /** Foto sacada, se muestra congelada mientras se lee. */
   protected readonly vistaPrevia = signal<string | null>(null);
   protected readonly error = signal<string | null>(null);
+  /** Las webcams y camaras frontales se muestran espejadas, como un espejo; la trasera no. */
+  protected readonly espejado = signal(false);
 
   private video?: HTMLVideoElement;
   private stream: MediaStream | null = null;
@@ -162,6 +164,8 @@ export class PatenteCamara implements OnDestroy {
     const video = this.video;
     if (!video || !this.stream || video.srcObject === this.stream) return;
 
+    const { facingMode } = this.stream.getVideoTracks()[0]?.getSettings() ?? {};
+    this.espejado.set(facingMode !== 'environment');
     video.srcObject = this.stream;
     try {
       await video.play();
