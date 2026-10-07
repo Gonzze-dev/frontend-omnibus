@@ -4,6 +4,7 @@ import { AbstractControl, FormBuilder, ReactiveFormsModule, Validators } from '@
 import { ActivatedRoute, ResolveFn, Router, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Topbar } from '../../shared/topbar/topbar';
+import { PatenteCamara } from '../../shared/patente-camara/patente-camara';
 import { AuthService } from '../../services/auth.service';
 import { AvisoService } from '../../services/aviso.service';
 import { TerminalService } from '../../services/terminal.service';
@@ -85,7 +86,7 @@ const FECHA = new Intl.DateTimeFormat('es-AR', { dateStyle: 'short', timeStyle: 
  */
 @Component({
   selector: 'app-avisos',
-  imports: [Topbar, RouterLink, ReactiveFormsModule],
+  imports: [Topbar, RouterLink, ReactiveFormsModule, PatenteCamara],
   templateUrl: './avisos.html',
   styleUrl: './avisos.scss',
 })
@@ -479,6 +480,14 @@ export class Avisos {
           this.errorAviso.set(mensajeErrorArribo(err));
         },
       });
+  }
+
+  /** Carga la patente que leyo el OCR desde la foto. */
+  protected onPatenteLeida(patente: string): void {
+    const control = this.formAviso.controls.patente;
+    control.setValue(patente);
+    control.markAsDirty();
+    control.markAsTouched();
   }
 
   protected invalidoAviso(

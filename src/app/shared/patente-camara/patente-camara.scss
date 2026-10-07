@@ -1,0 +1,165 @@
+:host {
+  display: inline-flex;
+}
+
+.disparador {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--ab-field);
+  color: var(--ab-primary);
+  cursor: pointer;
+}
+
+.disparador:hover { background: color-mix(in srgb, var(--ab-primary) 14%, var(--ab-field)); }
+.disparador:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 2px; }
+
+.camara__fondo {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(19, 27, 46, 0.7);
+}
+
+.camara__panel {
+  position: relative;
+  width: min(100%, 520px);
+  max-height: 100%;
+  overflow-y: auto;
+  padding: var(--ab-card-pad-sm);
+  border-radius: var(--ab-r-card);
+  background: var(--ab-white);
+  box-shadow: var(--ab-shadow-dark);
+}
+
+.camara__cerrar {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--ab-field);
+  color: var(--ab-ink);
+  cursor: pointer;
+}
+
+.camara__titulo {
+  margin: 0 0 16px;
+  font-weight: 700;
+  font-size: var(--ab-fs-h3);
+  line-height: var(--ab-lh-h3);
+  color: var(--ab-ink);
+  text-align: center;
+}
+
+.camara__visor {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--ab-r-card);
+  background: var(--ab-ink);
+}
+
+.camara__video,
+.camara__foto {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.camara__foto { object-fit: contain; background: var(--ab-ink); }
+
+/* Marco con la proporcion de una patente argentina (aprox. 3:1). */
+.camara__marco {
+  position: absolute;
+  left: 15%;
+  right: 15%;
+  top: 50%;
+  aspect-ratio: 3 / 1;
+  transform: translateY(-50%);
+  border: 3px solid var(--ab-white);
+  border-radius: 8px;
+  box-shadow: 0 0 0 9999px rgba(19, 27, 46, 0.35);
+  pointer-events: none;
+}
+
+.camara__aviso {
+  margin: 0;
+  padding: 24px;
+  color: var(--ab-white);
+  font-size: var(--ab-fs-body);
+  line-height: var(--ab-lh-body);
+  text-align: center;
+}
+
+.camara__estado {
+  position: absolute;
+  inset: auto 0 16px;
+  margin: 0;
+  color: var(--ab-white);
+  font-weight: 600;
+  font-size: var(--ab-fs-body);
+  line-height: var(--ab-lh-body);
+  text-align: center;
+}
+
+.camara__estado--velo {
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(19, 27, 46, 0.55);
+}
+
+.camara__ayuda,
+.camara__error {
+  margin: 12px 0 0;
+  font-size: var(--ab-fs-body);
+  line-height: var(--ab-lh-body);
+  text-align: center;
+}
+
+.camara__ayuda { color: var(--ab-body); }
+.camara__error { color: var(--ab-danger); }
+
+.camara__acciones {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.camara__subir {
+  padding: 4px 8px;
+  border: 0;
+  background: none;
+  color: var(--ab-primary);
+  font-weight: 600;
+  font-size: var(--ab-fs-body);
+  cursor: pointer;
+}
+
+.camara__subir:hover { text-decoration: underline; }
+
+.camara__archivo { display: none; }

@@ -1,0 +1,75 @@
+<button class="disparador" type="button" (click)="abrir()"
+        aria-label="Sacar foto de la patente" title="Sacar foto de la patente">
+  <svg width="20" height="18" viewBox="0 0 20 18" fill="none" aria-hidden="true">
+    <path d="M7 1h6l1.5 2.5H18a1 1 0 0 1 1 1V16a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1h3.5L7 1Z"
+          stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+    <circle cx="10" cy="10" r="3.5" stroke="currentColor" stroke-width="1.8" />
+  </svg>
+</button>
+
+@if (abierto()) {
+  <div class="camara__fondo" (click)="cerrar()">
+    <div class="camara__panel" role="dialog" aria-modal="true" aria-labelledby="camara-titulo"
+         (click)="$event.stopPropagation()">
+      <button class="camara__cerrar" type="button" (click)="cerrar()" aria-label="Cerrar camara">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+          <path d="M1 1l16 16M17 1L1 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        </svg>
+      </button>
+
+      <h2 class="camara__titulo" id="camara-titulo">Foto de la patente</h2>
+
+      <div class="camara__visor">
+        @if (!sinCamaraEnVivo()) {
+          <video #video class="camara__video"
+                 muted playsinline></video>
+          <div class="camara__marco" aria-hidden="true"></div>
+        } @else if (!vistaPrevia()) {
+          <p class="camara__aviso">
+            No se puede usar la camara en vivo en este navegador. Abri la camara del dispositivo para sacar la foto.
+          </p>
+        }
+
+        @if (vistaPrevia(); as foto) {
+          <img class="camara__foto" [src]="foto" alt="Foto sacada de la patente" />
+        }
+
+        @if (iniciando()) {
+          <p class="camara__estado">Iniciando camara...</p>
+        } @else if (paso() === 'leyendo') {
+          <p class="camara__estado camara__estado--velo" role="status">Leyendo patente...</p>
+        }
+      </div>
+
+      @if (error()) {
+        <p class="camara__error" role="alert">{{ error() }}</p>
+      } @else {
+        <p class="camara__ayuda">Encuadra la patente dentro del marco y saca la foto de frente.</p>
+      }
+
+      <div class="camara__acciones">
+        @if (paso() === 'error') {
+          <button class="ab-button" type="button" (click)="reintentar()">Sacar otra foto</button>
+        } @else if (sinCamaraEnVivo()) {
+          <button class="ab-button" type="button" [disabled]="paso() === 'leyendo'" (click)="elegirArchivo()">
+            Abrir camara
+          </button>
+        } @else {
+          <button class="ab-button" type="button" [disabled]="iniciando() || paso() === 'leyendo'"
+                  (click)="sacarFoto()">
+            Sacar foto
+          </button>
+        }
+
+        @if (!sinCamaraEnVivo() && paso() !== 'leyendo') {
+          <button class="camara__subir" type="button" (click)="elegirArchivo()">o subir una foto</button>
+        }
+      </div>
+
+      <!-- Sin camara en vivo, capture abre directo la camara nativa del celular; si no, deja elegir de la galeria. -->
+      <input #archivo class="camara__archivo" type="file" accept="image/*"
+             [attr.capture]="sinCamaraEnVivo() ? 'environment' : null"
+             (change)="onArchivo($event)" />
+    </div>
+  </div>
+}

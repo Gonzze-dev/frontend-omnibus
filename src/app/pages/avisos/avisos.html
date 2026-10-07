@@ -199,22 +199,43 @@
             }
           </div>
 
+          <!-- En un arribo, duracion y patente van lado a lado -->
           <div class="ab-field">
-            <label class="ab-label" for="patente-arribo">Patente del colectivo</label>
-            <input class="ab-input" id="patente-arribo" type="text" placeholder="AB 123 CD"
-                   autocomplete="off" formControlName="patente"
-                   [attr.aria-invalid]="invalidoAviso('patente')" />
-            @if (invalidoAviso('patente')) {
-              <p class="ab-field-error">Ingresa la patente del colectivo.</p>
-            }
+            <div class="crud__fila">
+              <div class="ab-field">
+                <label class="ab-label" for="vida-aviso">Duracion (minutos)</label>
+                <input class="ab-input" id="vida-aviso" type="number" min="1" placeholder="12"
+                       formControlName="vida" [attr.aria-invalid]="invalidoAviso('vida')" />
+                @if (invalidoAviso('vida')) {
+                  <p class="ab-field-error">Ingresa una duracion de al menos 1 minuto.</p>
+                }
+              </div>
+
+              <div class="ab-field">
+                <label class="ab-label" for="patente-arribo">Patente del colectivo</label>
+                <div class="patente-fila">
+                  <input class="ab-input" id="patente-arribo" type="text" placeholder="AB 123 CD"
+                         autocomplete="off" formControlName="patente"
+                         [attr.aria-invalid]="invalidoAviso('patente')" />
+                  <app-patente-camara (patenteLeida)="onPatenteLeida($event)" />
+                </div>
+                @if (invalidoAviso('patente')) {
+                  <p class="ab-field-error">Ingresa la patente del colectivo.</p>
+                }
+              </div>
+            </div>
             <p class="crud__nota">Usalo cuando la camara del anden no detecto la llegada del colectivo.</p>
+            <p class="crud__nota">Pasado ese tiempo el aviso deja de mostrarse a los pasajeros.</p>
           </div>
         } @else if (esRetraso()) {
           <div class="ab-field">
             <label class="ab-label" for="patente-retraso">Patente del colectivo</label>
-            <input class="ab-input" id="patente-retraso" type="text" placeholder="AB 123 CD"
-                   autocomplete="off" formControlName="patente"
-                   [attr.aria-invalid]="invalidoAviso('patente')" />
+            <div class="patente-fila">
+              <input class="ab-input" id="patente-retraso" type="text" placeholder="AB 123 CD"
+                     autocomplete="off" formControlName="patente"
+                     [attr.aria-invalid]="invalidoAviso('patente')" />
+              <app-patente-camara (patenteLeida)="onPatenteLeida($event)" />
+            </div>
             @if (invalidoAviso('patente')) {
               <p class="ab-field-error">Ingresa la patente del colectivo.</p>
             }
@@ -241,31 +262,33 @@
           </div>
         }
 
-        <div class="ab-field">
-          <!-- En un retraso, demora y duracion van lado a lado -->
-          <div [class.crud__fila]="esRetraso()">
-            @if (esRetraso()) {
+        @if (!esArribo()) {
+          <div class="ab-field">
+            <!-- En un retraso, demora y duracion van lado a lado -->
+            <div [class.crud__fila]="esRetraso()">
+              @if (esRetraso()) {
+                <div class="ab-field">
+                  <label class="ab-label" for="demora-retraso">Demora (minutos)</label>
+                  <input class="ab-input" id="demora-retraso" type="number" min="1" placeholder="15"
+                         formControlName="demora" [attr.aria-invalid]="invalidoAviso('demora')" />
+                  @if (invalidoAviso('demora')) {
+                    <p class="ab-field-error">Ingresa una demora de al menos 1 minuto.</p>
+                  }
+                </div>
+              }
+
               <div class="ab-field">
-                <label class="ab-label" for="demora-retraso">Demora (minutos)</label>
-                <input class="ab-input" id="demora-retraso" type="number" min="1" placeholder="15"
-                       formControlName="demora" [attr.aria-invalid]="invalidoAviso('demora')" />
-                @if (invalidoAviso('demora')) {
-                  <p class="ab-field-error">Ingresa una demora de al menos 1 minuto.</p>
+                <label class="ab-label" for="vida-aviso">Duracion (minutos)</label>
+                <input class="ab-input" id="vida-aviso" type="number" min="1" placeholder="12"
+                       formControlName="vida" [attr.aria-invalid]="invalidoAviso('vida')" />
+                @if (invalidoAviso('vida')) {
+                  <p class="ab-field-error">Ingresa una duracion de al menos 1 minuto.</p>
                 }
               </div>
-            }
-
-            <div class="ab-field">
-              <label class="ab-label" for="vida-aviso">Duracion (minutos)</label>
-              <input class="ab-input" id="vida-aviso" type="number" min="1" placeholder="12"
-                     formControlName="vida" [attr.aria-invalid]="invalidoAviso('vida')" />
-              @if (invalidoAviso('vida')) {
-                <p class="ab-field-error">Ingresa una duracion de al menos 1 minuto.</p>
-              }
             </div>
+            <p class="crud__nota">Pasado ese tiempo el aviso deja de mostrarse a los pasajeros.</p>
           </div>
-          <p class="crud__nota">Pasado ese tiempo el aviso deja de mostrarse a los pasajeros.</p>
-        </div>
+        }
 
         @if (errorAviso()) {
           <p class="ab-form-error" role="alert">{{ errorAviso() }}</p>

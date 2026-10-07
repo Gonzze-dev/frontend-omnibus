@@ -20,3 +20,15 @@
   background: rgba(116, 118, 133, 0.15);
   color: #5a5c6b;
 }
+
+/* Input de patente acotado, con el boton de la camara al lado */
+.patente-fila {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  .ab-input {
+    flex: 0 1 220px;
+    min-width: 0;
+  }
+}
