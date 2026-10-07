@@ -95,21 +95,6 @@ $fila: $icono + 29px;
 .crud__agregar:hover { opacity: 0.9; }
 .crud__agregar:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 2px; }
 
-/* Marca las pantallas que son solo para super admin */
-.crud__super {
-  display: inline-block;
-  margin-top: 12px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--tono) 12%, transparent);
-  font-weight: 600;
-  font-size: var(--ab-fs-label);
-  line-height: 16px;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--tono);
-}
-
 /* ---------------- Tablas ---------------- */
 .tabla {
   display: flex;
