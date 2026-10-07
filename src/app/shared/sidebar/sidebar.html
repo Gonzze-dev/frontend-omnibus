@@ -39,19 +39,22 @@
         </a>
       </li>
 
-      <li>
-        <a
-          class="drawer__item"
-          routerLink="/dashboard"
-          routerLinkActive="drawer__item--active"
-          (click)="close()"
-        >
-          <svg class="drawer__mark" width="10" height="7" viewBox="0 0 10 7" fill="none" aria-hidden="true">
-            <path d="M0.5 1h9M2 3.5h6M3.5 6h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" />
-          </svg>
-          Dashboard
-        </a>
-      </li>
+      <!-- Solo administradores: la ruta tambien esta protegida por soloRoles. -->
+      @if (esAdmin()) {
+        <li>
+          <a
+            class="drawer__item"
+            routerLink="/dashboard"
+            routerLinkActive="drawer__item--active"
+            (click)="close()"
+          >
+            <svg class="drawer__mark" width="10" height="7" viewBox="0 0 10 7" fill="none" aria-hidden="true">
+              <path d="M0.5 1h9M2 3.5h6M3.5 6h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" />
+            </svg>
+            Dashboard
+          </a>
+        </li>
+      }
     </ul>
 
     <button class="drawer__logout" type="button" (click)="cerrarSesion()">Cerrar Sesion</button>

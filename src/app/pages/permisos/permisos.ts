@@ -127,7 +127,7 @@ export class Permisos {
 
   private readonly dialogo = viewChild<ElementRef<HTMLDialogElement>>('dialogo');
 
-  protected readonly soySuper = computed(() => this.auth.user()?.rol === 'super_admin');
+  protected readonly soySuper = this.auth.esSuper;
 
   /** Usuario al que se le esta cambiando el rol. null = popup cerrado. */
   protected readonly objetivo = signal<UsuarioListado | null>(null);

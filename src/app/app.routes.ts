@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { soloRoles } from './guards/rol.guard';
 import { Login } from './pages/login/login';
 import { Registro } from './pages/registro/registro';
 import { OlvidarContrasena } from './pages/olvidar-contrasena/olvidar-contrasena';
@@ -24,22 +25,35 @@ export const routes: Routes = [
   { path: 'home', component: Home, title: 'Rastrea tu viaje' },
   { path: 'notificaciones', component: Notificaciones, title: 'Notificaciones' },
   { path: 'perfil', component: Perfil, title: 'Informacion sobre tu perfil' },
-  { path: 'dashboard', component: Dashboard, title: 'Dashboard' },
-  { path: 'dashboard/ciudades', pathMatch: 'full', redirectTo: 'dashboard/ciudades/listar' },
-  { path: 'dashboard/ciudades/:accion/:codigo', component: Ciudades, title: tituloCiudades },
-  { path: 'dashboard/ciudades/:accion', component: Ciudades, title: tituloCiudades },
-  { path: 'dashboard/plataformas', pathMatch: 'full', redirectTo: 'dashboard/plataformas/listar' },
-  { path: 'dashboard/plataformas/:accion/:codigo', component: Plataformas, title: tituloPlataformas },
-  { path: 'dashboard/plataformas/:accion', component: Plataformas, title: tituloPlataformas },
-  { path: 'dashboard/terminales', pathMatch: 'full', redirectTo: 'dashboard/terminales/listar' },
-  { path: 'dashboard/terminales/:accion/:codigo', component: Terminales, title: tituloTerminales },
-  { path: 'dashboard/terminales/:accion', component: Terminales, title: tituloTerminales },
-  { path: 'dashboard/permisos', component: Permisos, title: tituloPermisos },
-  { path: 'dashboard/permisos/:accion', redirectTo: 'dashboard/permisos' },
-  { path: 'dashboard/notificaciones/retraso', redirectTo: 'dashboard/notificaciones/aviso' },
-  { path: 'dashboard/notificaciones', pathMatch: 'full', redirectTo: 'dashboard/notificaciones/listar' },
-  { path: 'dashboard/notificaciones/:accion/:codigo', component: Avisos, title: tituloAvisos },
-  { path: 'dashboard/notificaciones/:accion', component: Avisos, title: tituloAvisos },
-  { path: 'dashboard/:seccion', component: Gestion, title: tituloGestion },
+  {
+    path: 'dashboard',
+    canMatch: [soloRoles('admin', 'super_admin')],
+    children: [
+      { path: '', component: Dashboard, title: 'Dashboard' },
+      { path: 'ciudades', pathMatch: 'full', redirectTo: 'ciudades/listar' },
+      { path: 'ciudades/:accion/:codigo', component: Ciudades, title: tituloCiudades },
+      { path: 'ciudades/:accion', component: Ciudades, title: tituloCiudades },
+      { path: 'plataformas', pathMatch: 'full', redirectTo: 'plataformas/listar' },
+      { path: 'plataformas/:accion/:codigo', component: Plataformas, title: tituloPlataformas },
+      { path: 'plataformas/:accion', component: Plataformas, title: tituloPlataformas },
+      // Los endpoints viven en /api/super: un admin no ve la card ni puede entrar por URL.
+      {
+        path: 'terminales',
+        canMatch: [soloRoles('super_admin')],
+        children: [
+          { path: '', pathMatch: 'full', redirectTo: 'listar' },
+          { path: ':accion/:codigo', component: Terminales, title: tituloTerminales },
+          { path: ':accion', component: Terminales, title: tituloTerminales },
+        ],
+      },
+      { path: 'permisos', component: Permisos, title: tituloPermisos },
+      { path: 'permisos/:accion', redirectTo: 'permisos' },
+      { path: 'notificaciones/retraso', redirectTo: 'notificaciones/aviso' },
+      { path: 'notificaciones', pathMatch: 'full', redirectTo: 'notificaciones/listar' },
+      { path: 'notificaciones/:accion/:codigo', component: Avisos, title: tituloAvisos },
+      { path: 'notificaciones/:accion', component: Avisos, title: tituloAvisos },
+      { path: ':seccion', component: Gestion, title: tituloGestion },
+    ],
+  },
   { path: '**', redirectTo: 'login' },
 ];

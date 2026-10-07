@@ -20,7 +20,7 @@
 
   <!-- Cada card abre el menu de opciones de su gestion. -->
   <ul class="accesos">
-    @for (a of accesos; track a.id) {
+    @for (a of accesosVisibles(); track a.id) {
       <li>
         <a class="acceso" [class]="'tono--' + a.tono" [routerLink]="['/dashboard', a.id]">
           <span class="acceso__icono">

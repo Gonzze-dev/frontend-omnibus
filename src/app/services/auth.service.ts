@@ -12,6 +12,7 @@ import {
   RegisterRequest,
   ResetPasswordRequest,
   ResetPasswordResponse,
+  Rol,
   User,
   ValidateRecoveryTokenResponse,
 } from '../models/auth.model';
@@ -36,6 +37,12 @@ export class AuthService {
   readonly accessToken = this._accessToken.asReadonly();
   readonly user = this._user.asReadonly();
   readonly isAuthenticated = computed(() => !!this._accessToken());
+  readonly esSuper = computed(() => this._user()?.rol === 'super_admin');
+
+  tieneRol(...roles: Rol[]): boolean {
+    const rol = this._user()?.rol;
+    return !!rol && roles.includes(rol);
+  }
 
   /** Refresh en curso, compartido para no disparar varios a la vez. */
   private refresh$: Observable<string> | null = null;
@@ -76,11 +83,17 @@ export class AuthService {
   /**
    * Reemplaza el usuario de la sesion. PUT /users/me no devuelve las
    * terminales del admin, asi que se conservan las que ya habia.
+   * Si cambio el rol se pide un access token nuevo: el backend autoriza
+   * con el rol del JWT y /auth/refresh lo vuelve a leer de la base.
    */
   actualizarUsuario(user: User): void {
+    const rolAnterior = this._user()?.rol;
     const actualizado: User = { ...user, terminals: user.terminals ?? this._user()?.terminals };
     this._user.set(actualizado);
     guardar(USER_KEY, JSON.stringify(actualizado));
+    if (rolAnterior && rolAnterior !== actualizado.rol) {
+      this.refreshToken().subscribe({ error: () => {} });
+    }
   }
 
   clearSession(): void {
@@ -119,7 +132,7 @@ export class AuthService {
 
   /** Pantalla inicial segun el rol: los administradores van al dashboard. */
   rutaInicio(user: User | null = this._user()): string {
-    return user?.rol === 'admin' || user?.rol === 'super_admin' ? '/dashboard' : '/home';
+    return esAdmin(user) ? '/dashboard' : '/home';
   }
 
   private guardarToken(token: string): void {
@@ -134,6 +147,10 @@ export class AuthService {
  */
 function cabeceraRecuperacion(token: string): HttpHeaders {
   return new HttpHeaders({ Authorization: `Bearer ${token.trim()}` });
+}
+
+function esAdmin(user: User | null): boolean {
+  return user?.rol === 'admin' || user?.rol === 'super_admin';
 }
 
 // localStorage puede fallar (modo privado, almacenamiento bloqueado)

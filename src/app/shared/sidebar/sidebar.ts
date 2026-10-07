@@ -1,4 +1,4 @@
-import { Component, inject, model } from '@angular/core';
+import { Component, computed, inject, model } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 
@@ -16,6 +16,8 @@ export class Sidebar {
 
   /** Two-way: el padre abre el menu y el drawer se cierra solo. */
   readonly open = model(false);
+
+  protected readonly esAdmin = computed(() => this.auth.tieneRol('admin', 'super_admin'));
 
   close(): void {
     this.open.set(false);
