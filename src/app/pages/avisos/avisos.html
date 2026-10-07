@@ -218,23 +218,28 @@
             <p class="crud__nota">Pasado ese tiempo el aviso deja de mostrarse a los pasajeros.</p>
           </div>
         } @else if (esRetraso()) {
+          <!-- En un retraso, patente y fecha van lado a lado -->
           <div class="ab-field">
-            <label class="ab-label" for="patente-retraso">Patente del colectivo</label>
-            <input class="ab-input" id="patente-retraso" type="text" placeholder="AB 123 CD"
-                   autocomplete="off" formControlName="patente"
-                   [attr.aria-invalid]="invalidoAviso('patente')" />
-            @if (invalidoAviso('patente')) {
-              <p class="ab-field-error">Ingresa la patente del colectivo.</p>
-            }
-          </div>
+            <div class="crud__fila">
+              <div class="ab-field">
+                <label class="ab-label" for="patente-retraso">Patente del colectivo</label>
+                <input class="ab-input" id="patente-retraso" type="text" placeholder="AB 123 CD"
+                       autocomplete="off" formControlName="patente"
+                       [attr.aria-invalid]="invalidoAviso('patente')" />
+                @if (invalidoAviso('patente')) {
+                  <p class="ab-field-error">Ingresa la patente del colectivo.</p>
+                }
+              </div>
 
-          <div class="ab-field">
-            <label class="ab-label" for="fecha-retraso">Fecha del viaje</label>
-            <input class="ab-input" id="fecha-retraso" type="date" formControlName="fecha"
-                   [attr.aria-invalid]="invalidoAviso('fecha')" />
-            @if (invalidoAviso('fecha')) {
-              <p class="ab-field-error">Elegi la fecha del viaje.</p>
-            }
+              <div class="ab-field">
+                <label class="ab-label" for="fecha-retraso">Fecha del viaje</label>
+                <input class="ab-input" id="fecha-retraso" type="date" formControlName="fecha"
+                       [attr.aria-invalid]="invalidoAviso('fecha')" />
+                @if (invalidoAviso('fecha')) {
+                  <p class="ab-field-error">Elegi la fecha del viaje.</p>
+                }
+              </div>
+            </div>
             <p class="crud__nota">El viaje tiene que estar registrado en el sistema de pasajes para esa fecha y patente.</p>
           </div>
         } @else {
