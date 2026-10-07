@@ -8,3 +8,12 @@ import { AuthService } from '../services/auth.service';
  */
 export const soloAutenticados: CanMatchFn = () =>
   inject(AuthService).isAuthenticated() || inject(Router).parseUrl('/login');
+
+/**
+ * Pantallas de invitado (login, registro): con sesion iniciada se va
+ * directo a la pantalla inicial del rol (dashboard o home).
+ */
+export const soloInvitados: CanMatchFn = () => {
+  const auth = inject(AuthService);
+  return !auth.isAuthenticated() || inject(Router).parseUrl(auth.rutaInicio());
+};

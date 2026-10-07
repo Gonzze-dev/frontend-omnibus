@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { soloAutenticados } from './guards/auth.guard';
+import { soloAutenticados, soloInvitados } from './guards/auth.guard';
 import { soloRoles } from './guards/rol.guard';
 import { Login } from './pages/login/login';
 import { Registro } from './pages/registro/registro';
@@ -18,8 +18,8 @@ import { Avisos, tituloAvisos } from './pages/avisos/avisos';
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'login' },
-  { path: 'login', component: Login, title: 'Iniciar Sesion' },
-  { path: 'registro', component: Registro, title: 'Create una cuenta' },
+  { path: 'login', component: Login, title: 'Iniciar Sesion', canMatch: [soloInvitados] },
+  { path: 'registro', component: Registro, title: 'Create una cuenta', canMatch: [soloInvitados] },
   { path: 'olvidar-contrasena', component: OlvidarContrasena, title: 'Olvidaste tu contraseña?' },
   // La ruta la arma el backend en el mail (FRONT_END_BASE_LINK + /reset-password?token=...)
   { path: 'reset-password', component: NuevaContrasena, title: 'Nueva contraseña' },
