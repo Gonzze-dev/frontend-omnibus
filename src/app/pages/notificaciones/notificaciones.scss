@@ -2,9 +2,20 @@
    Notificaciones (Figma nodo 35:217)
    ============================================================ */
 
+@use '../../../styles/pantalla' as *;
+
 .avisos {
   min-height: calc(100dvh - var(--ab-topbar-h));
   padding-bottom: 23px;
+  @include pantalla-card;
+}
+
+/* Dentro de la card el titulo necesita aire arriba y abajo */
+@media (min-width: 768px) {
+  .avisos {
+    padding-top: 34px;
+    padding-bottom: 48px;
+  }
 }
 
 .avisos__titulo {
