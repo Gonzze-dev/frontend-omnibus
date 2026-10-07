@@ -640,4 +640,14 @@ $fila: $icono + 29px;
   }
 
   .popup__cancelar:hover:not(:disabled) { text-decoration: underline; }
+
+  /* Popups de alta y edicion: el formulario va dentro del contenido */
+  .popup .crud__form { margin-top: 0; }
+
+  /* Boton de guardar del popup: mismo tamaño que el de confirmar la baja */
+  .popup__boton {
+    width: auto;
+    min-height: 48px;
+    padding: 12px 24px;
+  }
 }

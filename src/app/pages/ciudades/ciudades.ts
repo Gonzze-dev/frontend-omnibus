@@ -1,4 +1,4 @@
-import { Component, ElementRef, computed, effect, inject, signal, viewChild } from '@angular/core';
+import { Component, ElementRef, computed, effect, inject, signal, untracked, viewChild } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, ResolveFn, RouterLink } from '@angular/router';
@@ -115,7 +115,9 @@ export class Ciudades {
     Array.from({ length: Math.max(0, POR_PAGINA - (this.ciudades().length || 1)) }),
   );
 
-  // --- Alta ---
+  // --- Alta (popup sobre el listado) ---
+  private readonly dialogoAlta = viewChild<ElementRef<HTMLDialogElement>>('dialogoAlta');
+  protected readonly altaAbierta = signal(false);
   protected readonly formCrear = this.fb.nonNullable.group({
     postal_code: ['', Validators.required],
     name: ['', Validators.required],
@@ -133,7 +135,9 @@ export class Ciudades {
   protected readonly guardandoEditar = signal(false);
   protected readonly errorEditar = signal<string | null>(null);
 
-  // --- Edicion: ciudad elegida ---
+  // --- Edicion: ciudad elegida (popup sobre el listado) ---
+  private readonly dialogoEdicion = viewChild<ElementRef<HTMLDialogElement>>('dialogoEdicion');
+  protected readonly edicionAbierta = signal(false);
   protected readonly ciudadSeleccionada = signal<Ciudad | null>(null);
 
   // --- Baja (popup sobre el listado) ---
@@ -149,10 +153,14 @@ export class Ciudades {
       if (accion === 'listar') {
         this.cargarCiudades();
       } else if (accion === 'editar') {
-        this.cargarSeleccionada(this.codigo());
+        // La URL vieja de edicion sigue andando: muestra el listado con el popup abierto
+        const codigo = this.codigo();
+        this.router.navigateByUrl('/dashboard/ciudades', { replaceUrl: true });
+        untracked(() => this.abrirEdicion(codigo));
       } else if (accion === 'crear') {
-        this.formCrear.reset();
-        this.errorCrear.set(null);
+        // La URL vieja de alta sigue andando: muestra el listado con el popup abierto
+        this.router.navigateByUrl('/dashboard/ciudades', { replaceUrl: true });
+        untracked(() => this.abrirAlta());
       }
     });
 
@@ -163,6 +171,20 @@ export class Ciudades {
       if (!dialogo) return;
       if (this.aEliminar() && !dialogo.open) dialogo.showModal();
       if (!this.aEliminar() && dialogo.open) dialogo.close();
+    });
+
+    effect(() => {
+      const dialogo = this.dialogoAlta()?.nativeElement;
+      if (!dialogo) return;
+      if (this.altaAbierta() && !dialogo.open) dialogo.showModal();
+      if (!this.altaAbierta() && dialogo.open) dialogo.close();
+    });
+
+    effect(() => {
+      const dialogo = this.dialogoEdicion()?.nativeElement;
+      if (!dialogo) return;
+      if (this.edicionAbierta() && !dialogo.open) dialogo.showModal();
+      if (!this.edicionAbierta() && dialogo.open) dialogo.close();
     });
   }
 
@@ -214,8 +236,38 @@ export class Ciudades {
     this.pagina.set(Math.min(Math.max(pagina, 1), this.totalPaginas()));
   }
 
-  protected irAEditar(codigo: string): void {
-    this.router.navigate(['/dashboard/ciudades/editar', codigo]);
+  protected abrirAlta(): void {
+    this.formCrear.reset();
+    this.errorCrear.set(null);
+    this.altaAbierta.set(true);
+  }
+
+  protected cerrarAlta(): void {
+    if (this.guardandoCrear()) return;
+    this.altaAbierta.set(false);
+    this.errorCrear.set(null);
+  }
+
+  /** Un click en el fondo (fuera del contenido) cierra el popup de alta. */
+  protected clickEnPopupAlta(event: MouseEvent): void {
+    if (event.target === event.currentTarget) this.cerrarAlta();
+  }
+
+  protected abrirEdicion(codigo: string | null): void {
+    this.errorEditar.set(null);
+    this.edicionAbierta.set(true);
+    this.cargarSeleccionada(codigo);
+  }
+
+  protected cerrarEdicion(): void {
+    if (this.guardandoEditar()) return;
+    this.edicionAbierta.set(false);
+    this.errorEditar.set(null);
+  }
+
+  /** Un click en el fondo (fuera del contenido) cierra el popup de edicion. */
+  protected clickEnPopupEdicion(event: MouseEvent): void {
+    if (event.target === event.currentTarget) this.cerrarEdicion();
   }
 
   protected crear(): void {
@@ -231,7 +283,8 @@ export class Ciudades {
     this.ciudadService.crear({ postal_code: postal_code.trim(), name: name.trim() }).subscribe({
       next: () => {
         this.guardandoCrear.set(false);
-        this.router.navigateByUrl('/dashboard/ciudades');
+        this.altaAbierta.set(false);
+        this.cargarCiudades();
       },
       error: (err: HttpErrorResponse) => {
         this.guardandoCrear.set(false);
@@ -258,7 +311,8 @@ export class Ciudades {
       .subscribe({
         next: () => {
           this.guardandoEditar.set(false);
-          this.router.navigateByUrl('/dashboard/ciudades');
+          this.edicionAbierta.set(false);
+          this.cargarCiudades();
         },
         error: (err: HttpErrorResponse) => {
           this.guardandoEditar.set(false);
