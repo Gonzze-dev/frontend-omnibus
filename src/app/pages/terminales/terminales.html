@@ -52,8 +52,8 @@
 
           @for (t of terminales(); track t.uuid) {
             <li class="tabla__fila tabla__fila--seleccionable"
-                [routerLink]="['/dashboard/terminales/editar', t.uuid]"
-                (keydown.enter)="irAEditar(t.uuid)"
+                (click)="abrirEdicion(t.uuid)"
+                (keydown.enter)="abrirEdicion(t.uuid)"
                 tabindex="0" role="button" aria-label="Editar terminal">
               <span class="tabla__dato">
                 <span class="tabla__linea">{{ t.name }}</span>
@@ -112,55 +112,6 @@
             </svg>
           </button>
         </nav>
-      }
-    }
-
-    @case ('editar') {
-      @if (cargandoSeleccionada()) {
-        <p class="tabla__vacio">Cargando terminal...</p>
-      } @else if (errorSeleccionada()) {
-        <p class="ab-form-error" role="alert">{{ errorSeleccionada() }}</p>
-      } @else {
-        <form class="crud__form" [formGroup]="formEditar" (ngSubmit)="guardarEdicion()" novalidate>
-          <div class="ab-field">
-            <label class="ab-label" for="nombre-editar">Nombre</label>
-            <input class="ab-input" id="nombre-editar" type="text" autocomplete="off"
-                   formControlName="name" [attr.aria-invalid]="invalidoEditar('name')" />
-            @if (invalidoEditar('name')) {
-              <p class="ab-field-error">Ingresa el nombre.</p>
-            }
-          </div>
-
-          <div class="ab-field">
-            <label class="ab-label" for="ciudad-editar">Ciudad</label>
-            <select class="crud__select" id="ciudad-editar" formControlName="postal_code"
-                     [attr.aria-invalid]="invalidoEditar('postal_code')">
-              @for (c of ciudades(); track c.postal_code) {
-                <option [value]="c.postal_code">{{ c.name }} ({{ c.postal_code }})</option>
-              }
-            </select>
-            @if (invalidoEditar('postal_code')) {
-              <p class="ab-field-error">Elegi una ciudad.</p>
-            }
-          </div>
-
-          <div class="ab-field">
-            <label class="ab-label" for="externo-editar">Id externo</label>
-            <input class="ab-input" id="externo-editar" type="text" autocomplete="off"
-                   formControlName="external_terminal_id" [attr.aria-invalid]="invalidoEditar('external_terminal_id')" />
-            @if (invalidoEditar('external_terminal_id')) {
-              <p class="ab-field-error">Ingresa un id externo valido (uuid).</p>
-            }
-          </div>
-
-          @if (errorEditar()) {
-            <p class="ab-form-error" role="alert">{{ errorEditar() }}</p>
-          }
-
-          <button class="ab-button ab-button--lg" type="submit" [disabled]="guardandoEditar()">
-            {{ guardandoEditar() ? 'Guardando...' : 'Guardar cambios' }}
-          </button>
-        </form>
       }
     }
   }
@@ -281,6 +232,78 @@
           </button>
         </div>
       </form>
+    </div>
+  }
+</dialog>
+
+<!-- Popup con el formulario de edicion. Escape o un click afuera lo cierran. -->
+<dialog #dialogoEdicion class="popup" aria-labelledby="edicion-titulo"
+        (cancel)="$event.preventDefault(); cerrarEdicion()"
+        (click)="clickEnPopupEdicion($event)">
+  @if (edicionAbierta()) {
+    <div class="popup__contenido">
+      <header class="popup__head">
+        <h2 class="popup__titulo" id="edicion-titulo">Editar terminal</h2>
+        <button class="popup__cerrar" type="button" aria-label="Cerrar" [disabled]="guardandoEditar()" (click)="cerrarEdicion()">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <path d="M1.5 1.5l11 11M12.5 1.5l-11 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+          </svg>
+        </button>
+      </header>
+
+      <p class="popup__texto">Cambia el nombre, la ciudad o el id externo.</p>
+
+      @if (cargandoSeleccionada()) {
+        <p class="popup__texto">Cargando terminal...</p>
+      } @else if (errorSeleccionada()) {
+        <p class="ab-form-error" role="alert">{{ errorSeleccionada() }}</p>
+      } @else {
+        <form class="crud__form" [formGroup]="formEditar" (ngSubmit)="guardarEdicion()" novalidate>
+          <div class="ab-field">
+            <label class="ab-label" for="nombre-editar">Nombre</label>
+            <input class="ab-input" id="nombre-editar" type="text" autocomplete="off"
+                   formControlName="name" [attr.aria-invalid]="invalidoEditar('name')" />
+            @if (invalidoEditar('name')) {
+              <p class="ab-field-error">Ingresa el nombre.</p>
+            }
+          </div>
+
+          <div class="ab-field">
+            <label class="ab-label" for="ciudad-editar">Ciudad</label>
+            <select class="crud__select" id="ciudad-editar" formControlName="postal_code"
+                     [attr.aria-invalid]="invalidoEditar('postal_code')">
+              @for (c of ciudades(); track c.postal_code) {
+                <option [value]="c.postal_code">{{ c.name }} ({{ c.postal_code }})</option>
+              }
+            </select>
+            @if (invalidoEditar('postal_code')) {
+              <p class="ab-field-error">Elegi una ciudad.</p>
+            }
+          </div>
+
+          <div class="ab-field">
+            <label class="ab-label" for="externo-editar">Id externo</label>
+            <input class="ab-input" id="externo-editar" type="text" autocomplete="off"
+                   formControlName="external_terminal_id" [attr.aria-invalid]="invalidoEditar('external_terminal_id')" />
+            @if (invalidoEditar('external_terminal_id')) {
+              <p class="ab-field-error">Ingresa un id externo valido (uuid).</p>
+            }
+          </div>
+
+          @if (errorEditar()) {
+            <p class="ab-form-error" role="alert">{{ errorEditar() }}</p>
+          }
+
+          <div class="popup__acciones">
+            <button class="popup__cancelar" type="button" [disabled]="guardandoEditar()" (click)="cerrarEdicion()">
+              Cancelar
+            </button>
+            <button class="ab-button popup__boton" type="submit" [disabled]="guardandoEditar()">
+              {{ guardandoEditar() ? 'Guardando...' : 'Guardar cambios' }}
+            </button>
+          </div>
+        </form>
+      }
     </div>
   }
 </dialog>

@@ -146,7 +146,9 @@ export class Terminales {
   protected readonly guardandoEditar = signal(false);
   protected readonly errorEditar = signal<string | null>(null);
 
-  // --- Edicion: terminal elegida ---
+  // --- Edicion: terminal elegida (popup sobre el listado) ---
+  private readonly dialogoEdicion = viewChild<ElementRef<HTMLDialogElement>>('dialogoEdicion');
+  protected readonly edicionAbierta = signal(false);
   protected readonly terminalSeleccionada = signal<Terminal | null>(null);
 
   // --- Baja (popup sobre el listado) ---
@@ -164,7 +166,10 @@ export class Terminales {
       if (accion === 'listar') {
         this.cargarTerminales();
       } else if (accion === 'editar') {
-        this.cargarSeleccionada(this.codigo());
+        // La URL vieja de edicion sigue andando: muestra el listado con el popup abierto
+        const codigo = this.codigo();
+        this.router.navigateByUrl('/dashboard/terminales', { replaceUrl: true });
+        untracked(() => this.abrirEdicion(codigo));
       } else if (accion === 'crear') {
         // La URL vieja de alta sigue andando: muestra el listado con el popup abierto
         this.router.navigateByUrl('/dashboard/terminales', { replaceUrl: true });
@@ -177,6 +182,13 @@ export class Terminales {
       if (!dialogo) return;
       if (this.altaAbierta() && !dialogo.open) dialogo.showModal();
       if (!this.altaAbierta() && dialogo.open) dialogo.close();
+    });
+
+    effect(() => {
+      const dialogo = this.dialogoEdicion()?.nativeElement;
+      if (!dialogo) return;
+      if (this.edicionAbierta() && !dialogo.open) dialogo.showModal();
+      if (!this.edicionAbierta() && dialogo.open) dialogo.close();
     });
 
     // El <dialog> nativo se abre con showModal() para tener fondo, foco
@@ -247,8 +259,21 @@ export class Terminales {
     this.pagina.set(Math.min(Math.max(pagina, 1), this.totalPaginas()));
   }
 
-  protected irAEditar(uuid: string): void {
-    this.router.navigate(['/dashboard/terminales/editar', uuid]);
+  protected abrirEdicion(uuid: string | null): void {
+    this.errorEditar.set(null);
+    this.edicionAbierta.set(true);
+    this.cargarSeleccionada(uuid);
+  }
+
+  protected cerrarEdicion(): void {
+    if (this.guardandoEditar()) return;
+    this.edicionAbierta.set(false);
+    this.errorEditar.set(null);
+  }
+
+  /** Un click en el fondo (fuera del contenido) cierra el popup de edicion. */
+  protected clickEnPopupEdicion(event: MouseEvent): void {
+    if (event.target === event.currentTarget) this.cerrarEdicion();
   }
 
   protected abrirAlta(): void {
@@ -319,7 +344,8 @@ export class Terminales {
       .subscribe({
         next: () => {
           this.guardandoEditar.set(false);
-          this.router.navigateByUrl('/dashboard/terminales');
+          this.edicionAbierta.set(false);
+          this.cargarTerminales();
         },
         error: (err: HttpErrorResponse) => {
           this.guardandoEditar.set(false);
