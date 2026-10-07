@@ -231,7 +231,7 @@ export class Ciudades {
     this.ciudadService.crear({ postal_code: postal_code.trim(), name: name.trim() }).subscribe({
       next: () => {
         this.guardandoCrear.set(false);
-        this.router.navigateByUrl('/dashboard/ciudades/listar');
+        this.router.navigateByUrl('/dashboard/ciudades');
       },
       error: (err: HttpErrorResponse) => {
         this.guardandoCrear.set(false);
@@ -258,7 +258,7 @@ export class Ciudades {
       .subscribe({
         next: () => {
           this.guardandoEditar.set(false);
-          this.router.navigateByUrl('/dashboard/ciudades/listar');
+          this.router.navigateByUrl('/dashboard/ciudades');
         },
         error: (err: HttpErrorResponse) => {
           this.guardandoEditar.set(false);

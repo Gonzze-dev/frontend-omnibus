@@ -288,7 +288,7 @@ export class Plataformas {
       .subscribe({
         next: () => {
           this.guardandoCrear.set(false);
-          this.router.navigateByUrl('/dashboard/plataformas/listar');
+          this.router.navigateByUrl('/dashboard/plataformas');
         },
         error: (err: HttpErrorResponse) => {
           this.guardandoCrear.set(false);
@@ -315,7 +315,7 @@ export class Plataformas {
       .subscribe({
         next: () => {
           this.guardandoEditar.set(false);
-          this.router.navigateByUrl('/dashboard/plataformas/listar');
+          this.router.navigateByUrl('/dashboard/plataformas');
         },
         error: (err: HttpErrorResponse) => {
           this.guardandoEditar.set(false);

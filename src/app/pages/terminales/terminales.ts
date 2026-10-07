@@ -260,7 +260,7 @@ export class Terminales {
       .subscribe({
         next: () => {
           this.guardandoCrear.set(false);
-          this.router.navigateByUrl('/dashboard/terminales/listar');
+          this.router.navigateByUrl('/dashboard/terminales');
         },
         error: (err: HttpErrorResponse) => {
           this.guardandoCrear.set(false);
@@ -291,7 +291,7 @@ export class Terminales {
       .subscribe({
         next: () => {
           this.guardandoEditar.set(false);
-          this.router.navigateByUrl('/dashboard/terminales/listar');
+          this.router.navigateByUrl('/dashboard/terminales');
         },
         error: (err: HttpErrorResponse) => {
           this.guardandoEditar.set(false);
