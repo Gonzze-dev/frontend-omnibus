@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { soloAutenticados } from './guards/auth.guard';
 import { soloRoles } from './guards/rol.guard';
 import { Login } from './pages/login/login';
 import { Registro } from './pages/registro/registro';
@@ -22,12 +23,22 @@ export const routes: Routes = [
   { path: 'olvidar-contrasena', component: OlvidarContrasena, title: 'Olvidaste tu contraseña?' },
   // La ruta la arma el backend en el mail (FRONT_END_BASE_LINK + /reset-password?token=...)
   { path: 'reset-password', component: NuevaContrasena, title: 'Nueva contraseña' },
-  { path: 'home', component: Home, title: 'Rastrea tu viaje' },
-  { path: 'notificaciones', component: Notificaciones, title: 'Notificaciones' },
-  { path: 'perfil', component: Perfil, title: 'Informacion sobre tu perfil' },
+  { path: 'home', component: Home, title: 'Rastrea tu viaje', canMatch: [soloAutenticados] },
+  {
+    path: 'notificaciones',
+    component: Notificaciones,
+    title: 'Notificaciones',
+    canMatch: [soloAutenticados],
+  },
+  {
+    path: 'perfil',
+    component: Perfil,
+    title: 'Informacion sobre tu perfil',
+    canMatch: [soloAutenticados],
+  },
   {
     path: 'dashboard',
-    canMatch: [soloRoles('admin', 'super_admin')],
+    canMatch: [soloAutenticados, soloRoles('admin', 'super_admin')],
     children: [
       { path: '', component: Dashboard, title: 'Dashboard' },
       { path: 'ciudades', component: Ciudades, title: tituloCiudades },
