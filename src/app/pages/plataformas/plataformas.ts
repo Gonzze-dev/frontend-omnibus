@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, ElementRef, computed, effect, inject, signal, viewChild } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, ResolveFn, RouterLink } from '@angular/router';
@@ -9,7 +9,7 @@ import { TerminalService } from '../../services/terminal.service';
 import { TerminalConPlataformas } from '../../models/plataforma.model';
 import { Terminal } from '../../models/terminal.model';
 
-export type AccionPlataforma = 'listar' | 'crear' | 'editar' | 'eliminar';
+export type AccionPlataforma = 'listar' | 'crear' | 'editar';
 
 interface VistaPlataforma {
   titulo: string;
@@ -28,10 +28,6 @@ const VISTAS: Record<AccionPlataforma, VistaPlataforma> = {
   editar: {
     titulo: 'Editar plataforma',
     bajada: 'Cambia el anden o su ubicacion.',
-  },
-  eliminar: {
-    titulo: 'Eliminar plataforma',
-    bajada: 'Baja definitiva del sistema.',
   },
 };
 
@@ -67,7 +63,7 @@ export class Plataformas {
     return accion && accion in VISTAS ? accion : 'listar';
   });
 
-  /** Codigo del anden a editar/eliminar, si la ruta lo trae. */
+  /** Codigo del anden a editar, si la ruta lo trae. */
   private readonly codigo = computed(() => {
     const raw = this.parametros().get('codigo');
     const code = raw ? Number(raw) : NaN;
@@ -155,7 +151,7 @@ export class Plataformas {
   protected readonly guardandoEditar = signal(false);
   protected readonly errorEditar = signal<string | null>(null);
 
-  // --- Baja ---
+  // --- Edicion: anden elegido ---
   protected readonly plataformaSeleccionada = signal<{
     code: number;
     anden: string;
@@ -163,6 +159,10 @@ export class Plataformas {
     lng: number;
     terminal: string;
   } | null>(null);
+
+  // --- Baja (popup sobre el listado) ---
+  private readonly dialogoBaja = viewChild<ElementRef<HTMLDialogElement>>('dialogoBaja');
+  protected readonly aEliminar = signal<{ code: number; anden: string; terminal: string } | null>(null);
   protected readonly eliminando = signal(false);
   protected readonly errorEliminar = signal<string | null>(null);
 
@@ -174,12 +174,21 @@ export class Plataformas {
 
       if (accion === 'listar') {
         this.cargarPlataformas();
-      } else if (accion === 'editar' || accion === 'eliminar') {
+      } else if (accion === 'editar') {
         this.cargarSeleccionada(this.codigo());
       } else if (accion === 'crear') {
         this.formCrear.reset({ lat: 0, lng: 0 });
         this.errorCrear.set(null);
       }
+    });
+
+    // El <dialog> nativo se abre con showModal() para tener fondo, foco
+    // atrapado y cierre con Escape sin escribirlos a mano.
+    effect(() => {
+      const dialogo = this.dialogoBaja()?.nativeElement;
+      if (!dialogo) return;
+      if (this.aEliminar() && !dialogo.open) dialogo.showModal();
+      if (!this.aEliminar() && dialogo.open) dialogo.close();
     });
   }
 
@@ -208,7 +217,6 @@ export class Plataformas {
   private cargarSeleccionada(code: number | null): void {
     this.plataformaSeleccionada.set(null);
     this.errorSeleccionada.set(null);
-    this.errorEliminar.set(null);
 
     if (code === null) {
       this.errorSeleccionada.set('No se indico que plataforma usar.');
@@ -316,8 +324,24 @@ export class Plataformas {
       });
   }
 
+  protected confirmarBaja(code: number, anden: string, terminal: string): void {
+    this.errorEliminar.set(null);
+    this.aEliminar.set({ code, anden, terminal });
+  }
+
+  protected cancelarBaja(): void {
+    if (this.eliminando()) return;
+    this.aEliminar.set(null);
+    this.errorEliminar.set(null);
+  }
+
+  /** Un click en el fondo (fuera del contenido) cierra el popup. */
+  protected clickEnPopup(event: MouseEvent): void {
+    if (event.target === event.currentTarget) this.cancelarBaja();
+  }
+
   protected eliminar(): void {
-    const seleccionada = this.plataformaSeleccionada();
+    const seleccionada = this.aEliminar();
     if (!seleccionada) return;
 
     this.eliminando.set(true);
@@ -326,7 +350,14 @@ export class Plataformas {
     this.plataformaService.eliminar(seleccionada.code).subscribe({
       next: () => {
         this.eliminando.set(false);
-        this.router.navigateByUrl('/dashboard/plataformas/listar');
+        this.aEliminar.set(null);
+        // Se saca el anden del listado sin volver a pedirlo al backend
+        this.todosLosGrupos.update((grupos) =>
+          grupos.map((g) => ({
+            ...g,
+            platforms: g.platforms.filter((p) => p.code !== seleccionada.code),
+          })),
+        );
       },
       error: (err: HttpErrorResponse) => {
         this.eliminando.set(false);

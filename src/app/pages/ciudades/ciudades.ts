@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, ElementRef, computed, effect, inject, signal, viewChild } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, ResolveFn, RouterLink } from '@angular/router';
@@ -7,7 +7,7 @@ import { Topbar } from '../../shared/topbar/topbar';
 import { CiudadService } from '../../services/ciudad.service';
 import { Ciudad } from '../../models/ciudad.model';
 
-export type AccionCiudad = 'listar' | 'crear' | 'editar' | 'eliminar';
+export type AccionCiudad = 'listar' | 'crear' | 'editar';
 
 interface VistaCiudad {
   titulo: string;
@@ -26,10 +26,6 @@ const VISTAS: Record<AccionCiudad, VistaCiudad> = {
   editar: {
     titulo: 'Editar ciudad',
     bajada: 'Cambia el nombre o el codigo postal.',
-  },
-  eliminar: {
-    titulo: 'Eliminar ciudad',
-    bajada: 'Baja definitiva del sistema.',
   },
 };
 
@@ -65,7 +61,7 @@ export class Ciudades {
     return accion && accion in VISTAS ? accion : 'listar';
   });
 
-  /** Codigo postal de la ciudad a editar/eliminar, si la ruta lo trae. */
+  /** Codigo postal de la ciudad a editar, si la ruta lo trae. */
   private readonly codigo = computed(() => this.parametros().get('codigo'));
 
   protected readonly vista = computed(() => VISTAS[this.accion()]);
@@ -137,8 +133,12 @@ export class Ciudades {
   protected readonly guardandoEditar = signal(false);
   protected readonly errorEditar = signal<string | null>(null);
 
-  // --- Baja ---
+  // --- Edicion: ciudad elegida ---
   protected readonly ciudadSeleccionada = signal<Ciudad | null>(null);
+
+  // --- Baja (popup sobre el listado) ---
+  private readonly dialogoBaja = viewChild<ElementRef<HTMLDialogElement>>('dialogoBaja');
+  protected readonly aEliminar = signal<Ciudad | null>(null);
   protected readonly eliminando = signal(false);
   protected readonly errorEliminar = signal<string | null>(null);
 
@@ -148,12 +148,21 @@ export class Ciudades {
 
       if (accion === 'listar') {
         this.cargarCiudades();
-      } else if (accion === 'editar' || accion === 'eliminar') {
+      } else if (accion === 'editar') {
         this.cargarSeleccionada(this.codigo());
       } else if (accion === 'crear') {
         this.formCrear.reset();
         this.errorCrear.set(null);
       }
+    });
+
+    // El <dialog> nativo se abre con showModal() para tener fondo, foco
+    // atrapado y cierre con Escape sin escribirlos a mano.
+    effect(() => {
+      const dialogo = this.dialogoBaja()?.nativeElement;
+      if (!dialogo) return;
+      if (this.aEliminar() && !dialogo.open) dialogo.showModal();
+      if (!this.aEliminar() && dialogo.open) dialogo.close();
     });
   }
 
@@ -176,7 +185,6 @@ export class Ciudades {
   private cargarSeleccionada(codigo: string | null): void {
     this.ciudadSeleccionada.set(null);
     this.errorSeleccionada.set(null);
-    this.errorEliminar.set(null);
 
     if (!codigo) {
       this.errorSeleccionada.set('No se indico que ciudad usar.');
@@ -259,8 +267,24 @@ export class Ciudades {
       });
   }
 
+  protected confirmarBaja(ciudad: Ciudad): void {
+    this.errorEliminar.set(null);
+    this.aEliminar.set(ciudad);
+  }
+
+  protected cancelarBaja(): void {
+    if (this.eliminando()) return;
+    this.aEliminar.set(null);
+    this.errorEliminar.set(null);
+  }
+
+  /** Un click en el fondo (fuera del contenido) cierra el popup. */
+  protected clickEnPopup(event: MouseEvent): void {
+    if (event.target === event.currentTarget) this.cancelarBaja();
+  }
+
   protected eliminar(): void {
-    const seleccionada = this.ciudadSeleccionada();
+    const seleccionada = this.aEliminar();
     if (!seleccionada) return;
 
     this.eliminando.set(true);
@@ -269,7 +293,11 @@ export class Ciudades {
     this.ciudadService.eliminar(seleccionada.postal_code).subscribe({
       next: () => {
         this.eliminando.set(false);
-        this.router.navigateByUrl('/dashboard/ciudades/listar');
+        this.aEliminar.set(null);
+        // Se saca la ciudad del listado sin volver a pedirlo al backend
+        this.todasLasCiudades.update((ciudades) =>
+          ciudades.filter((c) => c.postal_code !== seleccionada.postal_code),
+        );
       },
       error: (err: HttpErrorResponse) => {
         this.eliminando.set(false);

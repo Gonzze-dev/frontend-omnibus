@@ -30,3 +30,6 @@
 }
 
 .tabla__fila--seleccionable:focus-visible { outline: none; }
+
+/* Popup para confirmar la baja */
+@include popup-baja;
