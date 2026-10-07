@@ -25,7 +25,6 @@
         @if (!sinCamaraEnVivo()) {
           <video #video class="camara__video"
                  muted playsinline></video>
-          <div class="camara__marco" aria-hidden="true"></div>
         } @else if (!vistaPrevia()) {
           <p class="camara__aviso">
             No se puede usar la camara en vivo en este navegador. Toca el boton blanco para abrir la camara del dispositivo.
@@ -47,7 +46,7 @@
             {{ error() }} Toca el boton blanco para sacar otra.
           </p>
         } @else if (paso() === 'camara' && !iniciando()) {
-          <p class="camara__mensaje">Encuadra la patente dentro del marco y saca la foto de frente.</p>
+          <p class="camara__mensaje">Encuadra la patente y saca la foto de frente.</p>
         }
       </div>
 

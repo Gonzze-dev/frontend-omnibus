@@ -107,20 +107,6 @@
 
 .camara__foto { object-fit: contain; background: #000; }
 
-/* Marco con la proporcion de una patente argentina (aprox. 3:1). */
-.camara__marco {
-  position: absolute;
-  left: 10%;
-  right: 10%;
-  top: 50%;
-  aspect-ratio: 3 / 1;
-  transform: translateY(-50%);
-  border: 3px solid #fff;
-  border-radius: 8px;
-  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.4);
-  pointer-events: none;
-}
-
 .camara__aviso {
   margin: 0;
   padding: 24px;
