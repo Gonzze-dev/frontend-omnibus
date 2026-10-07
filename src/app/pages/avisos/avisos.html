@@ -180,7 +180,36 @@
           </div>
         }
 
-        @if (esRetraso()) {
+        @if (esArribo()) {
+          <div class="ab-field">
+            <label class="ab-label" for="anden-arribo">Anden</label>
+            <select class="crud__select" id="anden-arribo" formControlName="anden"
+                    [attr.aria-invalid]="invalidoAviso('anden')">
+              <option value="" disabled>
+                {{ cargandoAndenes() ? 'Cargando andenes...' : andenes().length ? 'Elegi un anden' : 'La terminal no tiene andenes' }}
+              </option>
+              @for (a of andenes(); track a.code) {
+                <option [value]="a.code">{{ a.anden }}</option>
+              }
+            </select>
+            @if (errorAndenes()) {
+              <p class="ab-field-error" role="alert">{{ errorAndenes() }}</p>
+            } @else if (invalidoAviso('anden')) {
+              <p class="ab-field-error">Elegi el anden donde llego el colectivo.</p>
+            }
+          </div>
+
+          <div class="ab-field">
+            <label class="ab-label" for="patente-arribo">Patente del colectivo</label>
+            <input class="ab-input" id="patente-arribo" type="text" placeholder="AB 123 CD"
+                   autocomplete="off" formControlName="patente"
+                   [attr.aria-invalid]="invalidoAviso('patente')" />
+            @if (invalidoAviso('patente')) {
+              <p class="ab-field-error">Ingresa la patente del colectivo.</p>
+            }
+            <p class="crud__nota">Usalo cuando la camara del anden no detecto la llegada del colectivo.</p>
+          </div>
+        } @else if (esRetraso()) {
           <div class="ab-field">
             <label class="ab-label" for="patente-retraso">Patente del colectivo</label>
             <input class="ab-input" id="patente-retraso" type="text" placeholder="AB 123 CD"
@@ -246,7 +275,7 @@
         }
 
         <button class="ab-button ab-button--lg" type="submit" [disabled]="enviando()">
-          {{ enviando() ? 'Enviando...' : esRetraso() ? 'Avisar retraso' : 'Enviar aviso' }}
+          {{ enviando() ? 'Enviando...' : esRetraso() ? 'Avisar retraso' : esArribo() ? 'Avisar arribo' : 'Enviar aviso' }}
         </button>
       </form>
     }

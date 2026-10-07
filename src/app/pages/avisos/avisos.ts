@@ -7,6 +7,8 @@ import { Topbar } from '../../shared/topbar/topbar';
 import { AuthService } from '../../services/auth.service';
 import { AvisoService } from '../../services/aviso.service';
 import { TerminalService } from '../../services/terminal.service';
+import { PlataformaService } from '../../services/plataforma.service';
+import { PlataformaEnGrupo } from '../../models/plataforma.model';
 import {
   EstadoNotificacion,
   NotificacionAdmin,
@@ -27,7 +29,7 @@ const VISTAS: Record<AccionAviso, VistaAviso> = {
   },
   aviso: {
     titulo: 'Enviar aviso',
-    bajada: 'Notificacion general para los pasajeros de una terminal.',
+    bajada: 'Notificacion para los pasajeros de una terminal, o el arribo de un colectivo si fallo la camara.',
   },
   eliminar: {
     titulo: 'Eliminar aviso',
@@ -35,7 +37,7 @@ const VISTAS: Record<AccionAviso, VistaAviso> = {
   },
 };
 
-type TipoAviso = 'LOCAL' | 'GLOBAL' | 'BUS_DELAY';
+type TipoAviso = 'LOCAL' | 'GLOBAL' | 'BUS_DELAY' | 'BUS_ARRIVAL';
 
 /**
  * Tipos que acepta el envio de avisos, en el orden en que se muestran. Se
@@ -48,7 +50,14 @@ const OPCIONES_TIPOS: Record<TipoAviso, { etiqueta: string; detalle: string }> =
     etiqueta: 'RETRASO',
     detalle: 'Avisar un retraso de un colectivo puntual a sus pasajeros.',
   },
+  BUS_ARRIVAL: {
+    etiqueta: 'ARRIBO',
+    detalle: 'Avisar que un colectivo llego a un anden, por si la camara no lo detecto.',
+  },
 };
+
+/** Maximo de andenes que acepta GET /api/admin/platforms por pagina. */
+const MAX_ANDENES = 100;
 
 interface OpcionTerminal {
   uuid: string;
@@ -85,6 +94,7 @@ export class Avisos {
   private readonly auth = inject(AuthService);
   private readonly avisoService = inject(AvisoService);
   private readonly terminalService = inject(TerminalService);
+  private readonly plataformaService = inject(PlataformaService);
   private readonly fb = inject(FormBuilder);
 
   private readonly parametros = toSignal(this.ruta.paramMap, {
@@ -149,6 +159,7 @@ export class Avisos {
     terminal: ['', Validators.required],
     mensaje: ['', [Validators.required, Validators.pattern(/\S/)]],
     patente: ['', [Validators.required, Validators.pattern(/\S/)]],
+    anden: ['', Validators.required],
     fecha: ['', Validators.required],
     demora: [15, [Validators.required, Validators.min(1)]],
     vida: [12, [Validators.required, Validators.min(1)]],
@@ -167,14 +178,33 @@ export class Avisos {
   /** BUS_DELAY pide patente, fecha y demora en lugar de mensaje. */
   protected readonly esRetraso = computed(() => this.tipoElegido() === 'BUS_DELAY');
 
+  /** BUS_ARRIVAL pide patente y anden en lugar de mensaje. */
+  protected readonly esArribo = computed(() => this.tipoElegido() === 'BUS_ARRIVAL');
+
+  private readonly terminalElegida = toSignal(this.formAviso.controls.terminal.valueChanges, {
+    initialValue: this.formAviso.controls.terminal.value,
+  });
+
+  /** Andenes de la terminal elegida, para el aviso de arribo. */
+  protected readonly andenes = signal<PlataformaEnGrupo[]>([]);
+  protected readonly cargandoAndenes = signal(false);
+  protected readonly errorAndenes = signal<string | null>(null);
+
   constructor() {
     this.cargarTerminales();
 
     effect(() => {
-      const { terminal, mensaje, patente, fecha, demora } = this.formAviso.controls;
+      const { terminal, mensaje, patente, anden, fecha, demora } = this.formAviso.controls;
       habilitar(terminal, !this.esGlobal());
-      habilitar(mensaje, !this.esRetraso());
-      for (const control of [patente, fecha, demora]) habilitar(control, this.esRetraso());
+      habilitar(mensaje, !this.esRetraso() && !this.esArribo());
+      habilitar(patente, this.esRetraso() || this.esArribo());
+      habilitar(anden, this.esArribo());
+      for (const control of [fecha, demora]) habilitar(control, this.esRetraso());
+    });
+
+    effect(() => {
+      const terminal = this.terminalElegida();
+      if (this.esArribo()) untracked(() => this.cargarAndenes(terminal));
     });
 
     effect(() => {
@@ -316,6 +346,30 @@ export class Avisos {
     if (terminales.length === 1 && !control.value) control.setValue(terminales[0].uuid);
   }
 
+  private cargarAndenes(terminal: string): void {
+    this.andenes.set([]);
+    this.errorAndenes.set(null);
+    this.formAviso.controls.anden.setValue('');
+    if (!terminal) return;
+
+    this.cargandoAndenes.set(true);
+    this.plataformaService.listar({ bus_terminal_id: terminal, limit: MAX_ANDENES }).subscribe({
+      next: (res) => {
+        // Si mientras tanto cambio la terminal, esta respuesta ya no aplica.
+        if (this.formAviso.controls.terminal.value !== terminal) return;
+        this.cargandoAndenes.set(false);
+        const andenes = res.platforms.find((t) => t.uuid === terminal)?.platforms ?? [];
+        this.andenes.set(andenes);
+        if (andenes.length === 1) this.formAviso.controls.anden.setValue(String(andenes[0].code));
+      },
+      error: (err: HttpErrorResponse) => {
+        if (this.formAviso.controls.terminal.value !== terminal) return;
+        this.cargandoAndenes.set(false);
+        this.errorAndenes.set(mensajeErrorListado(err));
+      },
+    });
+  }
+
   private prepararAviso(): void {
     this.errorAviso.set(null);
     this.avisoEnviado.set(null);
@@ -348,6 +402,10 @@ export class Avisos {
     const { tipo, terminal, mensaje, vida } = this.formAviso.getRawValue();
     if (tipo === 'BUS_DELAY') {
       this.enviarRetraso();
+      return;
+    }
+    if (tipo === 'BUS_ARRIVAL') {
+      this.enviarArribo();
       return;
     }
 
@@ -396,8 +454,25 @@ export class Avisos {
       });
   }
 
+  private enviarArribo(): void {
+    const { patente, anden, vida } = this.formAviso.getRawValue();
+    this.avisoService
+      .notificarArribo({ license_patent: patente.trim(), code: anden, time_life: vida })
+      .subscribe({
+        next: () => {
+          this.enviando.set(false);
+          this.avisoEnviado.set('Arribo avisado a los pasajeros del colectivo.');
+          this.formAviso.controls.patente.reset();
+        },
+        error: (err: HttpErrorResponse) => {
+          this.enviando.set(false);
+          this.errorAviso.set(mensajeErrorArribo(err));
+        },
+      });
+  }
+
   protected invalidoAviso(
-    campo: 'terminal' | 'mensaje' | 'patente' | 'fecha' | 'demora' | 'vida',
+    campo: 'terminal' | 'mensaje' | 'patente' | 'anden' | 'fecha' | 'demora' | 'vida',
   ): boolean {
     const control = this.formAviso.controls[campo];
     return control.invalid && control.touched;
@@ -445,6 +520,21 @@ function mensajeErrorRetraso(err: HttpErrorResponse): string {
       return 'No hay un viaje registrado para esa patente y fecha en la terminal.';
     case 502:
       return 'No se pudo verificar el viaje o entregar el aviso. Intenta de nuevo.';
+    default:
+      return mensajeError(err);
+  }
+}
+
+function mensajeErrorArribo(err: HttpErrorResponse): string {
+  switch (err.status) {
+    case 400:
+      return 'Revisa los datos: la patente, el anden y la duracion son obligatorios.';
+    case 403:
+      return 'No tenes permisos para avisar arribos en esa terminal.';
+    case 404:
+      return 'No se encontro el anden indicado.';
+    case 502:
+      return 'El arribo no se pudo entregar en tiempo real. Intenta de nuevo.';
     default:
       return mensajeError(err);
   }

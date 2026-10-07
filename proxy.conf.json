@@ -3,6 +3,10 @@
     "target": "http://localhost:4989",
     "secure": false
   },
+  "/notify_passengers": {
+    "target": "http://localhost:4989",
+    "secure": false
+  },
   "/realtime": {
     "target": "http://localhost:4988",
     "secure": false,

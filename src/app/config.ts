@@ -6,6 +6,8 @@
  */
 export const APP_CONFIG = {
   apiUrl: '/api',
+  /** Aviso de llegada de colectivo; fuera de /api porque tambien lo usa la camara. */
+  notifyPassengersUrl: '/notify_passengers',
   realtimeUrl: '/realtime',
   /** El hub rechaza conexiones sin `?apiKey=` (RealTime/appsettings.json: ApiKey). */
   realtimeApiKey: 'agag2J26sgJ2SAV6ATAJ6aG26sg26JG',

@@ -8,6 +8,8 @@ import {
   ListNotificacionesParams,
   ListNotificacionesResponse,
   NotificacionAdmin,
+  NotificarArriboRequest,
+  NotificarArriboResponse,
   NotificarRetrasoRequest,
   NotificarRetrasoResponse,
   TiposAvisoResponse,
@@ -43,6 +45,11 @@ export class AvisoService {
   /** Avisa la demora de un colectivo puntual (BUS_DELAY). */
   notificarRetraso(datos: NotificarRetrasoRequest): Observable<NotificarRetrasoResponse> {
     return this.http.post<NotificarRetrasoResponse>(`${this.adminUrl}/notify-bus-delay`, datos);
+  }
+
+  /** Avisa a mano la llegada de un colectivo a un anden (BUS_ARRIVAL), por si falla la camara. */
+  notificarArribo(datos: NotificarArriboRequest): Observable<NotificarArriboResponse> {
+    return this.http.post<NotificarArriboResponse>(APP_CONFIG.notifyPassengersUrl, datos);
   }
 
   listar(params: ListNotificacionesParams = {}): Observable<ListNotificacionesResponse> {

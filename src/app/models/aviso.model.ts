@@ -1,5 +1,5 @@
 /** Tipos que puede enviar un administrador (GET /api/admin/notification-types). */
-export type TipoAvisoAdmin = 'LOCAL' | 'GLOBAL' | 'BUS_DELAY';
+export type TipoAvisoAdmin = 'LOCAL' | 'GLOBAL' | 'BUS_DELAY' | 'BUS_ARRIVAL';
 
 /** GET /api/admin/notification-types (models.AdminNotificationTypesResponse). */
 export interface TiposAvisoResponse {
@@ -37,6 +37,22 @@ export interface NotificarRetrasoRequest {
 }
 
 export interface NotificarRetrasoResponse {
+  message: string;
+}
+
+/**
+ * POST /notify_passengers (models.NotifyPassengersRequest). Lo usa la camara
+ * con X-API-Key; el admin lo usa con su JWT cuando la camara falla.
+ */
+export interface NotificarArriboRequest {
+  license_patent: string;
+  /** Codigo del anden (plataforma) donde llego el colectivo. */
+  code: string;
+  /** Minutos de vida de la notificacion. */
+  time_life: number;
+}
+
+export interface NotificarArriboResponse {
   message: string;
 }
 
