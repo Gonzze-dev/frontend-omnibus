@@ -137,4 +137,17 @@
     </button>
   </div>
   }
+
+  <dialog #dialogoPasaje class="popup" role="alertdialog" aria-labelledby="pasaje-titulo" aria-describedby="pasaje-texto"
+          (cancel)="$event.preventDefault(); aceptarErrorPasaje()">
+    @if (errorPasaje(); as error) {
+      <div class="popup__contenido">
+        <h2 class="popup__titulo" id="pasaje-titulo">{{ error.titulo }}</h2>
+        <p class="popup__texto" id="pasaje-texto">{{ error.mensaje }}</p>
+        <div class="popup__acciones">
+          <button class="ab-button popup__boton" type="button" autofocus (click)="aceptarErrorPasaje()">Aceptar</button>
+        </div>
+      </div>
+    }
+  </dialog>
 </div>

@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
+import { Component, ElementRef, computed, effect, inject, signal, untracked, viewChild } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Topbar } from '../../shared/topbar/topbar';
 import { EsperaViaje } from '../espera-viaje/espera-viaje';
@@ -43,6 +43,9 @@ export class Home {
 
   protected readonly buscando = signal(false);
   protected readonly errorBusqueda = signal<string | null>(null);
+  /** Error de pasaje o de datos faltantes: se muestra en un popup que hay que aceptar. */
+  protected readonly errorPasaje = signal<{ titulo: string; mensaje: string } | null>(null);
+  private readonly dialogoPasaje = viewChild<ElementRef<HTMLDialogElement>>('dialogoPasaje');
   protected readonly mostrarLlegada = signal(false);
   protected readonly andenLlegada = computed(() => this.realtime.llegada()?.anden ?? '');
 
@@ -59,6 +62,14 @@ export class Home {
         void this.quedarAEspera(viaje);
       },
       error: () => this.restaurando.set(false),
+    });
+
+    // El <dialog> nativo se abre con showModal() para tener fondo y foco.
+    effect(() => {
+      const dialogo = this.dialogoPasaje()?.nativeElement;
+      if (!dialogo) return;
+      if (this.errorPasaje() && !dialogo.open) dialogo.showModal();
+      if (!this.errorPasaje() && dialogo.open) dialogo.close();
     });
 
     // Aviso flotante cuando el colectivo llega mientras se espera.
@@ -98,11 +109,11 @@ export class Home {
     this.errorBusqueda.set(null);
 
     if (!terminalId) {
-      this.errorBusqueda.set('Elegí la terminal donde vas a esperar el colectivo.');
+      this.errorPasaje.set({ titulo: 'Falta la terminal', mensaje: 'Elegí la terminal donde vas a esperar el colectivo.' });
       return;
     }
     if (!ticket) {
-      this.errorBusqueda.set('Ingresá el código de tu pasaje o escaneá el QR.');
+      this.errorPasaje.set({ titulo: 'Falta el pasaje', mensaje: 'Ingresá el código de tu pasaje o escaneá el QR.' });
       return;
     }
 
@@ -114,9 +125,15 @@ export class Home {
       },
       error: (error: HttpErrorResponse) => {
         this.buscando.set(false);
-        this.errorBusqueda.set(mensajeError(error));
+        const pasaje = mensajePasajeInvalido(error);
+        if (pasaje) this.errorPasaje.set({ titulo: 'Pasaje no válido', mensaje: pasaje });
+        else this.errorBusqueda.set(mensajeError(error));
       },
     });
+  }
+
+  protected aceptarErrorPasaje(): void {
+    this.errorPasaje.set(null);
   }
 
   protected buscarOtro(): void {
@@ -139,15 +156,21 @@ export class Home {
   }
 }
 
+/** Mensaje para el popup cuando el backend rechaza el pasaje; null si es otro error. */
+function mensajePasajeInvalido(error: HttpErrorResponse): string | null {
+  const detalle: string = error.error?.message ?? '';
+  if (error.status === 409) return 'Este pasaje pertenece a otra terminal. Elegí la terminal correcta e intentá de nuevo.';
+  if (error.status === 404 && detalle.includes('trip')) return 'No encontramos un viaje con ese código de pasaje. Revisalo e intentá de nuevo.';
+  return null;
+}
+
 function mensajeError(error: HttpErrorResponse): string {
   const detalle: string = error.error?.message ?? '';
   switch (error.status) {
     case 401:
       return 'Iniciá sesión para seguir tu viaje.';
     case 404:
-      return detalle.includes('terminal')
-        ? 'La terminal elegida ya no existe. Elegí otra.'
-        : 'No encontramos un viaje con ese código de pasaje.';
+      return 'La terminal elegida ya no existe. Elegí otra.';
     case 502:
       return 'El sistema de la terminal no responde. Probá de nuevo en unos minutos.';
     default:

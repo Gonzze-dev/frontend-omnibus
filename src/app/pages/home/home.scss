@@ -212,3 +212,46 @@
 }
 
 .home__error + .home__cta { margin-top: 16px; }
+
+/* ---------------- Popup de pasaje no valido ---------------- */
+.popup {
+  width: min(480px, calc(100vw - 32px));
+  padding: 0;
+  border: 0;
+  border-radius: var(--ab-r-card);
+  background: var(--ab-white);
+  box-shadow: var(--ab-shadow-card);
+  color: var(--ab-ink);
+}
+
+.popup::backdrop { background: rgba(25, 27, 34, 0.45); }
+
+.popup__contenido {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 28px;
+}
+
+.popup__titulo {
+  margin: 0;
+  font-family: Manrope, Inter, sans-serif;
+  font-size: 22px;
+  line-height: 30px;
+  font-weight: 700;
+}
+
+.popup__texto {
+  margin: 0;
+  font-size: var(--ab-fs-body);
+  line-height: var(--ab-lh-body);
+  color: var(--ab-body);
+}
+
+.popup__acciones { display: flex; justify-content: flex-end; }
+
+.popup__boton {
+  width: auto;
+  min-height: 48px;
+  padding: 12px 24px;
+}
