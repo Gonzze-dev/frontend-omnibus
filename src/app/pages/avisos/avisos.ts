@@ -191,7 +191,7 @@ export class Avisos {
   protected readonly errorAndenes = signal<string | null>(null);
 
   protected readonly opcionesAndenes = computed<OpcionBuscador[]>(() =>
-    this.andenes().map((a) => ({ valor: String(a.code), etiqueta: a.anden })),
+    this.andenes().map((a) => ({ valor: String(a.code), etiqueta: a.anden, detalle: String(a.code) })),
   );
 
   constructor() {

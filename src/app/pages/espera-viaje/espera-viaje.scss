@@ -2,10 +2,21 @@
    Espera del viaje - frame "Espera del viaje" (mobile, 393px)
    Es el cuerpo del home cuando ya hay un viaje encontrado.
    ============================================================ */
+@use '../../../styles/pantalla' as *;
+
 .espera {
   min-height: calc(100dvh - var(--ab-topbar-h));
   padding-top: 24px;
   padding-bottom: 40px;
+  @include pantalla-card;
+}
+
+/* Dentro de la card blanca, igual que en el home */
+@media (min-width: 768px) {
+  .espera {
+    padding-top: 32px;
+    padding-bottom: 48px;
+  }
 }
 
 .espera__title {

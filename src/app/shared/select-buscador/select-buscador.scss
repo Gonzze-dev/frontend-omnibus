@@ -45,6 +45,10 @@
 }
 
 .buscador__opcion {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
   padding: 10px 12px;
   color: var(--ab-ink);
   font-size: var(--ab-fs-body);
@@ -54,6 +58,17 @@
 
 .buscador__opcion--activa { background: var(--ab-card); }
 .buscador__opcion--elegida { color: var(--ab-primary); font-weight: 600; }
+
+.buscador__etiqueta { min-width: 0; overflow-wrap: anywhere; }
+
+/* Dato secundario alineado a la derecha (ej: codigo del anden) */
+.buscador__detalle {
+  flex-shrink: 0;
+  color: var(--ab-muted);
+  font-size: 0.85em;
+  font-variant-numeric: tabular-nums;
+  font-weight: 400;
+}
 
 .buscador__opcion[aria-disabled='true'] {
   color: var(--ab-muted);

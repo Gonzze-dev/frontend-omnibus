@@ -22,7 +22,12 @@
             [attr.aria-disabled]="o.deshabilitada || null"
             (mousedown)="$event.preventDefault()"
             (mouseenter)="!o.deshabilitada && activa.set(i)"
-            (click)="elegir(o)">{{ o.etiqueta }}</li>
+            (click)="elegir(o)">
+          <span class="buscador__etiqueta">{{ o.etiqueta }}</span>
+          @if (o.detalle) {
+            <span class="buscador__detalle">{{ o.detalle }}</span>
+          }
+        </li>
       } @empty {
         <li class="buscador__vacio">Sin coincidencias.</li>
       }

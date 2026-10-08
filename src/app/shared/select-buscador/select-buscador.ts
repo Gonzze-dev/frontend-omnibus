@@ -4,6 +4,8 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 export interface OpcionBuscador {
   valor: string;
   etiqueta: string;
+  /** Texto secundario que se muestra a la derecha de la opcion (ej: un codigo). */
+  detalle?: string;
   deshabilitada?: boolean;
 }
 
@@ -55,7 +57,9 @@ export class SelectBuscador implements ControlValueAccessor {
     const busqueda = normalizar(this.texto().trim());
     // Con la opcion elegida a la vista se muestran todas, no solo esa
     if (!busqueda || this.texto() === this.seleccionada()?.etiqueta) return this.opciones();
-    return this.opciones().filter((o) => normalizar(o.etiqueta).includes(busqueda));
+    return this.opciones().filter(
+      (o) => normalizar(o.etiqueta).includes(busqueda) || normalizar(o.detalle ?? '').includes(busqueda),
+    );
   });
 
   constructor() {
