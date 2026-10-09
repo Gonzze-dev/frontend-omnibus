@@ -1,0 +1,6 @@
+.git
+.angular
+node_modules
+dist
+qr-examples
+docs
