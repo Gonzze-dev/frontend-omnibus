@@ -28,7 +28,7 @@
     <!-- Card 1: seleccion de terminal -->
     <section class="terminal">
       <h2 class="terminal__title">Buscar Terminal</h2>
-      <p class="terminal__hint">Filtrar por codigo postal</p>
+      <p class="terminal__hint">Buscá por nombre o filtrá por código postal</p>
 
       <div class="row">
         <svg class="ab-icon row__pin" width="16" height="20" viewBox="0 0 16 20" fill="none" aria-hidden="true">
@@ -36,17 +36,48 @@
                 stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
           <circle cx="8" cy="7" r="2" fill="currentColor" />
         </svg>
-        <select
+        <!-- Combobox: se escribe para filtrar las terminales por nombre -->
+        <input
           class="row__control row__control--select"
+          type="text"
+          role="combobox"
           aria-label="Terminal"
-          (change)="terminalId.set($any($event.target).value || null)"
-        >
-          <option value="" disabled [selected]="!terminalId()">Elegí una terminal</option>
-          @for (t of terminalesFiltradas(); track t.uuid) {
-            <option [value]="t.uuid" [selected]="t.uuid === terminalId()">{{ t.name }}</option>
-          }
-        </select>
+          aria-autocomplete="list"
+          aria-controls="lista-terminales"
+          autocomplete="off"
+          [attr.aria-expanded]="comboAbierto()"
+          [attr.aria-activedescendant]="comboAbierto() && opcionesTerminal().length ? 'terminal-' + opcionActiva() : null"
+          [placeholder]="nombreTerminal() || 'Elegí una terminal'"
+          [class.row__control--elegida]="!!nombreTerminal()"
+          [value]="comboAbierto() ? filtroNombre() : nombreTerminal()"
+          (focus)="abrirCombo()"
+          (click)="comboAbierto() || abrirCombo()"
+          (blur)="cerrarCombo()"
+          (input)="onFiltroNombre($any($event.target).value)"
+          (keydown)="onTeclaCombo($event)"
+        />
       </div>
+
+      @if (comboAbierto()) {
+        <ul id="lista-terminales" class="combo" role="listbox" aria-label="Terminales">
+          @for (t of opcionesTerminal(); track t.uuid; let i = $index) {
+            <li
+              [id]="'terminal-' + i"
+              class="combo__opcion"
+              role="option"
+              [class.combo__opcion--activa]="i === opcionActiva()"
+              [attr.aria-selected]="t.uuid === terminalId()"
+              (mousedown)="$event.preventDefault(); elegirTerminal(t)"
+              (mouseenter)="opcionActiva.set(i)"
+            >
+              <span>{{ t.name }}</span>
+              <span class="combo__cp">{{ t.postal_code }}</span>
+            </li>
+          } @empty {
+            <li class="combo__vacio">No hay terminales que coincidan</li>
+          }
+        </ul>
+      }
 
       <div class="row">
         <svg class="ab-icon row__pin" width="14" height="20" viewBox="0 0 16 20" fill="none" aria-hidden="true">

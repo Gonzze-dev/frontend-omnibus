@@ -36,6 +36,19 @@ export class Home {
     return filtro ? todas.filter((t) => t.postal_code.includes(filtro)) : todas;
   });
 
+  /** Combobox de terminal: lo que se escribe filtra la lista por nombre. */
+  protected readonly comboAbierto = signal(false);
+  protected readonly filtroNombre = signal('');
+  protected readonly opcionActiva = signal(0);
+  protected readonly nombreTerminal = computed(
+    () => this.terminales().find((t) => t.uuid === this.terminalId())?.name ?? '',
+  );
+  protected readonly opcionesTerminal = computed(() => {
+    const filtro = normalizar(this.filtroNombre().trim());
+    const lista = this.terminalesFiltradas();
+    return filtro ? lista.filter((t) => normalizar(t.name).includes(filtro)) : lista;
+  });
+
   protected readonly escaneando = signal(false);
   protected readonly ticket = signal('');
   protected readonly errorEscaneo = signal<string | null>(null);
@@ -87,6 +100,54 @@ export class Home {
     const filtradas = this.terminalesFiltradas();
     if (!filtradas.some((t) => t.uuid === this.terminalId())) {
       this.terminalId.set(filtradas.length === 1 ? filtradas[0].uuid : null);
+    }
+  }
+
+  protected abrirCombo(): void {
+    this.filtroNombre.set('');
+    this.opcionActiva.set(0);
+    this.comboAbierto.set(true);
+  }
+
+  protected cerrarCombo(): void {
+    this.comboAbierto.set(false);
+    this.filtroNombre.set('');
+  }
+
+  protected onFiltroNombre(valor: string): void {
+    this.filtroNombre.set(valor);
+    this.opcionActiva.set(0);
+    this.comboAbierto.set(true);
+  }
+
+  protected elegirTerminal(terminal: Terminal): void {
+    this.terminalId.set(terminal.uuid);
+    this.cerrarCombo();
+  }
+
+  protected onTeclaCombo(evento: KeyboardEvent): void {
+    const opciones = this.opcionesTerminal();
+    switch (evento.key) {
+      case 'ArrowDown':
+      case 'ArrowUp': {
+        evento.preventDefault();
+        if (!this.comboAbierto()) return this.abrirCombo();
+        if (!opciones.length) return;
+        const paso = evento.key === 'ArrowDown' ? 1 : -1;
+        this.opcionActiva.update((i) => (i + paso + opciones.length) % opciones.length);
+        return;
+      }
+      case 'Enter': {
+        const opcion = opciones[this.opcionActiva()];
+        if (this.comboAbierto() && opcion) {
+          evento.preventDefault();
+          this.elegirTerminal(opcion);
+        }
+        return;
+      }
+      case 'Escape':
+        this.cerrarCombo();
+        return;
     }
   }
 
@@ -154,6 +215,11 @@ export class Home {
       // el backend igual manda el mail cuando llega el colectivo.
     }
   }
+}
+
+/** Minusculas y sin tildes, para que "cordoba" encuentre "CÓRDOBA". */
+function normalizar(texto: string): string {
+  return texto.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 }
 
 /** Mensaje para el popup cuando el backend rechaza el pasaje; null si es otro error. */

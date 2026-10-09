@@ -116,6 +116,52 @@
   cursor: pointer;
 }
 
+/* Al abrirlo, la terminal elegida queda de placeholder mientras se busca */
+.row__control--select::placeholder { color: var(--ab-ink); }
+.row__control--select:focus::placeholder { color: var(--ab-muted); }
+
+/* Lista del combobox: va en el flujo de la card porque esta recorta (overflow) */
+.combo {
+  position: relative;
+  z-index: 1;
+  max-height: 220px;
+  margin: 4px 0 0;
+  padding: 4px 0;
+  overflow-y: auto;
+  list-style: none;
+  border-radius: var(--ab-r-input);
+  background: var(--ab-white);
+  box-shadow: var(--ab-shadow-card);
+}
+
+.combo + .row { margin-top: 9px; }
+
+.combo__opcion {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  font-size: var(--ab-fs-body);
+  line-height: var(--ab-lh-body);
+  font-weight: 600;
+  color: var(--ab-ink);
+  cursor: pointer;
+}
+
+.combo__opcion--activa { background: var(--ab-card); }
+.combo__opcion[aria-selected='true'] { color: var(--ab-primary); }
+
+.combo__cp {
+  font-weight: 500;
+  color: var(--ab-muted);
+}
+
+.combo__vacio {
+  padding: 10px 16px;
+  font-size: var(--ab-fs-body);
+  color: var(--ab-muted);
+}
+
 /* ---------------- Card: verificacion de ticket ---------------- */
 .ticket {
   display: flex;
