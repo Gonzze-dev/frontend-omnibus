@@ -8,7 +8,7 @@
   </p>
 
   @if (lista().length) {
-    <ul class="avisos__lista">
+    <ul class="avisos__lista" animate.leave="ab-sale-izquierda">
       @for (aviso of lista(); track aviso.id) {
         <li class="aviso">
           <span class="aviso__icono" [class]="'aviso__icono--' + aviso.tipo">
@@ -47,7 +47,7 @@
       }
     </ul>
 
-    <button class="avisos__limpiar" type="button" (click)="limpiar()">
+    <button class="avisos__limpiar" type="button" animate.leave="ab-sale-izquierda" (click)="limpiar()">
       Limpiar notificaciones
     </button>
   } @else {

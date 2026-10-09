@@ -8,6 +8,8 @@
    en todos los anchos.
    ============================================================ */
 
+@use 'sass:meta';
+
 :root {
   /* --- Color --- */
   --ab-bg:            #F9F9FF;  /* fondo de pantalla        */
@@ -337,3 +339,6 @@ body {
 }
 
 .ab-icon { display: block; flex: none; }
+
+/* Animaciones y transiciones: al final para ganar sobre lo de arriba */
+@include meta.load-css('styles/movimiento');

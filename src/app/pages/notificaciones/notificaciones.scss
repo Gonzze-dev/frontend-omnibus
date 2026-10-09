@@ -126,3 +126,30 @@
   color: var(--ab-placeholder);
   text-align: center;
 }
+
+/* ============================================================
+   Movimiento
+   ============================================================ */
+/* Cada aviso entra desde la izquierda, uno detras de otro */
+.aviso {
+  animation: ab-desde-izquierda var(--ab-dur-lenta) var(--ab-ease-out) backwards;
+}
+
+.aviso__icono {
+  animation: ab-pop var(--ab-dur-lenta) var(--ab-ease-spring) backwards;
+}
+
+@for $i from 1 through 8 {
+  .aviso:nth-child(#{$i}) { animation-delay: #{120 + $i * 60}ms; }
+  .aviso:nth-child(#{$i}) .aviso__icono { animation-delay: #{220 + $i * 60}ms; }
+}
+
+/* Al limpiar, la lista sale y recien despues aparece el vacio
+   (asi no se ve un instante debajo de los avisos que se van) */
+.ab-screen > .avisos__vacio { animation-delay: 300ms; }
+
+.avisos__limpiar {
+  transition: background-color var(--ab-dur-rapida) ease, transform var(--ab-dur-rapida) var(--ab-ease-out);
+}
+
+.avisos__limpiar:active { transform: scale(0.97); }

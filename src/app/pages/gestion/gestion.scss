@@ -201,3 +201,34 @@
 
   .opciones > li:last-child:nth-child(odd) { grid-column: 1 / -1; }
 }
+
+/* ============================================================
+   Movimiento
+   ============================================================ */
+.gestion__resumen {
+  animation: ab-pop var(--ab-dur-lenta) var(--ab-ease-spring) 200ms backwards;
+}
+
+/* Las opciones de cada grupo entran en cascada */
+.opciones > li {
+  animation: ab-sube var(--ab-dur-lenta) var(--ab-ease-out) backwards;
+}
+
+@for $i from 1 through 8 {
+  .opciones > li:nth-child(#{$i}) { animation-delay: #{80 + $i * 50}ms; }
+}
+
+.opcion__icono,
+.opcion__flecha {
+  transition: transform var(--ab-dur-media) var(--ab-ease-out);
+}
+
+.gestion__volver svg {
+  transition: transform var(--ab-dur-media) var(--ab-ease-out);
+}
+
+@media (hover: hover) {
+  .opcion:hover .opcion__icono { transform: scale(1.08); }
+  .opcion:hover .opcion__flecha { transform: translateX(4px); }
+  .gestion__volver:hover svg { transform: translateX(-4px); }
+}

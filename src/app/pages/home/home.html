@@ -2,11 +2,11 @@
   <app-topbar />
 
   @if (mostrarExito()) {
-    <app-toast mensaje="ID del pasaje cargado con éxito" (cerrado)="mostrarExito.set(false)" />
+    <app-toast animate.leave="ab-sale-arriba" mensaje="ID del pasaje cargado con éxito" (cerrado)="mostrarExito.set(false)" />
   }
 
   @if (mostrarLlegada() && viaje()) {
-    <app-toast
+    <app-toast animate.leave="ab-sale-arriba"
       [mensaje]="'¡Tu colectivo llegó! Plataforma ' + andenLlegada()"
       [duracionMs]="6000"
       (cerrado)="mostrarLlegada.set(false)"

@@ -292,3 +292,59 @@
 
 /* ---------------- CTA ---------------- */
 .espera__cta { margin-top: 32px; }
+
+/* ============================================================
+   Movimiento
+   ============================================================ */
+/* Llego el colectivo: el aviso verde rebota y deja una onda */
+.aviso:not(.aviso--espera, .aviso--demora) {
+  animation:
+    llegada-pop 560ms var(--ab-ease-spring) backwards,
+    llegada-onda 1.4s 300ms ease-out 2;
+}
+
+.aviso:not(.aviso--espera, .aviso--demora) svg {
+  animation: llegada-icono 700ms 250ms var(--ab-ease-out) backwards;
+}
+
+@keyframes llegada-pop {
+  from { opacity: 0; transform: scale(0.9); }
+}
+
+@keyframes llegada-onda {
+  from { box-shadow: var(--ab-shadow-dark), 0 0 0 0 rgba(22, 163, 74, 0.45); }
+  to   { box-shadow: var(--ab-shadow-dark), 0 0 0 14px rgba(22, 163, 74, 0); }
+}
+
+@keyframes llegada-icono {
+  0%   { opacity: 0; transform: scale(0.4) rotate(-30deg); }
+  60%  { opacity: 1; transform: scale(1.2) rotate(8deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+
+.aviso--demora {
+  animation: ab-desde-izquierda var(--ab-dur-lenta) var(--ab-ease-out) backwards;
+}
+
+/* El mapa se descubre de arriba hacia abajo */
+.mapa {
+  animation: mapa-revela 700ms var(--ab-ease-out) 150ms backwards;
+}
+
+@keyframes mapa-revela {
+  from { clip-path: inset(0 0 100% 0 round var(--ab-r-card)); }
+  to   { clip-path: inset(0 0 0 0 round var(--ab-r-card)); }
+}
+
+/* Los datos del pasajero aparecen fila por fila */
+.datos__fila {
+  animation: ab-sube var(--ab-dur-lenta) var(--ab-ease-out) backwards;
+}
+
+@for $i from 1 through 5 {
+  .datos__fila:nth-child(#{$i}) { animation-delay: #{240 + $i * 50}ms; }
+}
+
+.colectivo__icon {
+  animation: ab-pop var(--ab-dur-lenta) var(--ab-ease-spring) 260ms backwards;
+}

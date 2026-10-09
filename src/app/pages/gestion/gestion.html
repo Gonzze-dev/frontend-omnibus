@@ -16,7 +16,7 @@
 
       @if (s.resumen; as r) {
         <p class="gestion__resumen" [class]="'tono--' + r.tono">
-          <span class="gestion__resumen-valor">{{ formatear(r.valor) }}</span>
+          <span class="gestion__resumen-valor" [abContador]="r.valor"></span>
           {{ r.etiqueta }}
         </p>
       }

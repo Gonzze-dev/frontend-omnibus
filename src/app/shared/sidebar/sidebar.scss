@@ -108,6 +108,35 @@
 .drawer__logout:hover { text-decoration: underline; }
 .drawer__logout:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 4px; }
 
+/* ============================================================
+   Movimiento: al abrir, el contenido entra en cascada detras
+   del panel
+   ============================================================ */
+.drawer--open .drawer__brand,
+.drawer--open .drawer__nav > li,
+.drawer--open .drawer__logout {
+  animation: ab-desde-izquierda 360ms var(--ab-ease-out) backwards;
+}
+
+.drawer--open .drawer__brand { animation-delay: 60ms; }
+
+@for $i from 1 through 4 {
+  .drawer--open .drawer__nav > li:nth-child(#{$i}) { animation-delay: #{80 + $i * 50}ms; }
+}
+
+.drawer--open .drawer__logout { animation-delay: 320ms; }
+
+.drawer__item {
+  transition: background-color var(--ab-dur-rapida) ease;
+}
+
+.drawer__mark {
+  transition: transform var(--ab-dur-media) var(--ab-ease-out);
+}
+
+.drawer__item:hover .drawer__mark,
+.drawer__item--active .drawer__mark { transform: translateX(3px); }
+
 /* Sin animacion para quien la desactivo en el sistema */
 @media (prefers-reduced-motion: reduce) {
   .drawer__scrim,

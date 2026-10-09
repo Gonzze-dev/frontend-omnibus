@@ -121,3 +121,32 @@
   .topbar__nav,
   .topbar__logout { display: flex; }
 }
+
+/* ============================================================
+   Movimiento
+   ============================================================ */
+.topbar__menu {
+  transition: background-color var(--ab-dur-rapida) ease, transform var(--ab-dur-rapida) var(--ab-ease-out);
+}
+
+.topbar__menu:hover { background: var(--ab-card); }
+.topbar__menu:active { transform: scale(0.92); }
+
+.topbar__link {
+  transition: background-color var(--ab-dur-rapida) ease;
+}
+
+/* El badge aparece de un salto y la campana suena una vez */
+.topbar__badge {
+  animation: ab-pop 420ms var(--ab-ease-spring) backwards;
+}
+
+.topbar__bell svg { transform-origin: 50% 10%; }
+
+.topbar__bell:has(.topbar__badge) svg {
+  animation: ab-campana 900ms 250ms ease-in-out;
+}
+
+@media (hover: hover) {
+  .topbar__bell:hover svg { animation: ab-campana 900ms ease-in-out; }
+}

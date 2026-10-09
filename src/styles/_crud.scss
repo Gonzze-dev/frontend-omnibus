@@ -579,6 +579,68 @@ $fila: $icono + 29px;
   box-shadow: none;
 }
 
+/* ---------------- Movimiento ----------------
+   Las filas entran en cascada; al cambiar de pagina se vuelven a
+   crear y la cascada se repite, asi se nota el cambio. */
+.tabla > .tabla__fila:not(.tabla__fila--cabecera),
+.tabla > .tabla__item {
+  animation: ab-sube 360ms var(--ab-ease-out) backwards;
+}
+
+@for $i from 1 through 12 {
+  .tabla > :nth-child(#{$i}) { animation-delay: #{$i * 35}ms; }
+}
+
+/* Andenes de la terminal que se despliega */
+.tabla__panel > * {
+  animation: ab-baja 280ms var(--ab-ease-out) backwards;
+}
+
+@for $i from 1 through 8 {
+  .tabla__panel > :nth-child(#{$i}) { animation-delay: #{($i - 1) * 40}ms; }
+}
+
+.tabla__flecha { transition: transform var(--ab-dur-media) var(--ab-ease-spring); }
+
+.tabla__icono,
+.tabla__desplegable,
+.paginado__flecha,
+.paginado__numero {
+  transition:
+    background-color var(--ab-dur-rapida) ease,
+    border-color var(--ab-dur-rapida) ease,
+    color var(--ab-dur-rapida) ease,
+    transform var(--ab-dur-rapida) var(--ab-ease-out);
+}
+
+.tabla__icono:active,
+.paginado__flecha:active:not(:disabled),
+.paginado__numero:active { transform: scale(0.9); }
+
+.paginado__numero--activa {
+  animation: ab-pop 320ms var(--ab-ease-spring);
+}
+
+/* El + del alta gira al pasar el mouse */
+.crud__agregar {
+  transition: opacity var(--ab-dur-rapida) ease, transform var(--ab-dur-media) var(--ab-ease-spring);
+  animation: ab-pop var(--ab-dur-lenta) var(--ab-ease-spring) 200ms backwards;
+}
+
+.crud__agregar:hover { transform: rotate(90deg); }
+.crud__agregar:active { transform: rotate(90deg) scale(0.9); }
+
+.crud__volver svg { transition: transform var(--ab-dur-media) var(--ab-ease-out); }
+.crud__volver:hover svg { transform: translateX(-4px); }
+
+.resultado__fila {
+  animation: ab-sube 360ms var(--ab-ease-out) backwards;
+}
+
+@for $i from 1 through 8 {
+  .resultado__fila:nth-child(#{$i}) { animation-delay: #{80 + $i * 40}ms; }
+}
+
 /* ---------------- Popup para confirmar una baja ----------------
    Mixin (no se emite solo) para no chocar con el .popup propio de
    otras pantallas. Se usa con un <dialog class="popup"> y el icono

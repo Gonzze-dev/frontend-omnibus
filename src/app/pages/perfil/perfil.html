@@ -1,7 +1,7 @@
 <app-topbar />
 
 @if (mostrarExito()) {
-  <app-toast mensaje="Cambios guardados con éxito" (cerrado)="mostrarExito.set(false)" />
+  <app-toast animate.leave="ab-sale-arriba" mensaje="Cambios guardados con éxito" (cerrado)="mostrarExito.set(false)" />
 }
 
 <div class="ab-screen perfil">

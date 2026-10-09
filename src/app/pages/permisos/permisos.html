@@ -154,7 +154,7 @@
   }
 
   @if (exito()) {
-    <app-toast [mensaje]="exito()!" (cerrado)="exito.set(null)" />
+    <app-toast animate.leave="ab-sale-arriba" [mensaje]="exito()!" (cerrado)="exito.set(null)" />
   }
 
   <!-- Popup para subir el rol. Escape o un click afuera lo cierran. -->

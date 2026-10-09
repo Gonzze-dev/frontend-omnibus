@@ -3,6 +3,7 @@ import { NgTemplateOutlet } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { Observable } from 'rxjs';
 import { Topbar } from '../../shared/topbar/topbar';
+import { Contador } from '../../shared/contador/contador';
 import { StatsService } from '../../services/stats.service';
 import { AuthService } from '../../services/auth.service';
 import { UserService } from '../../services/user.service';
@@ -44,7 +45,7 @@ interface Acceso {
 
 @Component({
   selector: 'app-dashboard',
-  imports: [Topbar, NgTemplateOutlet, RouterLink],
+  imports: [Topbar, NgTemplateOutlet, RouterLink, Contador],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
 })
@@ -108,8 +109,6 @@ export class Dashboard implements OnInit {
     this.accesos.filter((a) => !a.soloSuper || this.auth.esSuper()),
   );
 
-  private readonly numero = new Intl.NumberFormat('es-AR');
-
   ngOnInit(): void {
     this.sincronizarPermisos();
 
@@ -135,9 +134,5 @@ export class Dashboard implements OnInit {
       },
       error: () => {},
     });
-  }
-
-  protected formatear(valor: number | null): string {
-    return valor === null ? '—' : this.numero.format(valor);
   }
 }

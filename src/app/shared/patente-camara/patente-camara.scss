@@ -210,3 +210,39 @@
 .camara__obturador:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
 
 .camara__archivo { display: none; }
+
+/* ============================================================
+   Movimiento
+   ============================================================ */
+.camara__fondo {
+  animation: ab-funde var(--ab-dur-media) ease-out;
+}
+
+.camara__panel {
+  animation: ab-dialogo-entra 360ms var(--ab-ease-spring);
+}
+
+/* Destello de "foto sacada" al mostrar la vista previa */
+.camara__foto {
+  animation: camara-flash 450ms ease-out;
+}
+
+@keyframes camara-flash {
+  from { filter: brightness(2.6); }
+}
+
+/* "Leyendo patente..." late mientras espera la respuesta */
+.camara__estado--velo {
+  animation: ab-funde var(--ab-dur-media) ease-out, camara-late 1.4s ease-in-out infinite;
+}
+
+@keyframes camara-late {
+  50% { color: rgba(255, 255, 255, 0.6); }
+}
+
+.disparador svg {
+  transition: transform var(--ab-dur-media) var(--ab-ease-spring);
+}
+
+.disparador:hover svg { transform: scale(1.12); }
+.disparador:active svg { transform: scale(0.92); }

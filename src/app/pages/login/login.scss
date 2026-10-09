@@ -37,3 +37,12 @@
   padding-top: var(--ab-card-gap);
   border-top: 1px solid var(--ab-line);
 }
+
+/* La flecha del boton avanza al pasar el mouse */
+.login__form .ab-button svg {
+  transition: transform var(--ab-dur-media) var(--ab-ease-out);
+}
+
+@media (hover: hover) {
+  .login__form .ab-button:hover:not(:disabled) svg { transform: translateX(4px); }
+}

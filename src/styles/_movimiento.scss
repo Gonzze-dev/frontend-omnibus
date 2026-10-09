@@ -1,0 +1,282 @@
+/* ============================================================
+   Movimiento - animaciones y transiciones globales.
+
+   Se carga al final de styles.scss (meta.load-css) para que sus
+   reglas ganen sobre las de base sin subir la especificidad.
+
+   Los @keyframes de aca son globales: Angular solo renombra los
+   que se declaran dentro del scss de un componente, asi que
+   cualquier pantalla puede usar `animation: ab-sube ...`.
+
+   Todo se apaga con prefers-reduced-motion (al final).
+   ============================================================ */
+
+:root {
+  --ab-ease-out:    cubic-bezier(0.22, 1, 0.36, 1);
+  --ab-ease-in:     cubic-bezier(0.55, 0, 1, 0.45);
+  --ab-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  --ab-dur-rapida: 160ms;
+  --ab-dur-media:  260ms;
+  --ab-dur-lenta:  480ms;
+
+  /* Separacion entre elementos que entran en cascada */
+  --ab-cascada: 60ms;
+}
+
+/* ============================================================
+   Keyframes
+   ============================================================ */
+@keyframes ab-funde {
+  from { opacity: 0; }
+}
+
+@keyframes ab-sube {
+  from { opacity: 0; transform: translateY(14px); }
+}
+
+@keyframes ab-baja {
+  from { opacity: 0; transform: translateY(-6px); }
+}
+
+@keyframes ab-desde-izquierda {
+  from { opacity: 0; transform: translateX(-16px); }
+}
+
+@keyframes ab-pop {
+  from { opacity: 0; transform: scale(0.6); }
+}
+
+@keyframes ab-dialogo-entra {
+  from { opacity: 0; transform: translateY(16px) scale(0.96); }
+}
+
+@keyframes ab-sacude {
+  0%, 100% { transform: translateX(0); }
+  20%      { transform: translateX(-5px); }
+  40%      { transform: translateX(4px); }
+  60%      { transform: translateX(-3px); }
+  80%      { transform: translateX(2px); }
+}
+
+@keyframes ab-sale-arriba {
+  to { opacity: 0; transform: translateY(-16px) scale(0.97); }
+}
+
+@keyframes ab-sale-izquierda {
+  to { opacity: 0; transform: translateX(-24px); }
+}
+
+@keyframes ab-campana {
+  0%, 100% { transform: rotate(0); }
+  15%      { transform: rotate(14deg); }
+  30%      { transform: rotate(-12deg); }
+  45%      { transform: rotate(8deg); }
+  60%      { transform: rotate(-5deg); }
+  75%      { transform: rotate(2deg); }
+}
+
+@keyframes ab-rebote {
+  0%, 100% { transform: translateY(0); }
+  40%      { transform: translateY(-5px); }
+  70%      { transform: translateY(1px); }
+}
+
+/* ============================================================
+   Clases para animate.leave de Angular: se agregan al elemento
+   que sale y Angular espera a que termine la animacion para
+   sacarlo del DOM. La variante con .ab-screen > le gana a la
+   entrada en cascada de mas abajo.
+   ============================================================ */
+.ab-sale-arriba,
+.ab-screen > .ab-sale-arriba {
+  animation: ab-sale-arriba 220ms var(--ab-ease-in) forwards;
+}
+
+.ab-sale-izquierda,
+.ab-screen > .ab-sale-izquierda {
+  animation: ab-sale-izquierda 260ms var(--ab-ease-in) forwards;
+}
+
+/* ============================================================
+   Cambio de pantalla (View Transitions del router)
+   Fundido corto de la pagina entera; el contenido de la nueva
+   entra despues en cascada (ver abajo).
+   ============================================================ */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 220ms;
+}
+
+/* ============================================================
+   Entrada de pantalla: cada bloque de primer nivel sube y
+   aparece, uno detras de otro. Vale para todas las pantallas
+   porque todas usan .ab-screen como contenedor.
+
+   `backwards` (y no `both`) para que al terminar no quede un
+   transform pegado que pise los :hover de cada pantalla.
+   ============================================================ */
+.ab-screen > :not(dialog, app-qr-scanner, app-toast) {
+  animation: ab-sube var(--ab-dur-lenta) var(--ab-ease-out) backwards;
+}
+
+@for $i from 2 through 8 {
+  .ab-screen > :nth-child(#{$i}) {
+    animation-delay: calc(var(--ab-cascada) * #{$i - 1});
+  }
+}
+
+.ab-screen > :nth-child(n + 9) { animation-delay: calc(var(--ab-cascada) * 8); }
+
+/* ============================================================
+   Botones
+   ============================================================ */
+.ab-button {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  transition:
+    transform var(--ab-dur-rapida) var(--ab-ease-out),
+    filter var(--ab-dur-media) ease,
+    opacity var(--ab-dur-media) ease;
+}
+
+/* Brillo que cruza el boton al pasar el mouse */
+.ab-button::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.22) 50%, transparent 70%);
+  transform: translateX(-110%);
+  pointer-events: none;
+}
+
+@media (hover: hover) {
+  .ab-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    filter: brightness(1.08);
+  }
+
+  .ab-button:hover:not(:disabled)::after {
+    transform: translateX(110%);
+    transition: transform 700ms var(--ab-ease-out);
+  }
+}
+
+.ab-button:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+  transition-duration: 80ms;
+}
+
+/* ============================================================
+   Campos: el anillo de foco se acerca en vez de aparecer de golpe
+   ============================================================ */
+.ab-input,
+.crud__select,
+.crud__textarea,
+.buscador__input {
+  outline: 2px solid transparent;
+  outline-offset: 6px;
+  transition:
+    outline-color var(--ab-dur-rapida) ease,
+    outline-offset var(--ab-dur-media) var(--ab-ease-out),
+    box-shadow var(--ab-dur-media) ease;
+}
+
+/* Al marcarse como invalido el campo se sacude una vez */
+.ab-input[aria-invalid="true"] {
+  animation: ab-sacude 380ms ease-in-out;
+}
+
+.ab-password__toggle svg {
+  animation: ab-pop var(--ab-dur-media) var(--ab-ease-spring);
+}
+
+/* ============================================================
+   Enlaces: el subrayado aparece y se acerca al texto
+   ============================================================ */
+.ab-link {
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 5px;
+  transition:
+    text-decoration-color var(--ab-dur-rapida) ease,
+    text-underline-offset var(--ab-dur-media) var(--ab-ease-out);
+}
+
+.ab-link:hover {
+  text-decoration-color: currentColor;
+  text-underline-offset: 2px;
+}
+
+/* ============================================================
+   Mensajes del formulario
+   ============================================================ */
+.ab-field-error {
+  animation: ab-baja 220ms var(--ab-ease-out) backwards;
+}
+
+.ab-form-ok {
+  animation: ab-baja var(--ab-dur-media) var(--ab-ease-out) backwards;
+}
+
+/* El error del servidor baja y despues se sacude para llamar la atencion */
+.ab-form-error {
+  animation:
+    ab-baja var(--ab-dur-media) var(--ab-ease-out) backwards,
+    ab-sacude 420ms 180ms ease-in-out;
+}
+
+/* ============================================================
+   Popups (<dialog> nativo abierto con showModal)
+   Solo se anima la apertura: al cerrar, varias pantallas sacan
+   el contenido con @if antes de cerrar y se veria la caja vacia.
+   ============================================================ */
+dialog[open] {
+  animation: ab-dialogo-entra 320ms var(--ab-ease-spring);
+}
+
+dialog[open]::backdrop {
+  animation: ab-funde var(--ab-dur-media) ease-out;
+}
+
+/* La X de los popups gira al pasar el mouse */
+.popup__cerrar svg,
+.scanner__close svg,
+.camara__cerrar svg {
+  transition: transform var(--ab-dur-media) var(--ab-ease-out);
+}
+
+.popup__cerrar:hover:not(:disabled) svg,
+.scanner__close:hover svg,
+.camara__cerrar:hover svg {
+  transform: rotate(90deg);
+}
+
+/* Lista del buscador (popover) */
+.buscador__lista:popover-open {
+  animation: ab-baja 180ms var(--ab-ease-out);
+}
+
+/* ============================================================
+   Sin animaciones para quien las desactivo en el sistema
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after,
+  ::backdrop {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+  }
+
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}

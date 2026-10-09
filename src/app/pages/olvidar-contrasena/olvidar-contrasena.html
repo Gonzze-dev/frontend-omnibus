@@ -21,7 +21,7 @@
     }
 
     @if (mostrarToast()) {
-      <app-toast [mensaje]="enviado()!" (cerrado)="mostrarToast.set(false)" />
+      <app-toast animate.leave="ab-sale-arriba" [mensaje]="enviado()!" (cerrado)="mostrarToast.set(false)" />
     }
 
     <button class="ab-button" type="submit" [disabled]="cargando() || !!enviado()">

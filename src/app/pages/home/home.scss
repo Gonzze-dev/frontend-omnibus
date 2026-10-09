@@ -255,3 +255,38 @@
   min-height: 48px;
   padding: 12px 24px;
 }
+
+/* ============================================================
+   Movimiento
+   ============================================================ */
+/* La terminal de la marca de agua flota despacio */
+.terminal__deco {
+  animation: deco-flota 6s ease-in-out infinite;
+}
+
+@keyframes deco-flota {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  50%      { transform: translateY(-6px) rotate(-2deg); }
+}
+
+/* El pin salta cuando se elige la terminal o se escribe el CP */
+.row:focus-within .row__pin {
+  animation: ab-rebote 520ms var(--ab-ease-out);
+}
+
+.ticket__barcode {
+  transition: color var(--ab-dur-media) ease;
+}
+
+.ticket__box:focus-within .ticket__barcode { color: var(--ab-primary); }
+
+/* Errores: bajan y se sacuden, como los del formulario */
+.ticket__error {
+  animation: ab-baja var(--ab-dur-media) var(--ab-ease-out) backwards;
+}
+
+.ab-screen > .home__error {
+  animation:
+    ab-baja var(--ab-dur-media) var(--ab-ease-out) backwards,
+    ab-sacude 420ms 180ms ease-in-out;
+}

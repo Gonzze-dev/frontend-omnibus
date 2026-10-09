@@ -179,3 +179,60 @@ a.acceso { text-decoration: none; }
   opacity: 0.05;
   pointer-events: none;
 }
+
+/* ============================================================
+   Movimiento
+   ============================================================ */
+/* Metricas y accesos entran en cascada detras de su lista */
+.metricas > .metrica,
+.accesos > li {
+  animation: ab-sube var(--ab-dur-lenta) var(--ab-ease-out) backwards;
+}
+
+@for $i from 1 through 3 {
+  .metricas > .metrica:nth-child(#{$i}) { animation-delay: #{100 + $i * 70}ms; }
+}
+
+@for $i from 1 through 6 {
+  .accesos > li:nth-child(#{$i}) { animation-delay: #{180 + $i * 60}ms; }
+}
+
+.metrica__icono {
+  animation: ab-pop var(--ab-dur-lenta) var(--ab-ease-spring) backwards;
+}
+
+@for $i from 1 through 3 {
+  .metrica:nth-child(#{$i}) .metrica__icono { animation-delay: #{260 + $i * 70}ms; }
+}
+
+.acceso {
+  transition:
+    transform var(--ab-dur-media) var(--ab-ease-out),
+    box-shadow var(--ab-dur-media) ease,
+    border-color var(--ab-dur-media) ease;
+}
+
+.acceso__icono,
+.acceso__marca {
+  transition: transform var(--ab-dur-lenta) var(--ab-ease-spring), opacity var(--ab-dur-media) ease;
+}
+
+@media (hover: hover) {
+  .acceso:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--ab-shadow-card);
+  }
+
+  .acceso:hover .acceso__icono { transform: scale(1.12) rotate(-4deg); }
+
+  /* La marca de agua se asoma un poco mas */
+  .acceso:hover .acceso__marca {
+    transform: scale(1.15) rotate(-8deg);
+    opacity: 0.09;
+  }
+}
+
+.acceso:active {
+  transform: scale(0.98);
+  transition-duration: 80ms;
+}

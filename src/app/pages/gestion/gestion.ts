@@ -3,6 +3,7 @@ import { NgTemplateOutlet } from '@angular/common';
 import { ActivatedRoute, ResolveFn, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Topbar } from '../../shared/topbar/topbar';
+import { Contador } from '../../shared/contador/contador';
 import { buscarSeccion } from './gestiones';
 
 /**
@@ -12,7 +13,7 @@ import { buscarSeccion } from './gestiones';
  */
 @Component({
   selector: 'app-gestion',
-  imports: [Topbar, RouterLink, NgTemplateOutlet],
+  imports: [Topbar, RouterLink, NgTemplateOutlet, Contador],
   templateUrl: './gestion.html',
   styleUrl: './gestion.scss',
 })
@@ -25,12 +26,6 @@ export class Gestion {
   });
 
   protected readonly seccion = computed(() => buscarSeccion(this.parametros().get('seccion')));
-
-  private readonly numero = new Intl.NumberFormat('es-AR');
-
-  protected formatear(valor: number): string {
-    return this.numero.format(valor);
-  }
 }
 
 /** Titulo de la pestaña: el de la seccion, o el generico si no existe. */
