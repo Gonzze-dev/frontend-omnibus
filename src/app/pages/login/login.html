@@ -2,7 +2,14 @@
   <!-- Marca: el isotipo entra solo en el centro y despues se corre a la izquierda
        mientras se despliega el nombre (ver .marca en login.scss). -->
   <h1 class="ab-brand login__brand marca">
-    <img class="marca__logo" src="assets/isotipo.png" alt="" width="64" height="64" />
+    <!-- El isotipo va en capas (mismo tamaño, apiladas) para armarlo por partes:
+         pin -> colectivo -> onda chica -> onda grande. -->
+    <span class="marca__logo" aria-hidden="true">
+      <img class="marca__capa marca__capa--pin" src="assets/isotipo/pin.png" alt="" />
+      <img class="marca__capa marca__capa--bus" src="assets/isotipo/bus.png" alt="" />
+      <img class="marca__capa marca__capa--onda1" src="assets/isotipo/onda1.png" alt="" />
+      <img class="marca__capa marca__capa--onda2" src="assets/isotipo/onda2.png" alt="" />
+    </span>
     <span class="marca__texto"><span class="marca__nombre">Ya llegó</span></span>
   </h1>
 

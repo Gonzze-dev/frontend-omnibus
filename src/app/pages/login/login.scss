@@ -17,17 +17,47 @@
   line-height: 48px;
 }
 
+/* Las cuatro capas son PNG del mismo tamaño apilados; cada una
+   entra a su turno. Los transform-origin estan en % del PNG
+   (512px): la punta del pin, el centro del colectivo y el punto
+   desde donde salen las ondas. */
 .marca__logo {
+  position: relative;
   width: 64px;
   height: 64px;
   flex-shrink: 0;
-  animation: marca-logo 600ms var(--ab-ease-spring) both;
 }
+
+.marca__capa {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.marca__capa--pin {
+  transform-origin: 40% 99%;
+  animation: marca-pin 500ms var(--ab-ease-spring) both;
+}
+
+.marca__capa--bus {
+  transform-origin: 40% 49%;
+  animation: marca-bus 450ms 300ms var(--ab-ease-spring) both;
+}
+
+.marca__capa--onda1,
+.marca__capa--onda2 {
+  transform-origin: 64% 39%;
+  animation: marca-onda 380ms var(--ab-ease-out) both;
+}
+
+.marca__capa--onda1 { animation-delay: 650ms; }
+.marca__capa--onda2 { animation-delay: 850ms; }
 
 .marca__texto {
   display: grid;
   grid-template-columns: 0fr;
-  animation: marca-abre 700ms 650ms var(--ab-ease-out) forwards;
+  animation: marca-abre 700ms 1150ms var(--ab-ease-out) forwards;
 }
 
 /* El hueco entre logo y nombre va dentro de la zona recortada,
@@ -37,18 +67,18 @@
   overflow: hidden;
   padding-left: 12px;
   white-space: nowrap;
-  animation: marca-nombre 600ms 800ms var(--ab-ease-out) both;
+  animation: marca-nombre 600ms 1300ms var(--ab-ease-out) both;
 }
 
 /* Splash: la marca no entra con la cascada global de .ab-screen.
    Arranca agrandada en el centro de la pantalla, hace su animacion
-   ahi (logo + nombre, ~1400ms) y despues sube a su lugar.
+   ahi (logo por partes + nombre, ~1900ms) y despues sube a su lugar.
    El origen es el centro del contenido (66px de padding + medio
    logo), asi el translate lo lleva justo al medio del viewport. */
 .login .marca {
   --marca-escala: 1.4;
   transform-origin: 50% calc(66px + 32px);
-  animation: marca-asienta 700ms 1600ms var(--ab-ease-out) backwards;
+  animation: marca-asienta 700ms 2100ms var(--ab-ease-out) backwards;
 }
 
 /* En celulares angostos el bloque agrandado no entra a 1.4 */
@@ -57,14 +87,24 @@
 }
 
 /* El form espera a que la marca este casi en su lugar */
-.login .login__card { animation-delay: 2050ms; }
+.login .login__card { animation-delay: 2550ms; }
 
 @keyframes marca-asienta {
   from { transform: translateY(calc(50dvh - 66px - 32px)) scale(var(--marca-escala)); }
 }
 
-@keyframes marca-logo {
-  from { opacity: 0; transform: scale(0.4) rotate(-12deg); }
+/* El pin cae desde arriba y rebota sobre su punta */
+@keyframes marca-pin {
+  from { opacity: 0; transform: translateY(-40%) scale(0.6); }
+}
+
+@keyframes marca-bus {
+  from { opacity: 0; transform: scale(0.3); }
+}
+
+/* Cada onda sale desde el pin hacia afuera */
+@keyframes marca-onda {
+  from { opacity: 0; transform: scale(0.5); }
 }
 
 @keyframes marca-abre {
