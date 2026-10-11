@@ -2,6 +2,56 @@
   padding-top: 66px;
 }
 
+/* ============================================================
+   Marca animada
+   1. El isotipo aparece solo, centrado.
+   2. La columna del nombre crece de 0 a su ancho: como el bloque
+      sigue centrado, el logo se corre a la izquierda solo.
+   3. El nombre entra desde atras del logo mientras se despliega.
+   ============================================================ */
+.marca {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  line-height: 48px;
+}
+
+.marca__logo {
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+  animation: marca-logo 600ms var(--ab-ease-spring) both;
+}
+
+.marca__texto {
+  display: grid;
+  grid-template-columns: 0fr;
+  animation: marca-abre 700ms 650ms var(--ab-ease-out) forwards;
+}
+
+/* El hueco entre logo y nombre va dentro de la zona recortada,
+   asi con la columna cerrada el logo queda centrado de verdad. */
+.marca__nombre {
+  min-width: 0;
+  overflow: hidden;
+  padding-left: 12px;
+  white-space: nowrap;
+  animation: marca-nombre 600ms 800ms var(--ab-ease-out) both;
+}
+
+@keyframes marca-logo {
+  from { opacity: 0; transform: scale(0.4) rotate(-12deg); }
+}
+
+@keyframes marca-abre {
+  to { grid-template-columns: 1fr; }
+}
+
+@keyframes marca-nombre {
+  from { opacity: 0; transform: translateX(-24px); }
+}
+
 .login__card {
   display: flex;
   flex-direction: column;

@@ -7,7 +7,7 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "alerta-bus": {
+    "ya-llego": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -66,10 +66,10 @@
           },
           "configurations": {
             "production": {
-              "buildTarget": "alerta-bus:build:production"
+              "buildTarget": "ya-llego:build:production"
             },
             "development": {
-              "buildTarget": "alerta-bus:build:development"
+              "buildTarget": "ya-llego:build:development"
             }
           },
           "defaultConfiguration": "development"

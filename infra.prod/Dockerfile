@@ -19,7 +19,7 @@ RUN npx ng build --configuration production
 
 FROM nginx:1.29-alpine
 COPY infra.prod/nginx.conf.template /etc/nginx/templates/default.conf.template
-COPY --from=build /app/dist/alerta-bus/browser /usr/share/nginx/html
+COPY --from=build /app/dist/ya-llego/browser /usr/share/nginx/html
 
 ENV PORT=80 \
     BACKEND_UPSTREAM=http://localhost:4989 \
