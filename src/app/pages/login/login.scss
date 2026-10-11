@@ -40,6 +40,29 @@
   animation: marca-nombre 600ms 800ms var(--ab-ease-out) both;
 }
 
+/* Splash: la marca no entra con la cascada global de .ab-screen.
+   Arranca agrandada en el centro de la pantalla, hace su animacion
+   ahi (logo + nombre, ~1400ms) y despues sube a su lugar.
+   El origen es el centro del contenido (66px de padding + medio
+   logo), asi el translate lo lleva justo al medio del viewport. */
+.login .marca {
+  --marca-escala: 1.4;
+  transform-origin: 50% calc(66px + 32px);
+  animation: marca-asienta 700ms 1600ms var(--ab-ease-out) backwards;
+}
+
+/* En celulares angostos el bloque agrandado no entra a 1.4 */
+@media (max-width: 380px) {
+  .login .marca { --marca-escala: 1.2; }
+}
+
+/* El form espera a que la marca este casi en su lugar */
+.login .login__card { animation-delay: 2050ms; }
+
+@keyframes marca-asienta {
+  from { transform: translateY(calc(50dvh - 66px - 32px)) scale(var(--marca-escala)); }
+}
+
 @keyframes marca-logo {
   from { opacity: 0; transform: scale(0.4) rotate(-12deg); }
 }
