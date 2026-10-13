@@ -18,16 +18,16 @@
   } @else if (!restoring()) {
   <div class="ab-screen home__body">
     <section class="hero">
-      <h1 class="hero__title">Rastrea tu viaje</h1>
+      <h1 class="hero__title">Rastreá tu viaje</h1>
       <p class="hero__text">
-        Acceda a datos del viaje y espere a ser alertado.
-        Elija la terminal, introduciendo el codigo del viaje o escaneando el QR del pasaje
+        Accedé a los datos de tu viaje y esperá a que te avisemos.
+        Elegí la terminal e ingresá el código del pasaje o escaneá el QR.
       </p>
     </section>
 
     <!-- Card 1: terminal selection -->
     <section class="terminal">
-      <h2 class="terminal__title">Buscar Terminal</h2>
+      <h2 class="terminal__title">Buscar terminal</h2>
       <p class="terminal__hint">Buscá por nombre o filtrá por código postal</p>
 
       <div class="row">
@@ -89,7 +89,7 @@
           class="row__control"
           type="text"
           inputmode="numeric"
-          placeholder="Código Postal"
+          placeholder="Código postal"
           aria-label="Código postal"
           [value]="zipFilter()"
           (input)="onZipFilter($any($event.target).value)"
@@ -112,11 +112,11 @@
           <path d="M1 1h18v4a3 3 0 0 0 0 6v4H1v-4a3 3 0 0 0 0-6V1Z" fill="currentColor" />
           <path d="M6 4.5v1M6 7.5v1M6 10.5v1" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round" />
         </svg>
-        <h2 class="ticket__kicker">Verificacion de ticket</h2>
+        <h2 class="ticket__kicker">Verificación de pasaje</h2>
       </div>
 
       <div class="ticket__field">
-        <label class="ticket__label" for="ticket">Ticket de referencia</label>
+        <label class="ticket__label" for="ticket">Código del pasaje</label>
         <div class="ticket__box">
           <svg class="ab-icon ticket__barcode" width="22" height="18" viewBox="0 0 22 18" fill="none" aria-hidden="true">
             <path d="M1 1v16M5 1v16M8 1v16M12 1v16M15 1v16M18 1v16M21 1v16"

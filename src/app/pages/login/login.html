@@ -15,28 +15,28 @@
 
   <section class="login__card">
     <header class="login__head">
-      <h2 class="ab-title">Iniciar Sesion</h2>
-      <p class="ab-subtitle">Ingresa tus credenciales para continuar</p>
+      <h2 class="ab-title">Iniciar sesión</h2>
+      <p class="ab-subtitle">Ingresá tus credenciales para continuar</p>
     </header>
 
     @if (passwordChanged()) {
-      <p class="ab-form-ok" role="status">Tu contraseña se cambio. Ingresa con la nueva.</p>
+      <p class="ab-form-ok" role="status">Tu contraseña se cambió. Ingresá con la nueva.</p>
     }
 
     <form class="login__form" [formGroup]="form" (ngSubmit)="signIn()" novalidate>
       <div class="ab-field">
         <label class="ab-label" for="email">Email</label>
-        <input class="ab-input" id="email" type="email" placeholder="name@company.com" autocomplete="email"
+        <input class="ab-input" id="email" type="email" placeholder="nombre@ejemplo.com" autocomplete="email"
                formControlName="email" [attr.aria-invalid]="invalid('email')" />
         @if (invalid('email')) {
-          <p class="ab-field-error">Ingresa un email valido.</p>
+          <p class="ab-field-error">Ingresá un email válido.</p>
         }
       </div>
 
       <div class="ab-field">
         <div class="ab-label-row">
           <label class="ab-label" for="password">Contraseña</label>
-          <a class="ab-link login__forgot" routerLink="/forgot-password">Olvidaste tu contraseña?</a>
+          <a class="ab-link login__forgot" routerLink="/forgot-password">¿Olvidaste tu contraseña?</a>
         </div>
         <div class="ab-password">
           <input class="ab-input" id="password" [type]="showPassword() ? 'text' : 'password'"
@@ -45,7 +45,7 @@
           <app-password-toggle [visible]="showPassword()" (visibleChange)="showPassword.set($event)" />
         </div>
         @if (invalid('password')) {
-          <p class="ab-field-error">Ingresa tu contraseña.</p>
+          <p class="ab-field-error">Ingresá tu contraseña.</p>
         }
       </div>
 
@@ -64,7 +64,7 @@
 
     <footer class="login__foot">
       <p class="ab-footnote">
-        No tenes cuenta?
+        ¿No tenés cuenta?
         <a class="ab-link" routerLink="/register">Registrate</a>
       </p>
     </footer>

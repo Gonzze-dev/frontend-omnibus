@@ -130,7 +130,7 @@ function toNotification(msg: PassengerNotification): Notification | null {
         ...base,
         kind: 'arrival',
         title: 'Tu colectivo acaba de llegar',
-        detail: `Esta en la plataforma ${p.bay}.`,
+        detail: `Está en la plataforma ${p.bay}.`,
       };
     }
     case 'BUS_DELAY': {
@@ -139,7 +139,7 @@ function toNotification(msg: PassengerNotification): Notification | null {
         ...base,
         kind: 'delay',
         title: 'Alerta de retraso',
-        detail: `Su colectivo esta retrasado unos ${p.time_delay} minutos aproximadamente.`,
+        detail: `Tu colectivo está retrasado unos ${p.time_delay} minutos.`,
       };
     }
     case 'LOCAL':

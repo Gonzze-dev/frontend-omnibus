@@ -10,8 +10,8 @@
   </a>
 
   <header class="crud__head">
-    <h1 class="crud__title">Control de Permisos</h1>
-    <p class="crud__lead">Busca una cuenta y cambiale el rol dentro del sistema.</p>
+    <h1 class="crud__title">Control de permisos</h1>
+    <p class="crud__lead">Buscá una cuenta y cambiale el rol dentro del sistema.</p>
   </header>
 
   <form class="crud__filter" (submit)="$event.preventDefault(); applySearch()">
@@ -63,7 +63,7 @@
               }
               @if (canDemote(u)) {
                 <button class="table__icon table__icon--crimson user__demote" type="button"
-                        [attr.aria-label]="'Bajar a usuario a ' + u.first_name + ' ' + u.last_name"
+                        [attr.aria-label]="'Bajar a ' + u.first_name + ' ' + u.last_name + ' a usuario'"
                         (click)="$event.stopPropagation(); openDemotion(u)">
                   <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true">
                     <path d="M3 10h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
@@ -114,7 +114,7 @@
           }
         </li>
       } @empty {
-        <li class="table__empty">No hay usuarios que coincidan con la busqueda.</li>
+        <li class="table__empty">No hay usuarios que coincidan con la búsqueda.</li>
       }
 
       @for (_ of filler(); track $index) {
@@ -126,9 +126,9 @@
       }
     </ul>
 
-    <nav class="pagination" aria-label="Paginas del listado"
+    <nav class="pagination" aria-label="Páginas del listado"
          [class.pagination--hidden]="totalPages() === 1">
-      <button class="pagination__arrow" type="button" aria-label="Pagina anterior"
+      <button class="pagination__arrow" type="button" aria-label="Página anterior"
               [disabled]="page() === 1" (click)="goTo(page() - 1)">
         <svg width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
           <path d="M10.5 1.5 4 7l6.5 5.5" stroke="currentColor" stroke-width="1.8"
@@ -143,7 +143,7 @@
                 (click)="goTo(p)">{{ p }}</button>
       }
 
-      <button class="pagination__arrow" type="button" aria-label="Pagina siguiente"
+      <button class="pagination__arrow" type="button" aria-label="Página siguiente"
               [disabled]="page() === totalPages()" (click)="goTo(page() + 1)">
         <svg width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
           <path d="M5.5 1.5 12 7l-6.5 5.5" stroke="currentColor" stroke-width="1.8"
@@ -188,13 +188,13 @@
         @if (mode() === 'demote') {
           <!-- Only a super admin on another super admin: confirmation -->
           <p class="popup__text">
-            ¿Seguro que queres bajar a esta persona a usuario? Pierde el manejo de terminales y de roles.
+            ¿Seguro que querés bajar a esta persona a usuario? Pierde el manejo de terminales y de roles.
           </p>
         } @else if (mode() === 'remove-terminal') {
           <p class="popup__text">
-            ¿Seguro que queres sacarle <strong>{{ terminalToRemove()?.name }}</strong>?
+            ¿Seguro que querés sacarle <strong>{{ terminalToRemove()?.name }}</strong>?
             @if (u.terminals.length <= 1) {
-              Es su unica terminal: la cuenta vuelve a ser un usuario comun.
+              Es su única terminal: la cuenta vuelve a ser un usuario común.
             } @else {
               Sigue siendo admin de sus otras terminales.
             }
@@ -221,7 +221,7 @@
               <p class="table__empty">Cargando terminales...</p>
             } @else if (offeredTerminals().length === 0) {
               <p class="table__empty">
-                {{ iAmSuper() ? 'Ya administra todas las terminales.' : 'No tenes terminales para asignarle.' }}
+                {{ iAmSuper() ? 'Ya administra todas las terminales.' : 'No tenés terminales para asignarle.' }}
               </p>
             } @else {
               <!-- Combobox: type to filter and choose from the list -->

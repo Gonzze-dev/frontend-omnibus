@@ -31,7 +31,7 @@
         <div class="ab-field">
           <label class="ab-label" for="terminal-filter">Buscar terminal</label>
           <input class="ab-input" id="terminal-filter" type="search" autocomplete="off"
-                 placeholder="Nombre, codigo postal o identificador"
+                 placeholder="Nombre, código postal o identificador"
                  [value]="filter()" (input)="applyFilter($any($event.target).value)" />
         </div>
       </div>
@@ -87,9 +87,9 @@
           }
         </ul>
 
-        <nav class="pagination" aria-label="Paginas del listado"
+        <nav class="pagination" aria-label="Páginas del listado"
              [class.pagination--hidden]="totalPages() === 1">
-          <button class="pagination__arrow" type="button" aria-label="Pagina anterior"
+          <button class="pagination__arrow" type="button" aria-label="Página anterior"
                   [disabled]="currentPage() === 1" (click)="goTo(currentPage() - 1)">
             <svg width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
               <path d="M10.5 1.5 4 7l6.5 5.5" stroke="currentColor" stroke-width="1.8"
@@ -104,7 +104,7 @@
                     (click)="goTo(p)">{{ p }}</button>
           }
 
-          <button class="pagination__arrow" type="button" aria-label="Pagina siguiente"
+          <button class="pagination__arrow" type="button" aria-label="Página siguiente"
                   [disabled]="currentPage() === totalPages()" (click)="goTo(currentPage() + 1)">
             <svg width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
               <path d="M5.5 1.5 12 7l-6.5 5.5" stroke="currentColor" stroke-width="1.8"
@@ -133,7 +133,7 @@
       </header>
 
       <p class="popup__text" id="delete-text">
-        Vas a eliminar esta terminal del sistema. La accion no se puede deshacer.
+        Vas a eliminar esta terminal del sistema. La acción no se puede deshacer.
       </p>
 
       <dl class="result__list">
@@ -146,7 +146,7 @@
           <dd>{{ terminal.uuid }}</dd>
         </div>
         <div class="result__row">
-          <dt>Codigo postal</dt>
+          <dt>Código postal</dt>
           <dd>{{ terminal.postal_code }}</dd>
         </div>
       </dl>
@@ -190,31 +190,31 @@
           <input class="ab-input" id="name-create" type="text" placeholder="Ej: Terminal Retiro BS AS" autocomplete="off"
                  formControlName="name" [attr.aria-invalid]="createInvalid('name')" />
           @if (createInvalid('name')) {
-            <p class="ab-field-error">Ingresa el nombre.</p>
+            <p class="ab-field-error">Ingresá el nombre.</p>
           }
         </div>
 
         <div class="ab-field">
           <label class="ab-label" for="city-create">Ciudad</label>
           <app-search-select inputId="city-create" formControlName="postal_code"
-                             placeholder="Busca una ciudad por nombre o codigo postal"
+                             placeholder="Buscá una ciudad por nombre o código postal"
                              [options]="cityOptions()" [invalid]="createInvalid('postal_code')" />
           @if (createInvalid('postal_code')) {
-            <p class="ab-field-error">Elegi una ciudad.</p>
+            <p class="ab-field-error">Elegí una ciudad.</p>
           }
         </div>
 
         <div class="ab-field">
           <label class="ab-label" for="external-create">Terminal externa</label>
           <app-search-select inputId="external-create" formControlName="external_terminal_id"
-                             placeholder="Busca una terminal externa"
+                             placeholder="Buscá una terminal externa"
                              [options]="externalOptions()" [invalid]="createInvalid('external_terminal_id')" />
           <p class="crud__note">Es la terminal en el sistema de pasajes. No puede estar asignada a otra terminal.</p>
           @if (externalsError()) {
             <p class="ab-field-error">{{ externalsError() }}</p>
           }
           @if (createInvalid('external_terminal_id')) {
-            <p class="ab-field-error">Elegi una terminal externa.</p>
+            <p class="ab-field-error">Elegí una terminal externa.</p>
           }
         </div>
 
@@ -250,7 +250,7 @@
         </button>
       </header>
 
-      <p class="popup__text">Cambia el nombre, la ciudad o la terminal externa.</p>
+      <p class="popup__text">Cambiá el nombre, la ciudad o la terminal externa.</p>
 
       @if (loadingSelected()) {
         <p class="popup__text">Cargando terminal...</p>
@@ -263,30 +263,30 @@
             <input class="ab-input" id="name-edit" type="text" autocomplete="off"
                    formControlName="name" [attr.aria-invalid]="editInvalid('name')" />
             @if (editInvalid('name')) {
-              <p class="ab-field-error">Ingresa el nombre.</p>
+              <p class="ab-field-error">Ingresá el nombre.</p>
             }
           </div>
 
           <div class="ab-field">
             <label class="ab-label" for="city-edit">Ciudad</label>
             <app-search-select inputId="city-edit" formControlName="postal_code"
-                               placeholder="Busca una ciudad por nombre o codigo postal"
+                               placeholder="Buscá una ciudad por nombre o código postal"
                                [options]="cityOptions()" [invalid]="editInvalid('postal_code')" />
             @if (editInvalid('postal_code')) {
-              <p class="ab-field-error">Elegi una ciudad.</p>
+              <p class="ab-field-error">Elegí una ciudad.</p>
             }
           </div>
 
           <div class="ab-field">
             <label class="ab-label" for="external-edit">Terminal externa</label>
             <app-search-select inputId="external-edit" formControlName="external_terminal_id"
-                               placeholder="Busca una terminal externa"
+                               placeholder="Buscá una terminal externa"
                                [options]="externalOptions()" [invalid]="editInvalid('external_terminal_id')" />
             @if (externalsError()) {
               <p class="ab-field-error">{{ externalsError() }}</p>
             }
             @if (editInvalid('external_terminal_id')) {
-              <p class="ab-field-error">Elegi una terminal externa.</p>
+              <p class="ab-field-error">Elegí una terminal externa.</p>
             }
           </div>
 

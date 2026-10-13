@@ -113,7 +113,7 @@ export class PlateCamera implements OnDestroy {
       await this.process(bitmap, bitmap.width, bitmap.height);
       bitmap.close();
     } catch {
-      this.showError('No se pudo abrir la foto. Proba con otra.');
+      this.showError('No se pudo abrir la foto. Probá con otra.');
     }
   }
 
@@ -190,7 +190,7 @@ export class PlateCamera implements OnDestroy {
       canvas.toBlob(resolve, 'image/jpeg', 0.9),
     );
     if (!image) {
-      this.showError('No se pudo sacar la foto. Proba de nuevo.');
+      this.showError('No se pudo sacar la foto. Probá de nuevo.');
       return;
     }
 
@@ -229,16 +229,16 @@ export class PlateCamera implements OnDestroy {
 function errorMessage(err: HttpErrorResponse): string {
   switch (err.status) {
     case 422:
-      return 'No se encontro una patente en la foto. Acercate y sacala de frente.';
+      return 'No se encontró una patente en la foto. Acercate y sacala de frente.';
     case 400:
     case 413:
-      return 'La foto no es valida. Proba sacar otra.';
+      return 'La foto no es válida. Probá sacar otra.';
     case 0:
     case 502:
     case 503:
     case 504:
-      return 'El lector de patentes no esta disponible. Cargala a mano.';
+      return 'El lector de patentes no está disponible. Cargala a mano.';
     default:
-      return 'No se pudo leer la patente. Proba de nuevo o cargala a mano.';
+      return 'No se pudo leer la patente. Probá de nuevo o cargala a mano.';
   }
 }

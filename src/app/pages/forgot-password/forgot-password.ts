@@ -39,7 +39,7 @@ export class ForgotPassword {
         // cannot be inferred from here whether the email went out.
         this.sent.set(
           res.message ||
-            'Si el email esta registrado, te llegara un correo para cambiar tu contraseña.',
+            'Si el email está registrado, te llegará un correo para cambiar tu contraseña.',
         );
         this.showToast.set(true);
       },
@@ -59,10 +59,10 @@ export class ForgotPassword {
 function errorMessage(err: HttpErrorResponse): string {
   switch (err.status) {
     case 0:
-      return 'No se pudo conectar con el servidor. Intenta mas tarde.';
+      return 'No se pudo conectar con el servidor. Intentá más tarde.';
     case 400:
-      return 'Ingresa un email valido.';
+      return 'Ingresá un email válido.';
     default:
-      return 'Ocurrio un error inesperado. Intenta de nuevo.';
+      return 'Ocurrió un error inesperado. Intentá de nuevo.';
   }
 }

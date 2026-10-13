@@ -28,11 +28,11 @@ interface NoticeView {
 const VIEWS: Record<NoticeAction, NoticeView> = {
   list: {
     title: 'Gestionar notificaciones',
-    lead: 'Revisa los avisos enviados a los pasajeros, de que terminal son y da de baja los que ya no hacen falta.',
+    lead: 'Revisá los avisos enviados a los pasajeros, de qué terminal son, y da de baja los que ya no hacen falta.',
   },
   send: {
     title: 'Enviar aviso',
-    lead: 'Notificacion para los pasajeros de una terminal, o el arribo de un colectivo si fallo la camara.',
+    lead: 'Notificación para los pasajeros de una terminal, o el arribo de un colectivo si falló la cámara.',
   },
 };
 
@@ -51,7 +51,7 @@ const TYPE_OPTIONS: Record<NoticeType, { label: string; detail: string }> = {
   },
   BUS_ARRIVAL: {
     label: 'ARRIBO',
-    detail: 'Avisar que un colectivo llego a un anden, por si la camara no lo detecto.',
+    detail: 'Avisar que un colectivo llegó a un andén, por si la cámara no lo detectó.',
   },
 };
 
@@ -72,7 +72,7 @@ const TYPE_LABELS: Record<NotificationType, string> = {
   GLOBAL: 'Global',
   BUS_DELAY: 'Retraso',
   BUS_ARRIVAL: 'Arribo',
-  CAMERA: 'Camara',
+  CAMERA: 'Cámara',
 };
 
 const DATE_FORMAT = new Intl.DateTimeFormat('es-AR', { dateStyle: 'short', timeStyle: 'short' });
@@ -317,7 +317,7 @@ export class Notices {
       case 'BUS_DELAY':
         return `Retraso de ${p['time_delay'] ?? '?'} min del colectivo ${p['license_plate'] ?? ''}`.trim();
       case 'BUS_ARRIVAL':
-        return `Arribo al anden ${p['bay'] ?? '?'}`;
+        return `Arribo al andén ${p['bay'] ?? '?'}`;
       default:
         return typeof p['message'] === 'string' ? p['message'] : '-';
     }
@@ -512,24 +512,24 @@ function setEnabled(control: AbstractControl, enabled: boolean): void {
 function listErrorMessage(err: HttpErrorResponse): string {
   switch (err.status) {
     case 0:
-      return 'No se pudo conectar con el servidor. Intenta mas tarde.';
+      return 'No se pudo conectar con el servidor. Intentá más tarde.';
     case 400:
       return err.error?.message === 'admin has no associated terminal'
-        ? 'No tenes terminales asignadas.'
-        : 'Revisa los filtros del listado.';
+        ? 'No tenés terminales asignadas.'
+        : 'Revisá los filtros del listado.';
     case 403:
-      return 'No tenes permisos para ver estos avisos.';
+      return 'No tenés permisos para ver estos avisos.';
     case 404:
-      return 'No se encontro el aviso. Puede que ya se haya eliminado.';
+      return 'No se encontró el aviso. Puede que ya se haya eliminado.';
     default:
-      return 'Ocurrio un error inesperado. Intenta de nuevo.';
+      return 'Ocurrió un error inesperado. Intentá de nuevo.';
   }
 }
 
 function deleteErrorMessage(err: HttpErrorResponse): string {
   switch (err.status) {
     case 403:
-      return 'No tenes permisos para eliminar este aviso.';
+      return 'No tenés permisos para eliminar este aviso.';
     case 404:
       return 'El aviso ya no existe.';
     default:
@@ -540,11 +540,11 @@ function deleteErrorMessage(err: HttpErrorResponse): string {
 function delayErrorMessage(err: HttpErrorResponse): string {
   switch (err.status) {
     case 400:
-      return 'Revisa los datos: la patente, la fecha, la demora, la duracion y la terminal son obligatorias.';
+      return 'Revisá los datos: la patente, la fecha, la demora, la duración y la terminal son obligatorias.';
     case 409:
       return 'No hay un viaje registrado para esa patente y fecha en la terminal.';
     case 502:
-      return 'No se pudo verificar el viaje o entregar el aviso. Intenta de nuevo.';
+      return 'No se pudo verificar el viaje o entregar el aviso. Intentá de nuevo.';
     default:
       return errorMessage(err);
   }
@@ -553,13 +553,13 @@ function delayErrorMessage(err: HttpErrorResponse): string {
 function arrivalErrorMessage(err: HttpErrorResponse): string {
   switch (err.status) {
     case 400:
-      return 'Revisa los datos: la patente, el anden y la duracion son obligatorios.';
+      return 'Revisá los datos: la patente, el andén y la duración son obligatorios.';
     case 403:
-      return 'No tenes permisos para avisar arribos en esa terminal.';
+      return 'No tenés permisos para avisar arribos en esa terminal.';
     case 404:
-      return 'No se encontro el anden indicado.';
+      return 'No se encontró el andén indicado.';
     case 502:
-      return 'El arribo no se pudo entregar en tiempo real. Intenta de nuevo.';
+      return 'El arribo no se pudo entregar en tiempo real. Intentá de nuevo.';
     default:
       return errorMessage(err);
   }
@@ -568,17 +568,17 @@ function arrivalErrorMessage(err: HttpErrorResponse): string {
 function errorMessage(err: HttpErrorResponse): string {
   switch (err.status) {
     case 0:
-      return 'No se pudo conectar con el servidor. Intenta mas tarde.';
+      return 'No se pudo conectar con el servidor. Intentá más tarde.';
     case 400:
-      return 'Revisa los datos: el mensaje, la duracion y la terminal son obligatorios.';
+      return 'Revisá los datos: el mensaje, la duración y la terminal son obligatorios.';
     case 403:
-      return 'No tenes permisos para enviar ese aviso o sobre esa terminal.';
+      return 'No tenés permisos para enviar ese aviso o sobre esa terminal.';
     case 404:
-      return 'No se encontro la terminal indicada.';
+      return 'No se encontró la terminal indicada.';
     case 502:
-      return 'El aviso no se pudo entregar en tiempo real. Intenta de nuevo.';
+      return 'El aviso no se pudo entregar en tiempo real. Intentá de nuevo.';
     default:
-      return 'Ocurrio un error inesperado. Intenta de nuevo.';
+      return 'Ocurrió un error inesperado. Intentá de nuevo.';
   }
 }
 

@@ -83,8 +83,8 @@ export class Profile implements OnInit {
         this.loading.set(false);
         this.loadError.set(
           err.status === 0
-            ? 'No se pudo conectar con el servidor. Intenta mas tarde.'
-            : 'No se pudo cargar tu perfil. Intenta de nuevo.',
+            ? 'No se pudo conectar con el servidor. Intentá más tarde.'
+            : 'No se pudo cargar tu perfil. Intentá de nuevo.',
         );
       },
     });
@@ -128,8 +128,8 @@ export class Profile implements OnInit {
         this.deleting.set(false);
         this.deleteError.set(
           err.status === 0
-            ? 'No se pudo conectar con el servidor. Intenta mas tarde.'
-            : 'No se pudo eliminar la cuenta. Intenta de nuevo.',
+            ? 'No se pudo conectar con el servidor. Intentá más tarde.'
+            : 'No se pudo eliminar la cuenta. Intentá de nuevo.',
         );
       },
     });
@@ -189,14 +189,14 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
 function errorMessage(err: HttpErrorResponse): string {
   switch (err.status) {
     case 0:
-      return 'No se pudo conectar con el servidor. Intenta mas tarde.';
+      return 'No se pudo conectar con el servidor. Intentá más tarde.';
     case 409:
       return 'Ya existe una cuenta con ese email.';
     case 400:
-      return 'Revisa los datos ingresados.';
+      return 'Revisá los datos ingresados.';
     case 404:
       return 'Tu cuenta ya no existe.';
     default:
-      return 'Ocurrio un error inesperado. Intenta de nuevo.';
+      return 'Ocurrió un error inesperado. Intentá de nuevo.';
   }
 }

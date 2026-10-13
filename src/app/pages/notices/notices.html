@@ -116,9 +116,9 @@
           }
         </ul>
 
-        <nav class="pagination" aria-label="Paginas del listado"
+        <nav class="pagination" aria-label="Páginas del listado"
              [class.pagination--hidden]="totalPages() === 1">
-          <button class="pagination__arrow" type="button" aria-label="Pagina anterior"
+          <button class="pagination__arrow" type="button" aria-label="Página anterior"
                   [disabled]="page() === 1" (click)="goTo(page() - 1)">
             <svg width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
               <path d="M10.5 1.5 4 7l6.5 5.5" stroke="currentColor" stroke-width="1.8"
@@ -133,7 +133,7 @@
                     (click)="goTo(p)">{{ p }}</button>
           }
 
-          <button class="pagination__arrow" type="button" aria-label="Pagina siguiente"
+          <button class="pagination__arrow" type="button" aria-label="Página siguiente"
                   [disabled]="page() === totalPages()" (click)="goTo(page() + 1)">
             <svg width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
               <path d="M5.5 1.5 12 7l-6.5 5.5" stroke="currentColor" stroke-width="1.8"
@@ -168,24 +168,24 @@
           <div class="ab-field">
             <label class="ab-label" for="notice-terminal">Terminal</label>
             <app-search-select inputId="notice-terminal" formControlName="terminal"
-                               placeholder="Busca una terminal"
+                               placeholder="Buscá una terminal"
                                [options]="terminalOptions()" [invalid]="noticeInvalid('terminal')" />
             @if (noticeInvalid('terminal')) {
-              <p class="ab-field-error">Elegi una terminal.</p>
+              <p class="ab-field-error">Elegí una terminal.</p>
             }
           </div>
         }
 
         @if (isArrival()) {
           <div class="ab-field">
-            <label class="ab-label" for="arrival-bay">Anden</label>
+            <label class="ab-label" for="arrival-bay">Andén</label>
             <app-search-select inputId="arrival-bay" formControlName="bay"
-                               [placeholder]="loadingBays() ? 'Cargando andenes...' : bays().length ? 'Busca un anden' : 'La terminal no tiene andenes'"
+                               [placeholder]="loadingBays() ? 'Cargando andenes...' : bays().length ? 'Buscá un andén' : 'La terminal no tiene andenes'"
                                [options]="bayOptions()" [invalid]="noticeInvalid('bay')" />
             @if (baysError()) {
               <p class="ab-field-error" role="alert">{{ baysError() }}</p>
             } @else if (noticeInvalid('bay')) {
-              <p class="ab-field-error">Elegi el anden donde llego el colectivo.</p>
+              <p class="ab-field-error">Elegí el andén donde llegó el colectivo.</p>
             }
           </div>
 
@@ -193,11 +193,11 @@
           <div class="ab-field">
             <div class="crud__row">
               <div class="ab-field">
-                <label class="ab-label" for="notice-lifetime">Duracion (minutos)</label>
+                <label class="ab-label" for="notice-lifetime">Duración (minutos)</label>
                 <input class="ab-input" id="notice-lifetime" type="number" min="1" placeholder="12"
                        formControlName="lifetime" [attr.aria-invalid]="noticeInvalid('lifetime')" />
                 @if (noticeInvalid('lifetime')) {
-                  <p class="ab-field-error">Ingresa una duracion de al menos 1 minuto.</p>
+                  <p class="ab-field-error">Ingresá una duración de al menos 1 minuto.</p>
                 }
               </div>
 
@@ -210,11 +210,11 @@
                   <app-plate-camera (plateRead)="onPlateRead($event)" />
                 </div>
                 @if (noticeInvalid('plate')) {
-                  <p class="ab-field-error">Ingresa la patente del colectivo.</p>
+                  <p class="ab-field-error">Ingresá la patente del colectivo.</p>
                 }
               </div>
             </div>
-            <p class="crud__note">Usalo cuando la camara del anden no detecto la llegada del colectivo.</p>
+            <p class="crud__note">Usalo cuando la cámara del andén no detectó la llegada del colectivo.</p>
             <p class="crud__note">Pasado ese tiempo el aviso deja de mostrarse a los pasajeros.</p>
           </div>
         } @else if (isDelay()) {
@@ -227,7 +227,7 @@
                        autocomplete="off" formControlName="plate"
                        [attr.aria-invalid]="noticeInvalid('plate')" />
                 @if (noticeInvalid('plate')) {
-                  <p class="ab-field-error">Ingresa la patente del colectivo.</p>
+                  <p class="ab-field-error">Ingresá la patente del colectivo.</p>
                 }
               </div>
 
@@ -236,7 +236,7 @@
                 <input class="ab-input" id="delay-date" type="date" formControlName="date"
                        [attr.aria-invalid]="noticeInvalid('date')" />
                 @if (noticeInvalid('date')) {
-                  <p class="ab-field-error">Elegi la fecha del viaje.</p>
+                  <p class="ab-field-error">Elegí la fecha del viaje.</p>
                 }
               </div>
             </div>
@@ -247,9 +247,9 @@
             <label class="ab-label" for="notice-message">Mensaje</label>
             <textarea class="crud__textarea" id="notice-message" formControlName="message"
                       [attr.aria-invalid]="noticeInvalid('message')"
-                      placeholder="Ej: El anden A3 permanece cerrado por mantenimiento."></textarea>
+                      placeholder="Ej: El andén A3 permanece cerrado por mantenimiento."></textarea>
             @if (noticeInvalid('message')) {
-              <p class="ab-field-error">Escribi el mensaje del aviso.</p>
+              <p class="ab-field-error">Escribí el mensaje del aviso.</p>
             }
           </div>
         }
@@ -264,17 +264,17 @@
                   <input class="ab-input" id="delay-minutes" type="number" min="1" placeholder="15"
                          formControlName="delay" [attr.aria-invalid]="noticeInvalid('delay')" />
                   @if (noticeInvalid('delay')) {
-                    <p class="ab-field-error">Ingresa una demora de al menos 1 minuto.</p>
+                    <p class="ab-field-error">Ingresá una demora de al menos 1 minuto.</p>
                   }
                 </div>
               }
 
               <div class="ab-field">
-                <label class="ab-label" for="notice-lifetime">Duracion (minutos)</label>
+                <label class="ab-label" for="notice-lifetime">Duración (minutos)</label>
                 <input class="ab-input" id="notice-lifetime" type="number" min="1" placeholder="12"
                        formControlName="lifetime" [attr.aria-invalid]="noticeInvalid('lifetime')" />
                 @if (noticeInvalid('lifetime')) {
-                  <p class="ab-field-error">Ingresa una duracion de al menos 1 minuto.</p>
+                  <p class="ab-field-error">Ingresá una duración de al menos 1 minuto.</p>
                 }
               </div>
             </div>
@@ -334,7 +334,7 @@
           <dd>{{ formatDate(n.date) }}</dd>
         </div>
         <div class="result__row">
-          <dt>{{ n.expired ? 'Vencio' : 'Vence' }}</dt>
+          <dt>{{ n.expired ? 'Venció' : 'Vence' }}</dt>
           <dd>{{ formatDate(n.expiration) }}</dd>
         </div>
       </dl>

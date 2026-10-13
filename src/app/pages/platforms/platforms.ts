@@ -23,11 +23,11 @@ const VIEWS: Record<PlatformAction, PlatformView> = {
   },
   create: {
     title: 'Cargar plataforma',
-    lead: 'Alta de un anden nuevo en una terminal.',
+    lead: 'Alta de un andén nuevo en una terminal.',
   },
   edit: {
     title: 'Editar plataforma',
-    lead: 'Cambia el anden o su ubicacion.',
+    lead: 'Cambiá el andén o su ubicación.',
   },
 };
 
@@ -241,7 +241,7 @@ export class Platforms {
     this.selectedError.set(null);
 
     if (code === null) {
-      this.selectedError.set('No se indico que plataforma usar.');
+      this.selectedError.set('No se indicó qué plataforma usar.');
       return;
     }
 
@@ -251,7 +251,7 @@ export class Platforms {
         this.loadingSelected.set(false);
         const platform = group.platforms[0];
         if (!platform) {
-          this.selectedError.set('No se encontro la plataforma.');
+          this.selectedError.set('No se encontró la plataforma.');
           return;
         }
 
@@ -434,15 +434,15 @@ export class Platforms {
 function errorMessage(err: HttpErrorResponse): string {
   switch (err.status) {
     case 0:
-      return 'No se pudo conectar con el servidor. Intenta mas tarde.';
+      return 'No se pudo conectar con el servidor. Intentá más tarde.';
     case 400:
-      return 'Revisa los datos: el anden y las coordenadas son obligatorios.';
+      return 'Revisá los datos: el andén y las coordenadas son obligatorios.';
     case 403:
-      return 'No tenes permisos sobre esa terminal.';
+      return 'No tenés permisos sobre esa terminal.';
     case 404:
-      return 'No se encontro la plataforma o la terminal indicada.';
+      return 'No se encontró la plataforma o la terminal indicada.';
     default:
-      return 'Ocurrio un error inesperado. Intenta de nuevo.';
+      return 'Ocurrió un error inesperado. Intentá de nuevo.';
   }
 }
 

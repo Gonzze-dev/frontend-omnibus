@@ -270,7 +270,7 @@ export class Permissions {
       this.userManagement.demoteAdmin(u.email, t.uuid),
       last
         ? `${u.first_name} ${u.last_name} ahora es usuario`
-        : `${u.first_name} ${u.last_name} ya no esta a cargo de ${t.name}`,
+        : `${u.first_name} ${u.last_name} ya no está a cargo de ${t.name}`,
     );
   }
 
@@ -383,28 +383,28 @@ function normalize(text: string): string {
 function listErrorMessage(err: HttpErrorResponse): string {
   switch (err.status) {
     case 0:
-      return 'No se pudo conectar con el servidor. Intenta mas tarde.';
+      return 'No se pudo conectar con el servidor. Intentá más tarde.';
     case 401:
     case 403:
-      return 'No tenes permisos para ver el listado de usuarios.';
+      return 'No tenés permisos para ver el listado de usuarios.';
     default:
-      return 'Ocurrio un error inesperado. Intenta de nuevo.';
+      return 'Ocurrió un error inesperado. Intentá de nuevo.';
   }
 }
 
 function promotionErrorMessage(err: HttpErrorResponse): string {
   switch (err.status) {
     case 0:
-      return 'No se pudo conectar con el servidor. Intenta mas tarde.';
+      return 'No se pudo conectar con el servidor. Intentá más tarde.';
     case 403:
-      return 'No tenes permisos sobre esa terminal.';
+      return 'No tenés permisos sobre esa terminal.';
     case 404:
-      return 'No se encontro el usuario o la terminal.';
+      return 'No se encontró el usuario o la terminal.';
     case 409:
       return 'La cuenta ya tiene ese rol.';
     default:
-      return 'Ocurrio un error inesperado. Intenta de nuevo.';
+      return 'Ocurrió un error inesperado. Intentá de nuevo.';
   }
 }
 
-export const permissionsTitle = 'Control de Permisos';
+export const permissionsTitle = 'Control de permisos';

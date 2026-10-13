@@ -6,9 +6,9 @@
 
 <div class="ab-screen profile">
   <header class="profile__head">
-    <h1 class="ab-brand profile__title">Informacion sobre tu perfil</h1>
+    <h1 class="ab-brand profile__title">Información sobre tu perfil</h1>
     <p class="profile__lead">
-      Actualiza tus datos personales y tu información de contacto.
+      Actualizá tus datos personales y tu información de contacto.
     </p>
   </header>
 
@@ -27,7 +27,7 @@
           <input class="ab-input" id="firstName" type="text" autocomplete="given-name"
                  formControlName="firstName" [attr.aria-invalid]="invalid('firstName')" />
           @if (invalid('firstName')) {
-            <p class="ab-field-error">Ingresa tu nombre.</p>
+            <p class="ab-field-error">Ingresá tu nombre.</p>
           }
         </div>
 
@@ -36,7 +36,7 @@
           <input class="ab-input" id="lastName" type="text" autocomplete="family-name"
                  formControlName="lastName" [attr.aria-invalid]="invalid('lastName')" />
           @if (invalid('lastName')) {
-            <p class="ab-field-error">Ingresa tu apellido.</p>
+            <p class="ab-field-error">Ingresá tu apellido.</p>
           }
         </div>
       </div>
@@ -46,7 +46,7 @@
         <input class="ab-input" id="email" type="email" autocomplete="email"
                formControlName="email" [attr.aria-invalid]="invalid('email')" />
         @if (invalid('email')) {
-          <p class="ab-field-error">Ingresa un email valido.</p>
+          <p class="ab-field-error">Ingresá un email válido.</p>
         }
       </div>
 
@@ -54,7 +54,7 @@
         <label class="ab-label" for="password">Nueva contraseña</label>
         <div class="ab-password">
           <input class="ab-input" id="password" [type]="showPassword() ? 'text' : 'password'"
-                 placeholder="Dejala vacia para no cambiarla" autocomplete="new-password"
+                 placeholder="Dejala vacía para no cambiarla" autocomplete="new-password"
                  formControlName="password" [attr.aria-invalid]="invalid('password')" />
           <app-password-toggle [visible]="showPassword()" (visibleChange)="showPassword.set($event)" />
         </div>
@@ -104,7 +104,7 @@
     </header>
 
     <p class="popup__text" id="delete-text">
-      ¿Seguro que queres eliminar tu cuenta? Se borra de forma permanente y la accion no se puede deshacer.
+      ¿Seguro que querés eliminar tu cuenta? Se borra de forma permanente y la acción no se puede deshacer.
     </p>
 
     @if (deleteError()) {

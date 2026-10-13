@@ -25,7 +25,7 @@ const VIEWS: Record<CityAction, CityView> = {
   },
   edit: {
     title: 'Editar ciudad',
-    lead: 'Cambia el nombre o el codigo postal.',
+    lead: 'Cambiá el nombre o el código postal.',
   },
 };
 
@@ -209,7 +209,7 @@ export class Cities {
     this.selectedError.set(null);
 
     if (!code) {
-      this.selectedError.set('No se indico que ciudad usar.');
+      this.selectedError.set('No se indicó qué ciudad usar.');
       return;
     }
 
@@ -374,15 +374,15 @@ export class Cities {
 function errorMessage(err: HttpErrorResponse): string {
   switch (err.status) {
     case 0:
-      return 'No se pudo conectar con el servidor. Intenta mas tarde.';
+      return 'No se pudo conectar con el servidor. Intentá más tarde.';
     case 400:
-      return 'El nombre y el codigo postal son obligatorios.';
+      return 'El nombre y el código postal son obligatorios.';
     case 404:
-      return 'No se encontro la ciudad.';
+      return 'No se encontró la ciudad.';
     case 409:
-      return 'Ya existe una ciudad con ese codigo postal.';
+      return 'Ya existe una ciudad con ese código postal.';
     default:
-      return 'Ocurrio un error inesperado. Intenta de nuevo.';
+      return 'Ocurrió un error inesperado. Intentá de nuevo.';
   }
 }
 

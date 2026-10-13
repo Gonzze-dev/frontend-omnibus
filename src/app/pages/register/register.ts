@@ -87,12 +87,12 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
 function errorMessage(err: HttpErrorResponse): string {
   switch (err.status) {
     case 0:
-      return 'No se pudo conectar con el servidor. Intenta mas tarde.';
+      return 'No se pudo conectar con el servidor. Intentá más tarde.';
     case 409:
       return 'Ya existe una cuenta con ese email.';
     case 400:
-      return 'Revisa los datos ingresados.';
+      return 'Revisá los datos ingresados.';
     default:
-      return 'Ocurrio un error inesperado. Intenta de nuevo.';
+      return 'Ocurrió un error inesperado. Intentá de nuevo.';
   }
 }

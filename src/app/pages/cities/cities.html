@@ -30,7 +30,7 @@
         <div class="ab-field">
           <label class="ab-label" for="city-filter">Buscar ciudad</label>
           <input class="ab-input" id="city-filter" type="search" autocomplete="off"
-                 placeholder="Codigo postal o nombre"
+                 placeholder="Código postal o nombre"
                  [value]="filter()" (input)="applyFilter($any($event.target).value)" />
         </div>
       </div>
@@ -44,7 +44,7 @@
       } @else {
         <ul class="table table--fixed">
           <li class="table__row table__row--header">
-            <span>Codigo postal</span>
+            <span>Código postal</span>
             <span>Nombre</span>
             <span></span>
           </li>
@@ -84,9 +84,9 @@
           }
         </ul>
 
-        <nav class="pagination" aria-label="Paginas del listado"
+        <nav class="pagination" aria-label="Páginas del listado"
            [class.pagination--hidden]="totalPages() === 1">
-          <button class="pagination__arrow" type="button" aria-label="Pagina anterior"
+          <button class="pagination__arrow" type="button" aria-label="Página anterior"
                   [disabled]="currentPage() === 1" (click)="goTo(currentPage() - 1)">
             <svg width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
               <path d="M10.5 1.5 4 7l6.5 5.5" stroke="currentColor" stroke-width="1.8"
@@ -101,7 +101,7 @@
                     (click)="goTo(p)">{{ p }}</button>
           }
 
-          <button class="pagination__arrow" type="button" aria-label="Pagina siguiente"
+          <button class="pagination__arrow" type="button" aria-label="Página siguiente"
                   [disabled]="currentPage() === totalPages()" (click)="goTo(currentPage() + 1)">
             <svg width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
               <path d="M5.5 1.5 12 7l-6.5 5.5" stroke="currentColor" stroke-width="1.8"
@@ -130,12 +130,12 @@
       </header>
 
       <p class="popup__text" id="delete-text">
-        Vas a eliminar esta ciudad del sistema. La accion no se puede deshacer.
+        Vas a eliminar esta ciudad del sistema. La acción no se puede deshacer.
       </p>
 
       <dl class="result__list">
         <div class="result__row">
-          <dt>Codigo postal</dt>
+          <dt>Código postal</dt>
           <dd>{{ city.postal_code }}</dd>
         </div>
         <div class="result__row">
@@ -179,11 +179,11 @@
 
       <form class="crud__form" [formGroup]="createForm" (ngSubmit)="create()" novalidate>
         <div class="ab-field">
-          <label class="ab-label" for="zip-create">Codigo postal</label>
+          <label class="ab-label" for="zip-create">Código postal</label>
           <input class="ab-input" id="zip-create" type="text" placeholder="Ej: 1004" autocomplete="off"
                  formControlName="postal_code" [attr.aria-invalid]="createInvalid('postal_code')" />
           @if (createInvalid('postal_code')) {
-            <p class="ab-field-error">Ingresa el codigo postal.</p>
+            <p class="ab-field-error">Ingresá el código postal.</p>
           }
         </div>
 
@@ -192,7 +192,7 @@
           <input class="ab-input" id="name-create" type="text" placeholder="Ej: Buenos Aires" autocomplete="off"
                  formControlName="name" [attr.aria-invalid]="createInvalid('name')" />
           @if (createInvalid('name')) {
-            <p class="ab-field-error">Ingresa el nombre.</p>
+            <p class="ab-field-error">Ingresá el nombre.</p>
           }
         </div>
 
@@ -228,7 +228,7 @@
         </button>
       </header>
 
-      <p class="popup__text">Cambia el codigo postal o el nombre.</p>
+      <p class="popup__text">Cambiá el código postal o el nombre.</p>
 
       @if (loadingSelected()) {
         <p class="popup__text">Cargando ciudad...</p>
@@ -237,11 +237,11 @@
       } @else {
         <form class="crud__form" [formGroup]="editForm" (ngSubmit)="saveEdit()" novalidate>
           <div class="ab-field">
-            <label class="ab-label" for="zip-edit">Codigo postal</label>
+            <label class="ab-label" for="zip-edit">Código postal</label>
             <input class="ab-input" id="zip-edit" type="text" autocomplete="off"
                    formControlName="postal_code" [attr.aria-invalid]="editInvalid('postal_code')" />
             @if (editInvalid('postal_code')) {
-              <p class="ab-field-error">Ingresa el codigo postal.</p>
+              <p class="ab-field-error">Ingresá el código postal.</p>
             }
           </div>
 
@@ -250,7 +250,7 @@
             <input class="ab-input" id="name-edit" type="text" autocomplete="off"
                    formControlName="name" [attr.aria-invalid]="editInvalid('name')" />
             @if (editInvalid('name')) {
-              <p class="ab-field-error">Ingresa el nombre.</p>
+              <p class="ab-field-error">Ingresá el nombre.</p>
             }
           </div>
 

@@ -12,7 +12,7 @@
     <div class="camera__panel" role="dialog" aria-modal="true" aria-labelledby="camera-title"
          (click)="$event.stopPropagation()">
       <div class="camera__top-bar">
-        <button class="camera__close" type="button" (click)="close()" aria-label="Cerrar camara">
+        <button class="camera__close" type="button" (click)="close()" aria-label="Cerrar cámara">
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
             <path d="M1 1l16 16M17 1L1 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
           </svg>
@@ -27,7 +27,7 @@
                  muted playsinline></video>
         } @else if (!preview()) {
           <p class="camera__notice">
-            No se puede usar la camara en vivo en este navegador. Toca el boton blanco para abrir la camara del dispositivo.
+            No se puede usar la cámara en vivo en este navegador. Tocá el botón blanco para abrir la cámara del dispositivo.
           </p>
         }
 
@@ -36,17 +36,17 @@
         }
 
         @if (starting()) {
-          <p class="camera__status">Iniciando camara...</p>
+          <p class="camera__status">Iniciando cámara...</p>
         } @else if (step() === 'reading') {
           <p class="camera__status camera__status--veil" role="status">Leyendo patente...</p>
         }
 
         @if (error()) {
           <p class="camera__message camera__message--error" role="alert">
-            {{ error() }} Toca el boton de reintentar para sacar otra.
+            {{ error() }} Tocá el botón de reintentar para sacar otra.
           </p>
         } @else if (step() === 'camera' && !starting()) {
-          <p class="camera__message">Encuadra la patente y saca la foto de frente.</p>
+          <p class="camera__message">Encuadrá la patente y sacá la foto de frente.</p>
         }
       </div>
 

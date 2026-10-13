@@ -54,7 +54,7 @@ export class QrScanner implements AfterViewInit, OnDestroy {
 
   private async startCamera(): Promise<void> {
     if (!navigator.mediaDevices?.getUserMedia) {
-      this.error.set('Este dispositivo o navegador no permite acceder a la camara.');
+      this.error.set('Este dispositivo o navegador no permite acceder a la cámara.');
       this.loading.set(false);
       return;
     }
@@ -71,7 +71,7 @@ export class QrScanner implements AfterViewInit, OnDestroy {
         // Some desktop browsers reject facingMode: retry without constraints.
         this.stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
       } catch {
-        this.error.set('No se pudo acceder a la camara. Revisa los permisos del navegador.');
+        this.error.set('No se pudo acceder a la cámara. Revisá los permisos del navegador.');
         this.loading.set(false);
         return;
       }

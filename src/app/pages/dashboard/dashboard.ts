@@ -96,12 +96,18 @@ export class Dashboard implements OnInit {
    * notice and delay endpoints, which had no card.
    */
   protected readonly shortcuts: readonly Shortcut[] = [
-    { id: 'cities', title: 'Gestionar Ciudades', lead: 'Mapa y sedes', icon: 'site', mark: 'city', tone: 'blue', superOnly: true },
-    { id: 'platforms', title: 'Gestionar Plataformas', lead: 'Sistemas base', icon: 'platform', mark: 'platform', tone: 'indigo' },
+    { id: 'cities', title: 'Gestionar ciudades', lead: 'Mapa y sedes', icon: 'site', mark: 'city', tone: 'blue', superOnly: true },
+    { id: 'platforms', title: 'Gestionar plataformas', lead: 'Sistemas base', icon: 'platform', mark: 'platform', tone: 'indigo' },
     { id: 'terminals', title: 'Gestionar terminales', lead: 'Sistema base', icon: 'terminal', mark: 'terminal', tone: 'crimson', superOnly: true },
-    { id: 'permissions', title: 'Control de Permisos', lead: 'Roles', icon: 'permissions', mark: 'roles', tone: 'ink' },
+    { id: 'permissions', title: 'Control de permisos', lead: 'Roles', icon: 'permissions', mark: 'roles', tone: 'ink' },
     { id: 'notifications', title: 'Gestionar notificaciones', lead: 'Avisos y retrasos', icon: 'notices', mark: 'notices', tone: 'orange' },
   ];
+
+  /** Greets with the session's first name, which /users/me keeps up to date. */
+  protected readonly greeting = computed(() => {
+    const name = this.auth.user()?.first_name?.trim();
+    return name ? `Bienvenido, ${name}` : 'Bienvenido';
+  });
 
   /** Recomputed only when /users/me brings a different role. */
   protected readonly visibleShortcuts = computed(() =>

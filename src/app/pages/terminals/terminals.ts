@@ -28,7 +28,7 @@ const VIEWS: Record<TerminalAction, TerminalView> = {
   },
   edit: {
     title: 'Editar terminal',
-    lead: 'Cambia el nombre, la ciudad o la terminal externa.',
+    lead: 'Cambiá el nombre, la ciudad o la terminal externa.',
   },
 };
 
@@ -267,7 +267,7 @@ export class Terminals {
     this.selectedError.set(null);
 
     if (!uuid) {
-      this.selectedError.set('No se indico que terminal usar.');
+      this.selectedError.set('No se indicó qué terminal usar.');
       return;
     }
 
@@ -447,15 +447,15 @@ export class Terminals {
 function errorMessage(err: HttpErrorResponse): string {
   switch (err.status) {
     case 0:
-      return 'No se pudo conectar con el servidor. Intenta mas tarde.';
+      return 'No se pudo conectar con el servidor. Intentá más tarde.';
     case 400:
-      return 'Revisa los datos: faltan campos o la terminal externa no es valida.';
+      return 'Revisá los datos: faltan campos o la terminal externa no es válida.';
     case 404:
-      return 'No se encontro la terminal o la ciudad indicada.';
+      return 'No se encontró la terminal o la ciudad indicada.';
     case 409:
-      return 'Esa terminal externa ya esta asignada a otra terminal.';
+      return 'Esa terminal externa ya está asignada a otra terminal.';
     default:
-      return 'Ocurrio un error inesperado. Intenta de nuevo.';
+      return 'Ocurrió un error inesperado. Intentá de nuevo.';
   }
 }
 

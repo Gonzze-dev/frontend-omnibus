@@ -69,8 +69,8 @@ describe('NotificationsStore', () => {
     expect(store.list().map((n) => [n.id, n.kind, n.title, n.detail])).toEqual([
       ['n-global', 'service', 'Aviso general', 'Out of service from 6 to 7'],
       ['n-local', 'service', 'Aviso de la terminal', 'Bay 3 closed'],
-      ['n-delay', 'delay', 'Alerta de retraso', 'Su colectivo esta retrasado unos 25 minutos aproximadamente.'],
-      ['n-arrival', 'arrival', 'Tu colectivo acaba de llegar', 'Esta en la plataforma A04.'],
+      ['n-delay', 'delay', 'Alerta de retraso', 'Tu colectivo está retrasado unos 25 minutos.'],
+      ['n-arrival', 'arrival', 'Tu colectivo acaba de llegar', 'Está en la plataforma A04.'],
     ]);
     expect(store.count()).toBe(4);
   });

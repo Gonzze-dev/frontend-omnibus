@@ -18,17 +18,17 @@ import { Notices, noticesTitle } from './pages/notices/notices';
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'login' },
-  { path: 'login', component: Login, title: 'Iniciar Sesion', canMatch: [guestsOnly] },
+  { path: 'login', component: Login, title: 'Iniciar sesión', canMatch: [guestsOnly] },
   { path: 'register', component: Register, title: 'Creá una cuenta', canMatch: [guestsOnly] },
   {
     path: 'forgot-password',
     component: ForgotPassword,
-    title: 'Olvidaste tu contraseña?',
+    title: '¿Olvidaste tu contraseña?',
     canMatch: [guestsOnly],
   },
   // The backend builds this route in the email (FRONT_END_BASE_LINK + /reset-password?token=...)
   { path: 'reset-password', component: ResetPassword, title: 'Nueva contraseña' },
-  { path: 'home', component: Home, title: 'Rastrea tu viaje', canMatch: [authenticatedOnly] },
+  { path: 'home', component: Home, title: 'Rastreá tu viaje', canMatch: [authenticatedOnly] },
   {
     path: 'notifications',
     component: Notifications,
@@ -38,7 +38,7 @@ export const routes: Routes = [
   {
     path: 'profile',
     component: Profile,
-    title: 'Informacion sobre tu perfil',
+    title: 'Información sobre tu perfil',
     canMatch: [authenticatedOnly],
   },
   {

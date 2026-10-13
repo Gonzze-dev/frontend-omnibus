@@ -30,7 +30,7 @@
         <div class="ab-field">
           <label class="ab-label" for="platform-filter">Buscar terminal</label>
           <input class="ab-input" id="platform-filter" type="search" autocomplete="off"
-                 placeholder="Nombre de la terminal, anden o codigo"
+                 placeholder="Nombre de la terminal, andén o código"
                  [value]="filter()" (input)="applyFilter($any($event.target).value)" />
         </div>
       </div>
@@ -74,7 +74,7 @@
                         tabindex="0" role="button" aria-label="Editar plataforma">
                       <span class="table__cell">
                         <span class="table__line">{{ p.bay }}</span>
-                        <span class="table__sub">Codigo {{ p.code }}</span>
+                        <span class="table__sub">Código {{ p.code }}</span>
                       </span>
                       <span class="table__cell">
                         <span class="table__line">{{ p.coordinates.lat }}</span>
@@ -108,9 +108,9 @@
           }
         </ul>
 
-        <nav class="pagination" aria-label="Paginas del listado"
+        <nav class="pagination" aria-label="Páginas del listado"
              [class.pagination--hidden]="totalPages() === 1">
-          <button class="pagination__arrow" type="button" aria-label="Pagina anterior"
+          <button class="pagination__arrow" type="button" aria-label="Página anterior"
                   [disabled]="currentPage() === 1" (click)="goTo(currentPage() - 1)">
             <svg width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
               <path d="M10.5 1.5 4 7l6.5 5.5" stroke="currentColor" stroke-width="1.8"
@@ -125,7 +125,7 @@
                     (click)="goTo(p)">{{ p }}</button>
           }
 
-          <button class="pagination__arrow" type="button" aria-label="Pagina siguiente"
+          <button class="pagination__arrow" type="button" aria-label="Página siguiente"
                   [disabled]="currentPage() === totalPages()" (click)="goTo(currentPage() + 1)">
             <svg width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
               <path d="M5.5 1.5 12 7l-6.5 5.5" stroke="currentColor" stroke-width="1.8"
@@ -154,16 +154,16 @@
       </header>
 
       <p class="popup__text" id="delete-text">
-        Vas a eliminar este anden del sistema. La accion no se puede deshacer.
+        Vas a eliminar este andén del sistema. La acción no se puede deshacer.
       </p>
 
       <dl class="result__list">
         <div class="result__row">
-          <dt>Codigo</dt>
+          <dt>Código</dt>
           <dd>{{ platform.code }}</dd>
         </div>
         <div class="result__row">
-          <dt>Anden</dt>
+          <dt>Andén</dt>
           <dd>{{ platform.bay }}</dd>
         </div>
         <div class="result__row">
@@ -203,29 +203,29 @@
         </button>
       </header>
 
-      <p class="popup__text">Alta de un anden nuevo en una terminal.</p>
+      <p class="popup__text">Alta de un andén nuevo en una terminal.</p>
 
       <form class="crud__form" [formGroup]="createForm" (ngSubmit)="create()" novalidate>
         <div class="ab-field">
           <label class="ab-label" for="terminal-create">Terminal</label>
           <select class="crud__select" id="terminal-create" formControlName="bus_terminal_id"
                    [attr.aria-invalid]="createInvalid('bus_terminal_id')">
-            <option value="" disabled>Elegi una terminal</option>
+            <option value="" disabled>Elegí una terminal</option>
             @for (t of terminals(); track t.uuid) {
               <option [value]="t.uuid">{{ t.name }}</option>
             }
           </select>
           @if (createInvalid('bus_terminal_id')) {
-            <p class="ab-field-error">Elegi una terminal.</p>
+            <p class="ab-field-error">Elegí una terminal.</p>
           }
         </div>
 
         <div class="ab-field">
-          <label class="ab-label" for="bay-create">Anden</label>
+          <label class="ab-label" for="bay-create">Andén</label>
           <input class="ab-input" id="bay-create" type="text" placeholder="Ej: A20" autocomplete="off"
                  formControlName="bay" [attr.aria-invalid]="createInvalid('bay')" />
           @if (createInvalid('bay')) {
-            <p class="ab-field-error">Ingresa el anden.</p>
+            <p class="ab-field-error">Ingresá el andén.</p>
           }
         </div>
 
@@ -243,7 +243,7 @@
           </div>
         </div>
 
-        <p class="crud__note">El codigo del anden lo asigna el sistema al crearlo.</p>
+        <p class="crud__note">El código del andén lo asigna el sistema al crearlo.</p>
 
         @if (createError()) {
           <p class="ab-form-error" role="alert">{{ createError() }}</p>
@@ -277,7 +277,7 @@
         </button>
       </header>
 
-      <p class="popup__text">Cambia el anden o sus coordenadas.</p>
+      <p class="popup__text">Cambiá el andén o sus coordenadas.</p>
 
       @if (loadingSelected()) {
         <p class="popup__text">Cargando plataforma...</p>
@@ -288,7 +288,7 @@
           <!-- Code and terminal are not editable: they are shown as text, not as inputs -->
           <dl class="crud__details">
             <div class="crud__cell">
-              <dt class="ab-label">Codigo</dt>
+              <dt class="ab-label">Código</dt>
               <dd class="crud__value">{{ platform.code }}</dd>
             </div>
             <div class="crud__cell">
@@ -298,11 +298,11 @@
           </dl>
 
           <div class="ab-field">
-            <label class="ab-label" for="bay-edit">Anden</label>
+            <label class="ab-label" for="bay-edit">Andén</label>
             <input class="ab-input" id="bay-edit" type="text" autocomplete="off"
                    formControlName="bay" [attr.aria-invalid]="editInvalid('bay')" />
             @if (editInvalid('bay')) {
-              <p class="ab-field-error">Ingresa el anden.</p>
+              <p class="ab-field-error">Ingresá el andén.</p>
             }
           </div>
 
