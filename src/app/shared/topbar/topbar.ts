@@ -1,11 +1,11 @@
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { Sidebar } from '../sidebar/sidebar';
-import { NotificacionesStore } from '../notificaciones';
+import { NotificationsStore } from '../notifications';
 import { AuthService } from '../../services/auth.service';
 
-/** Mismo corte que la escala de styles.scss: desde aca el menu va en la barra. */
-const ESCRITORIO = '(min-width: 768px)';
+/** Same breakpoint as the styles.scss scale: from here on the menu goes in the bar. */
+const DESKTOP = '(min-width: 768px)';
 
 @Component({
   selector: 'app-topbar',
@@ -14,23 +14,23 @@ const ESCRITORIO = '(min-width: 768px)';
   styleUrl: './topbar.scss',
 })
 export class Topbar {
-  private readonly store = inject(NotificacionesStore);
+  private readonly store = inject(NotificationsStore);
   private readonly auth = inject(AuthService);
 
   protected readonly menuOpen = signal(false);
-  protected readonly pendientes = this.store.cantidad;
-  protected readonly esAdmin = computed(() => this.auth.tieneRol('admin', 'super_admin'));
+  protected readonly pending = this.store.count;
+  protected readonly isAdmin = computed(() => this.auth.hasRole('admin', 'super_admin'));
 
   constructor() {
-    // Si el drawer quedo abierto y la ventana se agranda, se cierra:
-    // asi no reaparece abierto al volver a achicarla.
-    const mq = window.matchMedia(ESCRITORIO);
-    const alCambiar = (e: MediaQueryListEvent) => e.matches && this.menuOpen.set(false);
-    mq.addEventListener('change', alCambiar);
-    inject(DestroyRef).onDestroy(() => mq.removeEventListener('change', alCambiar));
+    // If the drawer was left open and the window grows, it closes:
+    // that way it does not reappear open when shrinking it again.
+    const mq = window.matchMedia(DESKTOP);
+    const onChange = (e: MediaQueryListEvent) => e.matches && this.menuOpen.set(false);
+    mq.addEventListener('change', onChange);
+    inject(DestroyRef).onDestroy(() => mq.removeEventListener('change', onChange));
   }
 
-  cerrarSesion(): void {
+  logout(): void {
     this.auth.logout();
   }
 }

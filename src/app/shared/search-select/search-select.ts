@@ -1,105 +1,105 @@
 import { Component, ElementRef, computed, effect, forwardRef, inject, input, signal, untracked, viewChild } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
-export interface OpcionBuscador {
-  valor: string;
-  etiqueta: string;
-  /** Texto secundario que se muestra a la derecha de la opcion (ej: un codigo). */
-  detalle?: string;
-  deshabilitada?: boolean;
+export interface SearchOption {
+  value: string;
+  label: string;
+  /** Secondary text shown to the right of the option (e.g. a code). */
+  detail?: string;
+  disabled?: boolean;
 }
 
-/** Pasa a minusculas y saca los acentos, para buscar "cordoba" y encontrar "Córdoba". */
-function normalizar(texto: string): string {
-  return texto.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+/** Lowercases and strips accents, so searching "cordoba" finds "Córdoba". */
+function normalize(text: string): string {
+  return text.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 }
 
 /**
- * Select con busqueda por coincidencia. Se usa como un control de
- * formulario mas (formControlName): escribir filtra las opciones y
- * al elegir una se guarda su valor.
+ * Select with match-based search. It is used like any other form
+ * control (formControlName): typing filters the options and
+ * choosing one stores its value.
  */
 @Component({
-  selector: 'app-select-buscador',
-  templateUrl: './select-buscador.html',
-  styleUrl: './select-buscador.scss',
+  selector: 'app-search-select',
+  templateUrl: './search-select.html',
+  styleUrl: './search-select.scss',
   providers: [
-    { provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => SelectBuscador), multi: true },
+    { provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => SearchSelect), multi: true },
   ],
   host: {
-    '(focusout)': 'alSalir($event)',
-    '(window:resize)': 'posicionar()',
+    '(focusout)': 'onLeave($event)',
+    '(window:resize)': 'position()',
   },
 })
-export class SelectBuscador implements ControlValueAccessor {
+export class SearchSelect implements ControlValueAccessor {
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
-  private readonly campo = viewChild.required<ElementRef<HTMLInputElement>>('campo');
-  private readonly lista = viewChild<ElementRef<HTMLUListElement>>('lista');
+  private readonly field = viewChild.required<ElementRef<HTMLInputElement>>('field');
+  private readonly list = viewChild<ElementRef<HTMLUListElement>>('list');
 
-  readonly opciones = input.required<OpcionBuscador[]>();
+  readonly options = input.required<SearchOption[]>();
   readonly placeholder = input('Buscar...');
   readonly inputId = input<string>();
-  readonly invalido = input(false);
+  readonly invalid = input(false);
 
-  protected readonly valor = signal('');
-  protected readonly texto = signal('');
-  protected readonly abierto = signal(false);
-  protected readonly activa = signal(0);
-  protected readonly deshabilitado = signal(false);
+  protected readonly value = signal('');
+  protected readonly text = signal('');
+  protected readonly open = signal(false);
+  protected readonly active = signal(0);
+  protected readonly disabled = signal(false);
 
-  protected readonly listaId = `select-buscador-${Math.random().toString(36).slice(2, 9)}`;
+  protected readonly listId = `search-select-${Math.random().toString(36).slice(2, 9)}`;
 
-  private readonly seleccionada = computed(() =>
-    this.opciones().find((o) => o.valor === this.valor()),
+  private readonly selected = computed(() =>
+    this.options().find((o) => o.value === this.value()),
   );
 
-  protected readonly filtradas = computed(() => {
-    const busqueda = normalizar(this.texto().trim());
-    // Con la opcion elegida a la vista se muestran todas, no solo esa
-    if (!busqueda || this.texto() === this.seleccionada()?.etiqueta) return this.opciones();
-    return this.opciones().filter(
-      (o) => normalizar(o.etiqueta).includes(busqueda) || normalizar(o.detalle ?? '').includes(busqueda),
+  protected readonly filtered = computed(() => {
+    const query = normalize(this.text().trim());
+    // With the chosen option in view all of them are shown, not just that one
+    if (!query || this.text() === this.selected()?.label) return this.options();
+    return this.options().filter(
+      (o) => normalize(o.label).includes(query) || normalize(o.detail ?? '').includes(query),
     );
   });
 
   constructor() {
-    // Las opciones pueden llegar despues que el valor (se piden al backend):
-    // cuando llegan se muestra la etiqueta de la opcion elegida.
+    // The options can arrive after the value (they are requested from the backend):
+    // when they arrive the chosen option's label is shown.
     effect(() => {
-      const etiqueta = this.seleccionada()?.etiqueta ?? '';
-      if (!untracked(this.abierto)) this.texto.set(etiqueta);
+      const label = this.selected()?.label ?? '';
+      if (!untracked(this.open)) this.text.set(label);
     });
 
-    // La lista se abre como popover: queda en la top layer, por encima del
-    // <dialog> que la contiene, sin que su overflow la recorte.
+    // The list opens as a popover: it stays in the top layer, above the
+    // <dialog> that contains it, without being clipped by its overflow.
     effect((onCleanup) => {
-      const lista = this.lista()?.nativeElement;
-      if (!lista) return;
-      lista.showPopover();
-      this.posicionar();
+      const list = this.list()?.nativeElement;
+      if (!list) return;
+      list.showPopover();
+      this.position();
 
-      // Si se scrollea el popup (o la pagina) la lista acompana al input
-      const alScrollear = () => this.posicionar();
-      document.addEventListener('scroll', alScrollear, true);
-      onCleanup(() => document.removeEventListener('scroll', alScrollear, true));
+      // If the popup (or the page) is scrolled the list follows the input
+      const onScroll = () => this.position();
+      document.addEventListener('scroll', onScroll, true);
+      onCleanup(() => document.removeEventListener('scroll', onScroll, true));
     });
 
-    // Al filtrar cambia el alto de la lista: se recalcula si entra abajo
+    // Filtering changes the list height: recompute whether it fits below
     effect(() => {
-      this.filtradas();
-      untracked(() => queueMicrotask(() => this.posicionar()));
+      this.filtered();
+      untracked(() => queueMicrotask(() => this.position()));
     });
   }
 
-  private onChange: (valor: string) => void = () => {};
+  private onChange: (value: string) => void = () => {};
   private onTouched: () => void = () => {};
 
-  writeValue(valor: string | null): void {
-    this.valor.set(valor ?? '');
-    this.texto.set(this.opciones().find((o) => o.valor === valor)?.etiqueta ?? '');
+  writeValue(value: string | null): void {
+    this.value.set(value ?? '');
+    this.text.set(this.options().find((o) => o.value === value)?.label ?? '');
   }
 
-  registerOnChange(fn: (valor: string) => void): void {
+  registerOnChange(fn: (value: string) => void): void {
     this.onChange = fn;
   }
 
@@ -107,95 +107,95 @@ export class SelectBuscador implements ControlValueAccessor {
     this.onTouched = fn;
   }
 
-  setDisabledState(deshabilitado: boolean): void {
-    this.deshabilitado.set(deshabilitado);
+  setDisabledState(disabled: boolean): void {
+    this.disabled.set(disabled);
   }
 
-  protected abrir(): void {
-    if (this.deshabilitado()) return;
-    this.abierto.set(true);
-    this.activa.set(Math.max(0, this.filtradas().findIndex((o) => o.valor === this.valor())));
+  protected openList(): void {
+    if (this.disabled()) return;
+    this.open.set(true);
+    this.active.set(Math.max(0, this.filtered().findIndex((o) => o.value === this.value())));
   }
 
-  protected escribir(texto: string): void {
-    this.texto.set(texto);
-    this.abierto.set(true);
-    this.activa.set(this.filtradas().findIndex((o) => !o.deshabilitada));
+  protected type(text: string): void {
+    this.text.set(text);
+    this.open.set(true);
+    this.active.set(this.filtered().findIndex((o) => !o.disabled));
   }
 
-  protected elegir(opcion: OpcionBuscador): void {
-    if (opcion.deshabilitada) return;
-    this.valor.set(opcion.valor);
-    this.texto.set(opcion.etiqueta);
-    this.abierto.set(false);
-    this.onChange(opcion.valor);
+  protected choose(option: SearchOption): void {
+    if (option.disabled) return;
+    this.value.set(option.value);
+    this.text.set(option.label);
+    this.open.set(false);
+    this.onChange(option.value);
   }
 
-  protected teclear(event: KeyboardEvent): void {
-    const opciones = this.filtradas();
+  protected onKeydown(event: KeyboardEvent): void {
+    const options = this.filtered();
 
     switch (event.key) {
       case 'ArrowDown':
       case 'ArrowUp': {
         event.preventDefault();
-        if (!this.abierto()) return this.abrir();
-        const paso = event.key === 'ArrowDown' ? 1 : -1;
-        let i = this.activa();
-        // Saltea las opciones deshabilitadas
-        for (let n = 0; n < opciones.length; n++) {
-          i = (i + paso + opciones.length) % opciones.length;
-          if (!opciones[i].deshabilitada) break;
+        if (!this.open()) return this.openList();
+        const step = event.key === 'ArrowDown' ? 1 : -1;
+        let i = this.active();
+        // Skips disabled options
+        for (let n = 0; n < options.length; n++) {
+          i = (i + step + options.length) % options.length;
+          if (!options[i].disabled) break;
         }
-        this.activa.set(i);
-        this.desplazarA(i);
+        this.active.set(i);
+        this.scrollTo(i);
         break;
       }
       case 'Enter':
-        if (this.abierto()) {
+        if (this.open()) {
           event.preventDefault();
-          const opcion = opciones[this.activa()];
-          if (opcion) this.elegir(opcion);
+          const option = options[this.active()];
+          if (option) this.choose(option);
         }
         break;
       case 'Escape':
-        if (this.abierto()) {
-          // Que el Escape cierre la lista y no el <dialog> que la contiene
+        if (this.open()) {
+          // Escape closes the list and not the <dialog> that contains it
           event.preventDefault();
           event.stopPropagation();
-          this.cerrar();
+          this.close();
         }
         break;
     }
   }
 
-  /** Cuando el foco sale del componente se cierra y vuelve a mostrar lo elegido. */
-  protected alSalir(event: FocusEvent): void {
+  /** When focus leaves the component it closes and shows the chosen option again. */
+  protected onLeave(event: FocusEvent): void {
     if (this.host.nativeElement.contains(event.relatedTarget as Node | null)) return;
-    this.cerrar();
+    this.close();
     this.onTouched();
   }
 
-  private cerrar(): void {
-    this.abierto.set(false);
-    this.texto.set(this.seleccionada()?.etiqueta ?? '');
+  private close(): void {
+    this.open.set(false);
+    this.text.set(this.selected()?.label ?? '');
   }
 
-  /** Ubica la lista debajo del input, o arriba si abajo no hay lugar. */
-  protected posicionar(): void {
-    const lista = this.lista()?.nativeElement;
-    if (!lista) return;
+  /** Places the list below the input, or above if there is no room below. */
+  protected position(): void {
+    const list = this.list()?.nativeElement;
+    if (!list) return;
 
-    const rect = this.campo().nativeElement.getBoundingClientRect();
-    const alto = lista.offsetHeight;
-    const abajo = window.innerHeight - rect.bottom;
-    const haciaArriba = abajo < alto + 8 && rect.top > abajo;
+    const rect = this.field().nativeElement.getBoundingClientRect();
+    const height = list.offsetHeight;
+    const below = window.innerHeight - rect.bottom;
+    const upwards = below < height + 8 && rect.top > below;
 
-    lista.style.left = `${rect.left}px`;
-    lista.style.width = `${rect.width}px`;
-    lista.style.top = `${haciaArriba ? rect.top - alto - 4 : rect.bottom + 4}px`;
+    list.style.left = `${rect.left}px`;
+    list.style.width = `${rect.width}px`;
+    list.style.top = `${upwards ? rect.top - height - 4 : rect.bottom + 4}px`;
   }
 
-  private desplazarA(indice: number): void {
-    this.lista()?.nativeElement.children[indice]?.scrollIntoView({ block: 'nearest' });
+  private scrollTo(index: number): void {
+    this.list()?.nativeElement.children[index]?.scrollIntoView({ block: 'nearest' });
   }
 }

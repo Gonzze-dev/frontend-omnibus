@@ -2,32 +2,32 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { APP_CONFIG } from '../config';
-import { Terminal, ViajeEsperado } from '../models/viaje.model';
+import { AwaitedTrip, Terminal } from '../models/trip.model';
 
-/** Endpoints del pasajero para buscar su viaje y quedar a la espera. */
+/** Passenger endpoints to find their trip and start waiting. */
 @Injectable({ providedIn: 'root' })
-export class ViajeService {
+export class TripService {
   private readonly http = inject(HttpClient);
   private readonly busesUrl = `${APP_CONFIG.apiUrl}/buses`;
 
-  terminales(): Observable<Terminal[]> {
+  terminals(): Observable<Terminal[]> {
     return this.http.get<Terminal[]>(`${APP_CONFIG.apiUrl}/users/terminals`);
   }
 
   /**
-   * El backend valida el pasaje contra el sistema de terminales y deja al
-   * usuario esperando ese colectivo. Reemplaza cualquier espera anterior.
+   * The backend validates the bus ticket against the terminals system and leaves the
+   * user waiting for that bus. It replaces any previous wait.
    */
-  esperar(terminalId: string, ticket: string): Observable<ViajeEsperado> {
-    return this.http.post<ViajeEsperado>(`${this.busesUrl}/join`, { terminalId, ticket });
+  wait(terminalId: string, ticket: string): Observable<AwaitedTrip> {
+    return this.http.post<AwaitedTrip>(`${this.busesUrl}/join`, { terminalId, ticket });
   }
 
-  /** Viaje que el usuario ya estaba esperando (404 si no hay ninguno). */
-  enEspera(): Observable<ViajeEsperado> {
-    return this.http.get<ViajeEsperado>(`${this.busesUrl}/awaited`);
+  /** Trip the user was already waiting for (404 if there is none). */
+  awaited(): Observable<AwaitedTrip> {
+    return this.http.get<AwaitedTrip>(`${this.busesUrl}/awaited`);
   }
 
-  dejarDeEsperar(): Observable<void> {
+  stopWaiting(): Observable<void> {
     return this.http.delete<void>(`${this.busesUrl}/awaited`);
   }
 }

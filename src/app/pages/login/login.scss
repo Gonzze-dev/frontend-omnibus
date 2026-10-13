@@ -3,13 +3,13 @@
 }
 
 /* ============================================================
-   Marca animada
-   1. El isotipo aparece solo, centrado.
-   2. La columna del nombre crece de 0 a su ancho: como el bloque
-      sigue centrado, el logo se corre a la izquierda solo.
-   3. El nombre entra desde atras del logo mientras se despliega.
+   Animated brand
+   1. The isotype appears alone, centered.
+   2. The name column grows from 0 to its width: since the block
+      stays centered, the logo slides to the left by itself.
+   3. The name comes in from behind the logo while it unfolds.
    ============================================================ */
-.marca {
+.mark {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -17,101 +17,101 @@
   line-height: 48px;
 }
 
-/* Las cuatro capas son PNG del mismo tamaño apilados; cada una
-   entra a su turno. Los transform-origin estan en % del PNG
-   (512px): la punta del pin, el centro del colectivo y el punto
-   desde donde salen las ondas. */
-.marca__logo {
+/* The four layers are stacked PNGs of the same size; each one
+   comes in on its turn. The transform-origins are in % of the PNG
+   (512px): the tip of the pin, the center of the bus and the point
+   the waves come out of. */
+.mark__logo {
   position: relative;
   width: 64px;
   height: 64px;
   flex-shrink: 0;
 }
 
-.marca__capa {
+.mark__layer {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
 }
 
-.marca__capa--pin {
+.mark__layer--pin {
   transform-origin: 40% 99%;
-  animation: marca-pin 500ms var(--ab-ease-spring) both;
+  animation: mark-pin 500ms var(--ab-ease-spring) both;
 }
 
-.marca__capa--bus {
+.mark__layer--bus {
   transform-origin: 40% 49%;
-  animation: marca-bus 450ms 300ms var(--ab-ease-spring) both;
+  animation: mark-bus 450ms 300ms var(--ab-ease-spring) both;
 }
 
-.marca__capa--onda1,
-.marca__capa--onda2 {
+.mark__layer--wave1,
+.mark__layer--wave2 {
   transform-origin: 64% 39%;
-  animation: marca-onda 380ms var(--ab-ease-out) both;
+  animation: mark-wave 380ms var(--ab-ease-out) both;
 }
 
-.marca__capa--onda1 { animation-delay: 650ms; }
-.marca__capa--onda2 { animation-delay: 850ms; }
+.mark__layer--wave1 { animation-delay: 650ms; }
+.mark__layer--wave2 { animation-delay: 850ms; }
 
-.marca__texto {
+.mark__text {
   display: grid;
   grid-template-columns: 0fr;
-  animation: marca-abre 700ms 1150ms var(--ab-ease-out) forwards;
+  animation: mark-open 700ms 1150ms var(--ab-ease-out) forwards;
 }
 
-/* El hueco entre logo y nombre va dentro de la zona recortada,
-   asi con la columna cerrada el logo queda centrado de verdad. */
-.marca__nombre {
+/* The gap between logo and name goes inside the clipped area,
+   so with the column closed the logo is truly centered. */
+.mark__name {
   min-width: 0;
   overflow: hidden;
   padding-left: 12px;
   white-space: nowrap;
-  animation: marca-nombre 600ms 1300ms var(--ab-ease-out) both;
+  animation: mark-name 600ms 1300ms var(--ab-ease-out) both;
 }
 
-/* Splash: la marca no entra con la cascada global de .ab-screen.
-   Arranca agrandada en el centro de la pantalla, hace su animacion
-   ahi (logo por partes + nombre, ~1900ms) y despues sube a su lugar.
-   El origen es el centro del contenido (66px de padding + medio
-   logo), asi el translate lo lleva justo al medio del viewport. */
-.login .marca {
+/* Splash: the brand does not come in with the global .ab-screen stagger.
+   It starts enlarged in the center of the screen, plays its animation
+   there (logo in parts + name, ~1900ms) and then moves up to its place.
+   The origin is the center of the content (66px of padding + half the
+   logo), so the translate takes it right to the middle of the viewport. */
+.login .mark {
   --marca-escala: 1.4;
   transform-origin: 50% calc(66px + 32px);
-  animation: marca-asienta 700ms 2100ms var(--ab-ease-out) backwards;
+  animation: mark-settle 700ms 2100ms var(--ab-ease-out) backwards;
 }
 
-/* En celulares angostos el bloque agrandado no entra a 1.4 */
+/* On narrow phones the enlarged block does not fit at 1.4 */
 @media (max-width: 380px) {
-  .login .marca { --marca-escala: 1.2; }
+  .login .mark { --marca-escala: 1.2; }
 }
 
-/* El form espera a que la marca este casi en su lugar */
+/* The form waits until the brand is almost in its place */
 .login .login__card { animation-delay: 2550ms; }
 
-@keyframes marca-asienta {
+@keyframes mark-settle {
   from { transform: translateY(calc(50dvh - 66px - 32px)) scale(var(--marca-escala)); }
 }
 
-/* El pin cae desde arriba y rebota sobre su punta */
-@keyframes marca-pin {
+/* The pin drops from above and bounces on its tip */
+@keyframes mark-pin {
   from { opacity: 0; transform: translateY(-40%) scale(0.6); }
 }
 
-@keyframes marca-bus {
+@keyframes mark-bus {
   from { opacity: 0; transform: scale(0.3); }
 }
 
-/* Cada onda sale desde el pin hacia afuera */
-@keyframes marca-onda {
+/* Each wave comes out from the pin outwards */
+@keyframes mark-wave {
   from { opacity: 0; transform: scale(0.5); }
 }
 
-@keyframes marca-abre {
+@keyframes mark-open {
   to { grid-template-columns: 1fr; }
 }
 
-@keyframes marca-nombre {
+@keyframes mark-name {
   from { opacity: 0; transform: translateX(-24px); }
 }
 
@@ -139,7 +139,7 @@
   gap: 24px;
 }
 
-/* El link viaja junto al label, sin la mayuscula ni el tracking */
+/* The link travels next to the label, without the uppercase or the tracking */
 .login__forgot {
   flex: none;
   font-size: var(--ab-fs-label);
@@ -151,7 +151,7 @@
   border-top: 1px solid var(--ab-line);
 }
 
-/* La flecha del boton avanza al pasar el mouse */
+/* The button arrow moves forward on mouse hover */
 .login__form .ab-button svg {
   transition: transform var(--ab-dur-media) var(--ab-ease-out);
 }

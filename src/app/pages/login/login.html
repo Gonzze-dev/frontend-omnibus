@@ -1,16 +1,16 @@
 <div class="ab-screen login">
-  <!-- Marca: el isotipo entra solo en el centro y despues se corre a la izquierda
-       mientras se despliega el nombre (ver .marca en login.scss). -->
-  <h1 class="ab-brand login__brand marca">
-    <!-- El isotipo va en capas (mismo tamaño, apiladas) para armarlo por partes:
-         pin -> colectivo -> onda chica -> onda grande. -->
-    <span class="marca__logo" aria-hidden="true">
-      <img class="marca__capa marca__capa--pin" src="assets/isotipo/pin.png" alt="" />
-      <img class="marca__capa marca__capa--bus" src="assets/isotipo/bus.png" alt="" />
-      <img class="marca__capa marca__capa--onda1" src="assets/isotipo/onda1.png" alt="" />
-      <img class="marca__capa marca__capa--onda2" src="assets/isotipo/onda2.png" alt="" />
+  <!-- Brand: the isotype comes in alone in the center and then slides to the left
+       while the name unfolds (see .mark in login.scss). -->
+  <h1 class="ab-brand login__brand mark">
+    <!-- The isotype comes in layers (same size, stacked) to assemble it in parts:
+         pin -> bus -> small wave -> big wave. -->
+    <span class="mark__logo" aria-hidden="true">
+      <img class="mark__layer mark__layer--pin" src="assets/isotype/pin.png" alt="" />
+      <img class="mark__layer mark__layer--bus" src="assets/isotype/bus.png" alt="" />
+      <img class="mark__layer mark__layer--wave1" src="assets/isotype/wave1.png" alt="" />
+      <img class="mark__layer mark__layer--wave2" src="assets/isotype/wave2.png" alt="" />
     </span>
-    <span class="marca__texto"><span class="marca__nombre">Ya llegó</span></span>
+    <span class="mark__text"><span class="mark__name">Ya llegó</span></span>
   </h1>
 
   <section class="login__card">
@@ -19,16 +19,16 @@
       <p class="ab-subtitle">Ingresa tus credenciales para continuar</p>
     </header>
 
-    @if (cambioOk()) {
+    @if (passwordChanged()) {
       <p class="ab-form-ok" role="status">Tu contraseña se cambio. Ingresa con la nueva.</p>
     }
 
-    <form class="login__form" [formGroup]="form" (ngSubmit)="ingresar()" novalidate>
+    <form class="login__form" [formGroup]="form" (ngSubmit)="signIn()" novalidate>
       <div class="ab-field">
         <label class="ab-label" for="email">Email</label>
         <input class="ab-input" id="email" type="email" placeholder="name@company.com" autocomplete="email"
-               formControlName="email" [attr.aria-invalid]="invalido('email')" />
-        @if (invalido('email')) {
+               formControlName="email" [attr.aria-invalid]="invalid('email')" />
+        @if (invalid('email')) {
           <p class="ab-field-error">Ingresa un email valido.</p>
         }
       </div>
@@ -36,15 +36,15 @@
       <div class="ab-field">
         <div class="ab-label-row">
           <label class="ab-label" for="password">Contraseña</label>
-          <a class="ab-link login__forgot" routerLink="/olvidar-contrasena">Olvidaste tu contraseña?</a>
+          <a class="ab-link login__forgot" routerLink="/forgot-password">Olvidaste tu contraseña?</a>
         </div>
         <div class="ab-password">
-          <input class="ab-input" id="password" [type]="mostrarPassword() ? 'text' : 'password'"
+          <input class="ab-input" id="password" [type]="showPassword() ? 'text' : 'password'"
                  placeholder="••••••••" autocomplete="current-password"
-                 formControlName="password" [attr.aria-invalid]="invalido('password')" />
-          <app-password-toggle [visible]="mostrarPassword()" (visibleChange)="mostrarPassword.set($event)" />
+                 formControlName="password" [attr.aria-invalid]="invalid('password')" />
+          <app-password-toggle [visible]="showPassword()" (visibleChange)="showPassword.set($event)" />
         </div>
-        @if (invalido('password')) {
+        @if (invalid('password')) {
           <p class="ab-field-error">Ingresa tu contraseña.</p>
         }
       </div>
@@ -53,8 +53,8 @@
         <p class="ab-form-error" role="alert">{{ error() }}</p>
       }
 
-      <button class="ab-button" type="submit" [disabled]="cargando()">
-        {{ cargando() ? 'Ingresando...' : 'Ingresar' }}
+      <button class="ab-button" type="submit" [disabled]="loading()">
+        {{ loading() ? 'Ingresando...' : 'Ingresar' }}
         <svg class="ab-icon" width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
           <path d="M1 8h13m0 0-5-5m5 5-5 5" stroke="currentColor" stroke-width="2"
                 stroke-linecap="round" stroke-linejoin="round" />
@@ -64,8 +64,8 @@
 
     <footer class="login__foot">
       <p class="ab-footnote">
-        No tienes cuenta?
-        <a class="ab-link" routerLink="/registro">Registrate</a>
+        No tenes cuenta?
+        <a class="ab-link" routerLink="/register">Registrate</a>
       </p>
     </footer>
   </section>

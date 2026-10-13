@@ -1,237 +1,236 @@
 import { Component, ElementRef, computed, effect, inject, signal, untracked, viewChild } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Topbar } from '../../shared/topbar/topbar';
-import { EsperaViaje } from '../espera-viaje/espera-viaje';
+import { TripWait } from '../trip-wait/trip-wait';
 import { QrScanner } from '../../shared/qr-scanner/qr-scanner';
 import { Toast } from '../../shared/toast/toast';
-import { PARSERS_BOLETO, QrBoletoError, parsearBoleto } from '../../shared/qr-scanner/boleto-parser';
-import { ViajeService } from '../../services/viaje.service';
+import { TICKET_PARSERS, QrTicketError, parseTicket } from '../../shared/qr-scanner/ticket-parser';
+import { TripService } from '../../services/trip.service';
 import { RealtimeService } from '../../services/realtime.service';
-import { Terminal, ViajeEsperado } from '../../models/viaje.model';
+import { AwaitedTrip, Terminal } from '../../models/trip.model';
 
 @Component({
   selector: 'app-home',
-  imports: [Topbar, EsperaViaje, QrScanner, Toast],
+  imports: [Topbar, TripWait, QrScanner, Toast],
   templateUrl: './home.html',
   styleUrl: './home.scss',
 })
 export class Home {
-  private readonly viajes = inject(ViajeService);
+  private readonly trips = inject(TripService);
   private readonly realtime = inject(RealtimeService);
 
   /**
-   * "Espera del viaje" no es una ruta: es el mismo home con el cuerpo
-   * reemplazado. Volver a null lo deja como estaba.
+   * "Trip wait" is not a route: it is the same home with the body
+   * replaced. Setting it back to null leaves it as it was.
    */
-  protected readonly viaje = signal<ViajeEsperado | null>(null);
-  /** Mientras se consulta si el usuario ya estaba esperando un viaje. */
-  protected readonly restaurando = signal(true);
+  protected readonly trip = signal<AwaitedTrip | null>(null);
+  /** While checking whether the user was already waiting for a trip. */
+  protected readonly restoring = signal(true);
 
-  protected readonly terminales = signal<Terminal[]>([]);
-  protected readonly filtroCp = signal('');
+  protected readonly terminals = signal<Terminal[]>([]);
+  protected readonly zipFilter = signal('');
   protected readonly terminalId = signal<string | null>(null);
-  protected readonly terminalesFiltradas = computed(() => {
-    const filtro = this.filtroCp().trim();
-    const todas = this.terminales();
-    return filtro ? todas.filter((t) => t.postal_code.includes(filtro)) : todas;
+  protected readonly filteredTerminals = computed(() => {
+    const filter = this.zipFilter().trim();
+    const all = this.terminals();
+    return filter ? all.filter((t) => t.postal_code.includes(filter)) : all;
   });
 
-  /** Combobox de terminal: lo que se escribe filtra la lista por nombre. */
-  protected readonly comboAbierto = signal(false);
-  protected readonly filtroNombre = signal('');
-  protected readonly opcionActiva = signal(0);
-  protected readonly nombreTerminal = computed(
-    () => this.terminales().find((t) => t.uuid === this.terminalId())?.name ?? '',
+  /** Terminal combobox: what is typed filters the list by name. */
+  protected readonly comboOpen = signal(false);
+  protected readonly nameFilter = signal('');
+  protected readonly activeOption = signal(0);
+  protected readonly terminalName = computed(
+    () => this.terminals().find((t) => t.uuid === this.terminalId())?.name ?? '',
   );
-  protected readonly opcionesTerminal = computed(() => {
-    const filtro = normalizar(this.filtroNombre().trim());
-    const lista = this.terminalesFiltradas();
-    return filtro ? lista.filter((t) => normalizar(t.name).includes(filtro)) : lista;
+  protected readonly terminalOptions = computed(() => {
+    const filter = normalize(this.nameFilter().trim());
+    const list = this.filteredTerminals();
+    return filter ? list.filter((t) => normalize(t.name).includes(filter)) : list;
   });
 
-  protected readonly escaneando = signal(false);
+  protected readonly scanning = signal(false);
   protected readonly ticket = signal('');
-  protected readonly errorEscaneo = signal<string | null>(null);
-  protected readonly mostrarExito = signal(false);
+  protected readonly scanError = signal<string | null>(null);
+  protected readonly showSuccess = signal(false);
 
-  protected readonly buscando = signal(false);
-  protected readonly errorBusqueda = signal<string | null>(null);
-  /** Error de pasaje o de datos faltantes: se muestra en un popup que hay que aceptar. */
-  protected readonly errorPasaje = signal<{ titulo: string; mensaje: string } | null>(null);
-  private readonly dialogoPasaje = viewChild<ElementRef<HTMLDialogElement>>('dialogoPasaje');
-  protected readonly mostrarLlegada = signal(false);
-  protected readonly andenLlegada = computed(() => this.realtime.llegada()?.anden ?? '');
+  protected readonly searching = signal(false);
+  protected readonly searchError = signal<string | null>(null);
+  /** Bus ticket error or missing data: shown in a popup that has to be accepted. */
+  protected readonly ticketError = signal<{ title: string; message: string } | null>(null);
+  private readonly ticketDialog = viewChild<ElementRef<HTMLDialogElement>>('ticketDialog');
+  protected readonly showArrival = signal(false);
+  protected readonly arrivalBay = computed(() => this.realtime.arrival()?.bay ?? '');
 
   constructor() {
-    this.viajes.terminales().subscribe({
-      next: (lista) => this.terminales.set(lista),
-      error: () => this.errorBusqueda.set('No se pudieron cargar las terminales.'),
+    this.trips.terminals().subscribe({
+      next: (list) => this.terminals.set(list),
+      error: () => this.searchError.set('No se pudieron cargar las terminales.'),
     });
 
-    // Si el usuario recarga la pagina, retoma la espera que tenia.
-    this.viajes.enEspera().subscribe({
-      next: (viaje) => {
-        this.restaurando.set(false);
-        void this.quedarAEspera(viaje);
+    // If the user reloads the page, it resumes the wait they had.
+    this.trips.awaited().subscribe({
+      next: (trip) => {
+        this.restoring.set(false);
+        void this.startWaiting(trip);
       },
-      error: () => this.restaurando.set(false),
+      error: () => this.restoring.set(false),
     });
 
-    // El <dialog> nativo se abre con showModal() para tener fondo y foco.
+    // The native <dialog> is opened with showModal() to get a backdrop and focus.
     effect(() => {
-      const dialogo = this.dialogoPasaje()?.nativeElement;
-      if (!dialogo) return;
-      if (this.errorPasaje() && !dialogo.open) dialogo.showModal();
-      if (!this.errorPasaje() && dialogo.open) dialogo.close();
+      const dialog = this.ticketDialog()?.nativeElement;
+      if (!dialog) return;
+      if (this.ticketError() && !dialog.open) dialog.showModal();
+      if (!this.ticketError() && dialog.open) dialog.close();
     });
 
-    // Aviso flotante cuando el colectivo llega mientras se espera.
+    // Floating notice when the bus arrives while waiting.
     effect(() => {
-      const llegada = this.realtime.llegada();
-      if (llegada && untracked(this.viaje)) {
-        this.mostrarLlegada.set(true);
+      const arrival = this.realtime.arrival();
+      if (arrival && untracked(this.trip)) {
+        this.showArrival.set(true);
         navigator.vibrate?.([200, 100, 200]);
       }
     });
   }
 
-  protected onFiltroCp(valor: string): void {
-    this.filtroCp.set(valor);
-    const filtradas = this.terminalesFiltradas();
-    if (!filtradas.some((t) => t.uuid === this.terminalId())) {
-      this.terminalId.set(filtradas.length === 1 ? filtradas[0].uuid : null);
+  protected onZipFilter(value: string): void {
+    this.zipFilter.set(value);
+    const filtered = this.filteredTerminals();
+    if (!filtered.some((t) => t.uuid === this.terminalId())) {
+      this.terminalId.set(filtered.length === 1 ? filtered[0].uuid : null);
     }
   }
 
-  protected abrirCombo(): void {
-    this.filtroNombre.set('');
-    this.opcionActiva.set(0);
-    this.comboAbierto.set(true);
+  protected openCombo(): void {
+    this.nameFilter.set('');
+    this.activeOption.set(0);
+    this.comboOpen.set(true);
   }
 
-  protected cerrarCombo(): void {
-    this.comboAbierto.set(false);
-    this.filtroNombre.set('');
+  protected closeCombo(): void {
+    this.comboOpen.set(false);
+    this.nameFilter.set('');
   }
 
-  protected onFiltroNombre(valor: string): void {
-    this.filtroNombre.set(valor);
-    this.opcionActiva.set(0);
-    this.comboAbierto.set(true);
+  protected onNameFilter(value: string): void {
+    this.nameFilter.set(value);
+    this.activeOption.set(0);
+    this.comboOpen.set(true);
   }
 
-  protected elegirTerminal(terminal: Terminal): void {
+  protected chooseTerminal(terminal: Terminal): void {
     this.terminalId.set(terminal.uuid);
-    this.cerrarCombo();
+    this.closeCombo();
   }
 
-  protected onTeclaCombo(evento: KeyboardEvent): void {
-    const opciones = this.opcionesTerminal();
-    switch (evento.key) {
+  protected onComboKey(event: KeyboardEvent): void {
+    const options = this.terminalOptions();
+    switch (event.key) {
       case 'ArrowDown':
       case 'ArrowUp': {
-        evento.preventDefault();
-        if (!this.comboAbierto()) return this.abrirCombo();
-        if (!opciones.length) return;
-        const paso = evento.key === 'ArrowDown' ? 1 : -1;
-        this.opcionActiva.update((i) => (i + paso + opciones.length) % opciones.length);
+        event.preventDefault();
+        if (!this.comboOpen()) return this.openCombo();
+        if (!options.length) return;
+        const step = event.key === 'ArrowDown' ? 1 : -1;
+        this.activeOption.update((i) => (i + step + options.length) % options.length);
         return;
       }
       case 'Enter': {
-        const opcion = opciones[this.opcionActiva()];
-        if (this.comboAbierto() && opcion) {
-          evento.preventDefault();
-          this.elegirTerminal(opcion);
+        const option = options[this.activeOption()];
+        if (this.comboOpen() && option) {
+          event.preventDefault();
+          this.chooseTerminal(option);
         }
         return;
       }
       case 'Escape':
-        this.cerrarCombo();
+        this.closeCombo();
         return;
     }
   }
 
-  protected onCodigoLeido(codigo: string): void {
+  protected onCodeRead(code: string): void {
     try {
-      this.ticket.set(parsearBoleto(PARSERS_BOLETO, codigo));
-      this.errorEscaneo.set(null);
-      this.mostrarExito.set(true);
+      this.ticket.set(parseTicket(TICKET_PARSERS, code));
+      this.scanError.set(null);
+      this.showSuccess.set(true);
     } catch (error) {
-      this.errorEscaneo.set(
-        error instanceof QrBoletoError ? error.message : 'No se pudo escanear el QR correctamente.',
+      this.scanError.set(
+        error instanceof QrTicketError ? error.message : 'No se pudo escanear el QR correctamente.',
       );
     }
-    this.escaneando.set(false);
+    this.scanning.set(false);
   }
 
-  protected buscarViaje(): void {
+  protected searchTrip(): void {
     const terminalId = this.terminalId();
     const ticket = this.ticket().trim().toUpperCase();
-    this.errorBusqueda.set(null);
+    this.searchError.set(null);
 
     if (!terminalId) {
-      this.errorPasaje.set({ titulo: 'Falta la terminal', mensaje: 'Elegí la terminal donde vas a esperar el colectivo.' });
+      this.ticketError.set({ title: 'Falta la terminal', message: 'Elegí la terminal donde vas a esperar el colectivo.' });
       return;
     }
     if (!ticket) {
-      this.errorPasaje.set({ titulo: 'Falta el pasaje', mensaje: 'Ingresá el código de tu pasaje o escaneá el QR.' });
+      this.ticketError.set({ title: 'Falta el pasaje', message: 'Ingresá el código de tu pasaje o escaneá el QR.' });
       return;
     }
 
-    this.buscando.set(true);
-    this.viajes.esperar(terminalId, ticket).subscribe({
-      next: (viaje) => {
-        this.buscando.set(false);
-        void this.quedarAEspera(viaje);
+    this.searching.set(true);
+    this.trips.wait(terminalId, ticket).subscribe({
+      next: (trip) => {
+        this.searching.set(false);
+        void this.startWaiting(trip);
       },
       error: (error: HttpErrorResponse) => {
-        this.buscando.set(false);
-        const pasaje = mensajePasajeInvalido(error);
-        if (pasaje) this.errorPasaje.set({ titulo: 'Pasaje no válido', mensaje: pasaje });
-        else this.errorBusqueda.set(mensajeError(error));
+        this.searching.set(false);
+        const invalid = invalidTicketMessage(error);
+        if (invalid) this.ticketError.set({ title: 'Pasaje no válido', message: invalid });
+        else this.searchError.set(errorMessage(error));
       },
     });
   }
 
-  protected aceptarErrorPasaje(): void {
-    this.errorPasaje.set(null);
+  protected acceptTicketError(): void {
+    this.ticketError.set(null);
   }
 
-  protected buscarOtro(): void {
-    this.viajes.dejarDeEsperar().subscribe({ error: () => {} });
-    void this.realtime.dejarViaje();
-    this.mostrarLlegada.set(false);
-    this.viaje.set(null);
+  protected searchAnother(): void {
+    this.trips.stopWaiting().subscribe({ error: () => {} });
+    void this.realtime.leaveTrip();
+    this.showArrival.set(false);
+    this.trip.set(null);
   }
 
-  private async quedarAEspera(viaje: ViajeEsperado): Promise<void> {
-    this.viaje.set(viaje);
-    this.ticket.set(viaje.trip.ticket);
-    this.terminalId.set(viaje.terminal.uuid);
+  private async startWaiting(trip: AwaitedTrip): Promise<void> {
+    this.trip.set(trip);
+    this.ticket.set(trip.trip.ticket);
+    this.terminalId.set(trip.terminal.uuid);
     try {
-      await this.realtime.seguirViaje(viaje.group_key, viaje.terminal.uuid);
+      await this.realtime.followTrip(trip.group_key, trip.terminal.uuid);
     } catch {
-      // La pantalla de espera avisa que no hay conexion en tiempo real;
-      // el backend igual manda el mail cuando llega el colectivo.
+      // The wait screen warns that there is no real-time connection;
+      // the backend still sends the email when the bus arrives.
     }
   }
 }
 
-/** Minusculas y sin tildes, para que "cordoba" encuentre "CÓRDOBA". */
-function normalizar(texto: string): string {
-  return texto.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+/** Lowercase and without accents, so "cordoba" finds "CÓRDOBA". */
+function normalize(text: string): string {
+  return text.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 }
 
-/** Mensaje para el popup cuando el backend rechaza el pasaje; null si es otro error. */
-function mensajePasajeInvalido(error: HttpErrorResponse): string | null {
-  const detalle: string = error.error?.message ?? '';
+/** Message for the popup when the backend rejects the bus ticket; null if it is another error. */
+function invalidTicketMessage(error: HttpErrorResponse): string | null {
+  const detail: string = error.error?.message ?? '';
   if (error.status === 409) return 'Este pasaje pertenece a otra terminal. Elegí la terminal correcta e intentá de nuevo.';
-  if (error.status === 404 && detalle.includes('trip')) return 'No encontramos un viaje con ese código de pasaje. Revisalo e intentá de nuevo.';
+  if (error.status === 404 && detail.includes('trip')) return 'No encontramos un viaje con ese código de pasaje. Revisalo e intentá de nuevo.';
   return null;
 }
 
-function mensajeError(error: HttpErrorResponse): string {
-  const detalle: string = error.error?.message ?? '';
+function errorMessage(error: HttpErrorResponse): string {
   switch (error.status) {
     case 401:
       return 'Iniciá sesión para seguir tu viaje.';

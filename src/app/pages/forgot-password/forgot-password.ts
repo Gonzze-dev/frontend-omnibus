@@ -6,57 +6,57 @@ import { AuthService } from '../../services/auth.service';
 import { Toast } from '../../shared/toast/toast';
 
 @Component({
-  selector: 'app-olvidar-contrasena',
+  selector: 'app-forgot-password',
   imports: [RouterLink, ReactiveFormsModule, Toast],
-  templateUrl: './olvidar-contrasena.html',
-  styleUrl: './olvidar-contrasena.scss',
+  templateUrl: './forgot-password.html',
+  styleUrl: './forgot-password.scss',
 })
-export class OlvidarContrasena {
+export class ForgotPassword {
   private readonly auth = inject(AuthService);
 
   readonly form = inject(FormBuilder).nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
   });
 
-  readonly cargando = signal(false);
+  readonly loading = signal(false);
   readonly error = signal<string | null>(null);
-  readonly enviado = signal<string | null>(null);
-  readonly mostrarToast = signal(false);
+  readonly sent = signal<string | null>(null);
+  readonly showToast = signal(false);
 
-  enviarEnlace(): void {
+  sendLink(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
 
-    this.cargando.set(true);
+    this.loading.set(true);
     this.error.set(null);
 
     this.auth.forgotPassword(this.form.getRawValue().email).subscribe({
       next: (res) => {
-        this.cargando.set(false);
-        // El backend contesta lo mismo exista o no la cuenta: no se puede
-        // deducir desde aca si el mail salio.
-        this.enviado.set(
+        this.loading.set(false);
+        // The backend answers the same whether or not the account exists: it
+        // cannot be inferred from here whether the email went out.
+        this.sent.set(
           res.message ||
             'Si el email esta registrado, te llegara un correo para cambiar tu contraseña.',
         );
-        this.mostrarToast.set(true);
+        this.showToast.set(true);
       },
       error: (err: HttpErrorResponse) => {
-        this.cargando.set(false);
-        this.error.set(mensajeError(err));
+        this.loading.set(false);
+        this.error.set(errorMessage(err));
       },
     });
   }
 
-  invalido(): boolean {
+  invalid(): boolean {
     const control = this.form.controls.email;
     return control.invalid && control.touched;
   }
 }
 
-function mensajeError(err: HttpErrorResponse): string {
+function errorMessage(err: HttpErrorResponse): string {
   switch (err.status) {
     case 0:
       return 'No se pudo conectar con el servidor. Intenta mas tarde.';

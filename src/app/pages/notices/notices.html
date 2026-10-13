@@ -1,8 +1,8 @@
 <app-topbar />
 
-<div class="ab-screen crud tono--naranja">
-  @if (accion() === 'listar') {
-    <a class="crud__volver" routerLink="/dashboard">
+<div class="ab-screen crud tone--orange">
+  @if (action() === 'list') {
+    <a class="crud__back" routerLink="/dashboard">
     <svg class="ab-icon" width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
       <path d="M15 7H1M1 7l5.5-5.5M1 7l5.5 5.5" stroke="currentColor" stroke-width="1.8"
             stroke-linecap="round" stroke-linejoin="round" />
@@ -10,7 +10,7 @@
       Dashboard
     </a>
   } @else {
-    <a class="crud__volver" routerLink="/dashboard/notificaciones">
+    <a class="crud__back" routerLink="/dashboard/notifications">
     <svg class="ab-icon" width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
       <path d="M15 7H1M1 7l5.5-5.5M1 7l5.5 5.5" stroke="currentColor" stroke-width="1.8"
             stroke-linecap="round" stroke-linejoin="round" />
@@ -19,14 +19,14 @@
     </a>
   }
 
-  <header class="crud__head crud__head--acciones">
+  <header class="crud__head crud__head--actions">
     <div>
-      <h1 class="crud__titulo">{{ vista().titulo }}</h1>
-      <p class="crud__bajada">{{ vista().bajada }}</p>
+      <h1 class="crud__title">{{ view().title }}</h1>
+      <p class="crud__lead">{{ view().lead }}</p>
     </div>
 
-    @if (accion() === 'listar') {
-      <a class="crud__agregar crud__agregar--primario" routerLink="/dashboard/notificaciones/aviso" aria-label="Enviar aviso">
+    @if (action() === 'list') {
+      <a class="crud__add crud__add--primary" routerLink="/dashboard/notifications/send" aria-label="Enviar aviso">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
           <path d="M10 3v14M3 10h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
         </svg>
@@ -34,24 +34,24 @@
     }
   </header>
 
-  @switch (accion()) {
-    @case ('listar') {
-      <div class="crud__filtro">
+  @switch (action()) {
+    @case ('list') {
+      <div class="crud__filter">
         <div class="ab-field">
-          <label class="ab-label" for="filtro-tipo">Tipo</label>
-          <select class="crud__select" id="filtro-tipo"
-                  [value]="filtroTipo()" (change)="filtrarTipo($any($event.target).value)">
+          <label class="ab-label" for="type-filter">Tipo</label>
+          <select class="crud__select" id="type-filter"
+                  [value]="typeFilter()" (change)="filterByType($any($event.target).value)">
             <option value="">Todos</option>
-            @for (t of tiposFiltro; track t) {
-              <option [value]="t">{{ etiquetasTipo[t] }}</option>
+            @for (t of filterTypes; track t) {
+              <option [value]="t">{{ typeLabels[t] }}</option>
             }
           </select>
         </div>
 
         <div class="ab-field">
-          <label class="ab-label" for="filtro-estado">Estado</label>
-          <select class="crud__select" id="filtro-estado"
-                  [value]="filtroEstado()" (change)="filtrarEstado($any($event.target).value)">
+          <label class="ab-label" for="status-filter">Estado</label>
+          <select class="crud__select" id="status-filter"
+                  [value]="statusFilter()" (change)="filterByStatus($any($event.target).value)">
             <option value="all">Todos</option>
             <option value="active">Activos</option>
             <option value="expired">Vencidos</option>
@@ -59,15 +59,15 @@
         </div>
       </div>
 
-      @if (errorListado()) {
-        <p class="ab-form-error" role="alert">{{ errorListado() }}</p>
+      @if (listError()) {
+        <p class="ab-form-error" role="alert">{{ listError() }}</p>
       }
 
-      @if (cargandoListado()) {
-        <p class="tabla__vacio">Cargando avisos...</p>
+      @if (loadingList()) {
+        <p class="table__empty">Cargando avisos...</p>
       } @else {
-        <ul class="tabla tabla--fija">
-          <li class="tabla__fila tabla__fila--cabecera">
+        <ul class="table table--fixed">
+          <li class="table__row table__row--header">
             <span>Tipo</span>
             <span>Mensaje</span>
             <span>Terminal</span>
@@ -75,27 +75,27 @@
             <span></span>
           </li>
 
-          @for (n of notificaciones(); track n.id) {
-            <li class="tabla__fila">
-              <span class="tabla__dato">
-                <span class="tabla__linea">{{ etiquetasTipo[n.type] ?? n.type }}</span>
+          @for (n of notifications(); track n.id) {
+            <li class="table__row">
+              <span class="table__cell">
+                <span class="table__line">{{ typeLabels[n.type] ?? n.type }}</span>
               </span>
-              <span class="tabla__dato">
-                <span class="tabla__linea" [title]="mensaje(n)">{{ mensaje(n) }}</span>
-                <span class="tabla__sub">{{ fecha(n.date) }}</span>
+              <span class="table__cell">
+                <span class="table__line" [title]="message(n)">{{ message(n) }}</span>
+                <span class="table__sub">{{ formatDate(n.date) }}</span>
               </span>
-              <span class="tabla__dato">
-                <span class="tabla__linea" [title]="terminal(n)">{{ terminal(n) }}</span>
+              <span class="table__cell">
+                <span class="table__line" [title]="terminal(n)">{{ terminal(n) }}</span>
               </span>
-              <span class="tabla__dato">
-                <span class="estado" [class.estado--vencido]="n.expired">
+              <span class="table__cell">
+                <span class="status" [class.status--expired]="n.expired">
                   {{ n.expired ? 'Vencido' : 'Activo' }}
                 </span>
-                <span class="tabla__sub">Vence {{ fecha(n.expiration) }}</span>
+                <span class="table__sub">Vence {{ formatDate(n.expiration) }}</span>
               </span>
-              <span class="tabla__acciones">
-                <button class="tabla__icono tabla__icono--carmin" type="button"
-                        (click)="confirmarBaja(n)" aria-label="Eliminar aviso">
+              <span class="table__actions">
+                <button class="table__icon table__icon--crimson" type="button"
+                        (click)="confirmDelete(n)" aria-label="Eliminar aviso">
                   <svg width="18" height="18" viewBox="0 0 22 22" fill="none" aria-hidden="true">
                     <path d="M3 5.5h16M8.5 5.5V3h5v2.5M5.5 5.5 6.5 19h9l1-13.5" stroke="currentColor"
                           stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
@@ -104,37 +104,37 @@
               </span>
             </li>
           } @empty {
-            <li class="tabla__vacio">No hay avisos que coincidan con el filtro.</li>
+            <li class="table__empty">No hay avisos que coincidan con el filtro.</li>
           }
 
-          @for (_ of relleno(); track $index) {
-            <li class="tabla__fila tabla__fila--relleno" aria-hidden="true">
-              <span class="tabla__dato">
-                <span class="tabla__linea">&nbsp;</span>
+          @for (_ of filler(); track $index) {
+            <li class="table__row table__row--filler" aria-hidden="true">
+              <span class="table__cell">
+                <span class="table__line">&nbsp;</span>
               </span>
             </li>
           }
         </ul>
 
-        <nav class="paginado" aria-label="Paginas del listado"
-             [class.paginado--oculto]="totalPaginas() === 1">
-          <button class="paginado__flecha" type="button" aria-label="Pagina anterior"
-                  [disabled]="pagina() === 1" (click)="irA(pagina() - 1)">
+        <nav class="pagination" aria-label="Paginas del listado"
+             [class.pagination--hidden]="totalPages() === 1">
+          <button class="pagination__arrow" type="button" aria-label="Pagina anterior"
+                  [disabled]="page() === 1" (click)="goTo(page() - 1)">
             <svg width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
               <path d="M10.5 1.5 4 7l6.5 5.5" stroke="currentColor" stroke-width="1.8"
                     stroke-linecap="round" stroke-linejoin="round" />
             </svg>
           </button>
 
-          @for (p of paginas(); track p) {
-            <button class="paginado__numero" type="button"
-                    [class.paginado__numero--activa]="p === pagina()"
-                    [attr.aria-current]="p === pagina() ? 'page' : null"
-                    (click)="irA(p)">{{ p }}</button>
+          @for (p of pages(); track p) {
+            <button class="pagination__number" type="button"
+                    [class.pagination__number--active]="p === page()"
+                    [attr.aria-current]="p === page() ? 'page' : null"
+                    (click)="goTo(p)">{{ p }}</button>
           }
 
-          <button class="paginado__flecha" type="button" aria-label="Pagina siguiente"
-                  [disabled]="pagina() === totalPaginas()" (click)="irA(pagina() + 1)">
+          <button class="pagination__arrow" type="button" aria-label="Pagina siguiente"
+                  [disabled]="page() === totalPages()" (click)="goTo(page() + 1)">
             <svg width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
               <path d="M5.5 1.5 12 7l-6.5 5.5" stroke="currentColor" stroke-width="1.8"
                     stroke-linecap="round" stroke-linejoin="round" />
@@ -144,211 +144,211 @@
       }
     }
 
-    @case ('aviso') {
-      <form class="crud__form" [formGroup]="formAviso" (ngSubmit)="enviarAviso()" novalidate>
-        <fieldset class="tipos">
-          <legend class="ab-label tipos__titulo">Tipo de aviso</legend>
+    @case ('send') {
+      <form class="crud__form" [formGroup]="noticeForm" (ngSubmit)="sendNotice()" novalidate>
+        <fieldset class="types">
+          <legend class="ab-label types__title">Tipo de aviso</legend>
 
-          @if (errorTipos()) {
-            <p class="ab-form-error" role="alert">{{ errorTipos() }}</p>
+          @if (typesError()) {
+            <p class="ab-form-error" role="alert">{{ typesError() }}</p>
           }
 
-          <div class="tipos__opciones">
-            @for (t of tipos(); track t.nombre) {
-              <label class="tipo">
-                <input class="tipo__radio" type="radio" formControlName="tipo" [value]="t.nombre" />
-                <span class="tipo__nombre">{{ t.etiqueta }}</span>
-                <span class="tipo__detalle">{{ t.detalle }}</span>
+          <div class="types__options">
+            @for (t of types(); track t.name) {
+              <label class="type">
+                <input class="type__radio" type="radio" formControlName="type" [value]="t.name" />
+                <span class="type__name">{{ t.label }}</span>
+                <span class="type__detail">{{ t.detail }}</span>
               </label>
             }
           </div>
         </fieldset>
 
-        @if (!esGlobal()) {
+        @if (!isGlobal()) {
           <div class="ab-field">
-            <label class="ab-label" for="terminal-aviso">Terminal</label>
-            <app-select-buscador inputId="terminal-aviso" formControlName="terminal"
-                                 placeholder="Busca una terminal"
-                                 [opciones]="opcionesTerminales()" [invalido]="invalidoAviso('terminal')" />
-            @if (invalidoAviso('terminal')) {
+            <label class="ab-label" for="notice-terminal">Terminal</label>
+            <app-search-select inputId="notice-terminal" formControlName="terminal"
+                               placeholder="Busca una terminal"
+                               [options]="terminalOptions()" [invalid]="noticeInvalid('terminal')" />
+            @if (noticeInvalid('terminal')) {
               <p class="ab-field-error">Elegi una terminal.</p>
             }
           </div>
         }
 
-        @if (esArribo()) {
+        @if (isArrival()) {
           <div class="ab-field">
-            <label class="ab-label" for="anden-arribo">Anden</label>
-            <app-select-buscador inputId="anden-arribo" formControlName="anden"
-                                 [placeholder]="cargandoAndenes() ? 'Cargando andenes...' : andenes().length ? 'Busca un anden' : 'La terminal no tiene andenes'"
-                                 [opciones]="opcionesAndenes()" [invalido]="invalidoAviso('anden')" />
-            @if (errorAndenes()) {
-              <p class="ab-field-error" role="alert">{{ errorAndenes() }}</p>
-            } @else if (invalidoAviso('anden')) {
+            <label class="ab-label" for="arrival-bay">Anden</label>
+            <app-search-select inputId="arrival-bay" formControlName="bay"
+                               [placeholder]="loadingBays() ? 'Cargando andenes...' : bays().length ? 'Busca un anden' : 'La terminal no tiene andenes'"
+                               [options]="bayOptions()" [invalid]="noticeInvalid('bay')" />
+            @if (baysError()) {
+              <p class="ab-field-error" role="alert">{{ baysError() }}</p>
+            } @else if (noticeInvalid('bay')) {
               <p class="ab-field-error">Elegi el anden donde llego el colectivo.</p>
             }
           </div>
 
-          <!-- En un arribo, duracion y patente van lado a lado -->
+          <!-- In an arrival, duration and license plate go side by side -->
           <div class="ab-field">
-            <div class="crud__fila">
+            <div class="crud__row">
               <div class="ab-field">
-                <label class="ab-label" for="vida-aviso">Duracion (minutos)</label>
-                <input class="ab-input" id="vida-aviso" type="number" min="1" placeholder="12"
-                       formControlName="vida" [attr.aria-invalid]="invalidoAviso('vida')" />
-                @if (invalidoAviso('vida')) {
+                <label class="ab-label" for="notice-lifetime">Duracion (minutos)</label>
+                <input class="ab-input" id="notice-lifetime" type="number" min="1" placeholder="12"
+                       formControlName="lifetime" [attr.aria-invalid]="noticeInvalid('lifetime')" />
+                @if (noticeInvalid('lifetime')) {
                   <p class="ab-field-error">Ingresa una duracion de al menos 1 minuto.</p>
                 }
               </div>
 
               <div class="ab-field">
-                <label class="ab-label" for="patente-arribo">Patente del colectivo</label>
-                <div class="patente-fila">
-                  <input class="ab-input" id="patente-arribo" type="text" placeholder="AB 123 CD"
-                         autocomplete="off" formControlName="patente"
-                         [attr.aria-invalid]="invalidoAviso('patente')" />
-                  <app-patente-camara (patenteLeida)="onPatenteLeida($event)" />
+                <label class="ab-label" for="arrival-plate">Patente del colectivo</label>
+                <div class="plate-row">
+                  <input class="ab-input" id="arrival-plate" type="text" placeholder="AB 123 CD"
+                         autocomplete="off" formControlName="plate"
+                         [attr.aria-invalid]="noticeInvalid('plate')" />
+                  <app-plate-camera (plateRead)="onPlateRead($event)" />
                 </div>
-                @if (invalidoAviso('patente')) {
+                @if (noticeInvalid('plate')) {
                   <p class="ab-field-error">Ingresa la patente del colectivo.</p>
                 }
               </div>
             </div>
-            <p class="crud__nota">Usalo cuando la camara del anden no detecto la llegada del colectivo.</p>
-            <p class="crud__nota">Pasado ese tiempo el aviso deja de mostrarse a los pasajeros.</p>
+            <p class="crud__note">Usalo cuando la camara del anden no detecto la llegada del colectivo.</p>
+            <p class="crud__note">Pasado ese tiempo el aviso deja de mostrarse a los pasajeros.</p>
           </div>
-        } @else if (esRetraso()) {
-          <!-- En un retraso, patente y fecha van lado a lado -->
+        } @else if (isDelay()) {
+          <!-- In a delay, license plate and date go side by side -->
           <div class="ab-field">
-            <div class="crud__fila">
+            <div class="crud__row">
               <div class="ab-field">
-                <label class="ab-label" for="patente-retraso">Patente del colectivo</label>
-                <input class="ab-input" id="patente-retraso" type="text" placeholder="AB 123 CD"
-                       autocomplete="off" formControlName="patente"
-                       [attr.aria-invalid]="invalidoAviso('patente')" />
-                @if (invalidoAviso('patente')) {
+                <label class="ab-label" for="delay-plate">Patente del colectivo</label>
+                <input class="ab-input" id="delay-plate" type="text" placeholder="AB 123 CD"
+                       autocomplete="off" formControlName="plate"
+                       [attr.aria-invalid]="noticeInvalid('plate')" />
+                @if (noticeInvalid('plate')) {
                   <p class="ab-field-error">Ingresa la patente del colectivo.</p>
                 }
               </div>
 
               <div class="ab-field">
-                <label class="ab-label" for="fecha-retraso">Fecha del viaje</label>
-                <input class="ab-input" id="fecha-retraso" type="date" formControlName="fecha"
-                       [attr.aria-invalid]="invalidoAviso('fecha')" />
-                @if (invalidoAviso('fecha')) {
+                <label class="ab-label" for="delay-date">Fecha del viaje</label>
+                <input class="ab-input" id="delay-date" type="date" formControlName="date"
+                       [attr.aria-invalid]="noticeInvalid('date')" />
+                @if (noticeInvalid('date')) {
                   <p class="ab-field-error">Elegi la fecha del viaje.</p>
                 }
               </div>
             </div>
-            <p class="crud__nota">El viaje tiene que estar registrado en el sistema de pasajes para esa fecha y patente.</p>
+            <p class="crud__note">El viaje tiene que estar registrado en el sistema de pasajes para esa fecha y patente.</p>
           </div>
         } @else {
           <div class="ab-field">
-            <label class="ab-label" for="mensaje-aviso">Mensaje</label>
-            <textarea class="crud__textarea" id="mensaje-aviso" formControlName="mensaje"
-                      [attr.aria-invalid]="invalidoAviso('mensaje')"
+            <label class="ab-label" for="notice-message">Mensaje</label>
+            <textarea class="crud__textarea" id="notice-message" formControlName="message"
+                      [attr.aria-invalid]="noticeInvalid('message')"
                       placeholder="Ej: El anden A3 permanece cerrado por mantenimiento."></textarea>
-            @if (invalidoAviso('mensaje')) {
+            @if (noticeInvalid('message')) {
               <p class="ab-field-error">Escribi el mensaje del aviso.</p>
             }
           </div>
         }
 
-        @if (!esArribo()) {
+        @if (!isArrival()) {
           <div class="ab-field">
-            <!-- En un retraso, demora y duracion van lado a lado -->
-            <div [class.crud__fila]="esRetraso()">
-              @if (esRetraso()) {
+            <!-- In a delay, delay and duration go side by side -->
+            <div [class.crud__row]="isDelay()">
+              @if (isDelay()) {
                 <div class="ab-field">
-                  <label class="ab-label" for="demora-retraso">Demora (minutos)</label>
-                  <input class="ab-input" id="demora-retraso" type="number" min="1" placeholder="15"
-                         formControlName="demora" [attr.aria-invalid]="invalidoAviso('demora')" />
-                  @if (invalidoAviso('demora')) {
+                  <label class="ab-label" for="delay-minutes">Demora (minutos)</label>
+                  <input class="ab-input" id="delay-minutes" type="number" min="1" placeholder="15"
+                         formControlName="delay" [attr.aria-invalid]="noticeInvalid('delay')" />
+                  @if (noticeInvalid('delay')) {
                     <p class="ab-field-error">Ingresa una demora de al menos 1 minuto.</p>
                   }
                 </div>
               }
 
               <div class="ab-field">
-                <label class="ab-label" for="vida-aviso">Duracion (minutos)</label>
-                <input class="ab-input" id="vida-aviso" type="number" min="1" placeholder="12"
-                       formControlName="vida" [attr.aria-invalid]="invalidoAviso('vida')" />
-                @if (invalidoAviso('vida')) {
+                <label class="ab-label" for="notice-lifetime">Duracion (minutos)</label>
+                <input class="ab-input" id="notice-lifetime" type="number" min="1" placeholder="12"
+                       formControlName="lifetime" [attr.aria-invalid]="noticeInvalid('lifetime')" />
+                @if (noticeInvalid('lifetime')) {
                   <p class="ab-field-error">Ingresa una duracion de al menos 1 minuto.</p>
                 }
               </div>
             </div>
-            <p class="crud__nota">Pasado ese tiempo el aviso deja de mostrarse a los pasajeros.</p>
+            <p class="crud__note">Pasado ese tiempo el aviso deja de mostrarse a los pasajeros.</p>
           </div>
         }
 
-        @if (errorAviso()) {
-          <p class="ab-form-error" role="alert">{{ errorAviso() }}</p>
+        @if (noticeError()) {
+          <p class="ab-form-error" role="alert">{{ noticeError() }}</p>
         }
-        @if (avisoEnviado()) {
-          <p class="ab-form-ok" role="status">{{ avisoEnviado() }}</p>
+        @if (noticeSent()) {
+          <p class="ab-form-ok" role="status">{{ noticeSent() }}</p>
         }
 
-        <button class="ab-button ab-button--lg" type="submit" [disabled]="enviando()">
-          {{ enviando() ? 'Enviando...' : esRetraso() ? 'Avisar retraso' : esArribo() ? 'Avisar arribo' : 'Enviar aviso' }}
+        <button class="ab-button ab-button--lg" type="submit" [disabled]="sending()">
+          {{ sending() ? 'Enviando...' : isDelay() ? 'Avisar retraso' : isArrival() ? 'Avisar arribo' : 'Enviar aviso' }}
         </button>
       </form>
     }
   }
 </div>
 
-<!-- Popup para confirmar la baja. Escape o un click afuera lo cierran. -->
-<dialog #dialogoBaja class="popup" role="alertdialog" aria-labelledby="baja-titulo" aria-describedby="baja-texto"
-        (cancel)="$event.preventDefault(); cancelarBaja()"
-        (click)="clickEnPopup($event)">
-  @if (aEliminar(); as n) {
-    <div class="popup__contenido">
+<!-- Popup to confirm the deletion. Escape or a click outside closes it. -->
+<dialog #deleteDialog class="popup" role="alertdialog" aria-labelledby="delete-title" aria-describedby="delete-text"
+        (cancel)="$event.preventDefault(); cancelDelete()"
+        (click)="onDeletePopupClick($event)">
+  @if (toDelete(); as n) {
+    <div class="popup__content">
       <header class="popup__head">
-        <h2 class="popup__titulo" id="baja-titulo">Eliminar aviso</h2>
-        <button class="popup__cerrar" type="button" aria-label="Cerrar" [disabled]="eliminando()" (click)="cancelarBaja()">
+        <h2 class="popup__title" id="delete-title">Eliminar aviso</h2>
+        <button class="popup__close" type="button" aria-label="Cerrar" [disabled]="deleting()" (click)="cancelDelete()">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
             <path d="M1.5 1.5l11 11M12.5 1.5l-11 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
           </svg>
         </button>
       </header>
 
-      <p class="popup__texto" id="baja-texto">
+      <p class="popup__text" id="delete-text">
         Vas a eliminar este aviso. Deja de verse en el momento para todos los pasajeros.
       </p>
 
-      <dl class="resultado__lista">
-        <div class="resultado__fila">
+      <dl class="result__list">
+        <div class="result__row">
           <dt>Tipo</dt>
-          <dd>{{ etiquetasTipo[n.type] ?? n.type }}</dd>
+          <dd>{{ typeLabels[n.type] ?? n.type }}</dd>
         </div>
-        <div class="resultado__fila">
+        <div class="result__row">
           <dt>Mensaje</dt>
-          <dd>{{ mensaje(n) }}</dd>
+          <dd>{{ message(n) }}</dd>
         </div>
-        <div class="resultado__fila">
+        <div class="result__row">
           <dt>Terminal</dt>
           <dd>{{ terminal(n) }}</dd>
         </div>
-        <div class="resultado__fila">
+        <div class="result__row">
           <dt>Enviado</dt>
-          <dd>{{ fecha(n.date) }}</dd>
+          <dd>{{ formatDate(n.date) }}</dd>
         </div>
-        <div class="resultado__fila">
+        <div class="result__row">
           <dt>{{ n.expired ? 'Vencio' : 'Vence' }}</dt>
-          <dd>{{ fecha(n.expiration) }}</dd>
+          <dd>{{ formatDate(n.expiration) }}</dd>
         </div>
       </dl>
 
-      @if (errorEliminar()) {
-        <p class="ab-form-error" role="alert">{{ errorEliminar() }}</p>
+      @if (deleteError()) {
+        <p class="ab-form-error" role="alert">{{ deleteError() }}</p>
       }
 
-      <div class="popup__acciones">
-        <button class="popup__cancelar" type="button" [disabled]="eliminando()" (click)="cancelarBaja()">
+      <div class="popup__actions">
+        <button class="popup__cancel" type="button" [disabled]="deleting()" (click)="cancelDelete()">
           Cancelar
         </button>
-        <button class="ab-button confirmar__boton" type="button" [disabled]="eliminando()" (click)="eliminar()">
-          {{ eliminando() ? 'Eliminando...' : 'Eliminar aviso' }}
+        <button class="ab-button confirm__button" type="button" [disabled]="deleting()" (click)="delete()">
+          {{ deleting() ? 'Eliminando...' : 'Eliminar aviso' }}
         </button>
       </div>
     </div>

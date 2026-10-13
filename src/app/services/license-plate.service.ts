@@ -3,22 +3,22 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { APP_CONFIG } from '../config';
 
-export interface LeerPatenteResponse {
+export interface ReadLicensePlateResponse {
   license_plate: string;
 }
 
 /**
- * Lectura de patentes desde una foto. El backend reenvia la imagen al
- * microservicio de OCR, asi su API key no queda expuesta en el navegador.
+ * Reads license plates from a photo. The backend forwards the image to the
+ * OCR microservice, so its API key is not exposed in the browser.
  */
 @Injectable({ providedIn: 'root' })
-export class PatenteService {
+export class LicensePlateService {
   private readonly http = inject(HttpClient);
   private readonly url = `${APP_CONFIG.apiUrl}/admin/license-plate/read`;
 
-  leer(imagen: Blob): Observable<LeerPatenteResponse> {
-    const datos = new FormData();
-    datos.append('image', imagen, 'patente.jpg');
-    return this.http.post<LeerPatenteResponse>(this.url, datos);
+  read(image: Blob): Observable<ReadLicensePlateResponse> {
+    const data = new FormData();
+    data.append('image', image, 'license-plate.jpg');
+    return this.http.post<ReadLicensePlateResponse>(this.url, data);
   }
 }

@@ -1,10 +1,10 @@
 <div class="drawer" [class.drawer--open]="open()">
-  <!-- Capa gris: al tocarla se cierra el menu -->
+  <!-- Gray layer: tapping it closes the menu -->
   <div class="drawer__scrim" (click)="close()"></div>
 
   <nav
     class="drawer__panel"
-    id="menu-principal"
+    id="main-menu"
     aria-label="Menu principal"
     [attr.inert]="open() ? null : ''"
   >
@@ -28,7 +28,7 @@
       <li>
         <a
           class="drawer__item"
-          routerLink="/perfil"
+          routerLink="/profile"
           routerLinkActive="drawer__item--active"
           (click)="close()"
         >
@@ -39,8 +39,8 @@
         </a>
       </li>
 
-      <!-- Solo administradores: la ruta tambien esta protegida por soloRoles. -->
-      @if (esAdmin()) {
+      <!-- Administrators only: the route is also protected by rolesOnly. -->
+      @if (isAdmin()) {
         <li>
           <a
             class="drawer__item"
@@ -57,6 +57,6 @@
       }
     </ul>
 
-    <button class="drawer__logout" type="button" (click)="cerrarSesion()">Cerrar Sesion</button>
+    <button class="drawer__logout" type="button" (click)="logout()">Cerrar Sesion</button>
   </nav>
 </div>

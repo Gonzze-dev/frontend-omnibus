@@ -1,24 +1,24 @@
-/** Ciudad tal como la devuelve el backend (models.City). */
-export interface Ciudad {
+/** City as returned by the backend (models.City). */
+export interface City {
   postal_code: string;
   name: string;
 }
 
 /** POST /api/admin/cities */
-export interface CreateCiudadRequest {
+export interface CreateCityRequest {
   postal_code: string;
   name: string;
 }
 
-/** PUT /api/admin/cities/:postal_code (campos opcionales, models.UpdateCityRequest). */
-export interface UpdateCiudadRequest {
+/** PUT /api/admin/cities/:postal_code (optional fields, models.UpdateCityRequest). */
+export interface UpdateCityRequest {
   postal_code?: string;
   name?: string;
 }
 
 /** GET /api/admin/cities (models.ListCitiesResponse). */
-export interface ListCiudadesResponse {
-  cities: Ciudad[];
+export interface ListCitiesResponse {
+  cities: City[];
   page: number;
   next: number | null;
   prev: number | null;
@@ -26,7 +26,7 @@ export interface ListCiudadesResponse {
   total_elements: number;
 }
 
-export interface ListCiudadesParams {
+export interface ListCitiesParams {
   page?: number;
   limit?: number;
   order?: 'ASC' | 'DESC';

@@ -1,68 +1,68 @@
-/* Permisos: control de roles con los estilos comunes del dashboard. */
+/* Permissions: role control with the common dashboard styles. */
 @use '../../../styles/crud' as *;
 
-/* Listado de usuarios: Usuario | Rol | acciones (+ y flecha) */
-.usuarios { --cols: 1fr auto auto; }
+/* Users list: User | Role | actions (+ and arrow) */
+.users { --cols: 1fr auto auto; }
 
-/* Celdas de dos lineas (nombre y email): dos renglones + el gap, el padding y el borde */
-.usuarios.tabla--fija { --fila: calc(2 * var(--ab-lh-body) + 31px); }
+/* Two-line cells (name and email): two lines + the gap, the padding and the border */
+.users.table--fixed { --row-height: calc(2 * var(--ab-lh-body) + 31px); }
 
-/* El rol queda pegado a la derecha, alineado entre filas */
-.usuarios .resultado__rol { justify-self: end; }
+/* The role stays stuck to the right, aligned between rows */
+.users .result__role { justify-self: end; }
 
-/* Las acciones ocupan siempre el ancho de dos iconos, asi el rol no se
-   corre entre filas que tienen + y flecha y filas que no tienen nada. */
-.usuarios .tabla__acciones { min-width: calc(2 * #{$icono} + 8px); }
+/* The actions always take the width of two icons, so the role does not
+   shift between rows that have + and arrow and rows that have nothing. */
+.users .table__actions { min-width: calc(2 * #{$icon} + 8px); }
 
-.usuarios .tabla__icono {
+.users .table__icon {
   padding: 0;
   border: 0;
   background: none;
   cursor: pointer;
 }
 
-.usuarios .tabla__icono:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 2px; }
+.users .table__icon:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 2px; }
 
-/* Fila de un admin: toda la fila despliega sus terminales */
-.usuarios {
-  /* El agrandado de la fila seleccionada no se puede recortar */
+/* An admin's row: the whole row expands their terminals */
+.users {
+  /* The enlargement of the selected row must not be clipped */
   overflow: visible;
 }
 
-/* El contenedor ya no recorta el contenido, asi que el redondeado
-   de las esquinas lo ponen la cabecera y la ultima fila. */
-.usuarios .tabla__fila--cabecera { border-top-left-radius: var(--ab-r-card); border-top-right-radius: var(--ab-r-card); }
-.usuarios > .tabla__item:last-child > :last-child { border-bottom-left-radius: var(--ab-r-card); border-bottom-right-radius: var(--ab-r-card); }
+/* The container no longer clips the content, so the rounding
+   of the corners is applied by the header and the last row. */
+.users .table__row--header { border-top-left-radius: var(--ab-r-card); border-top-right-radius: var(--ab-r-card); }
+.users > .table__item:last-child > :last-child { border-bottom-left-radius: var(--ab-r-card); border-bottom-right-radius: var(--ab-r-card); }
 
-.usuario--desplegable {
+.user--dropdown {
   position: relative;
   cursor: pointer;
   transform-origin: center;
   transition: background-color 0.1s, color 0.1s, transform 0.1s;
 }
 
-.usuario--abierto { background: color-mix(in srgb, var(--tono) 7%, transparent); }
+.user--open { background: color-mix(in srgb, var(--tone) 7%, transparent); }
 
-/* Mismo hover que las filas de ciudades y terminales */
-.usuario--desplegable:hover {
+/* Same hover as the cities and terminals rows */
+.user--dropdown:hover {
   background: color-mix(in srgb, #0050CB 15%, white);
   color: var(--ab-ink);
   transform: scale(1.04);
   z-index: 1;
 }
 
-/* El + resalta un poco mas que la flecha: es la accion de la fila */
-.usuarios .usuario__promover {
-  border: 1.5px solid color-mix(in srgb, var(--tono) 35%, transparent);
+/* The + stands out a bit more than the arrow: it is the row's action */
+.users .user__promote {
+  border: 1.5px solid color-mix(in srgb, var(--tone) 35%, transparent);
 }
 
-/* El - es destructivo: mismo borde que el +, en carmin */
-.usuarios .usuario__degradar {
+/* The - is destructive: same border as the +, in crimson */
+.users .user__demote {
   border: 1.5px solid rgba(180, 0, 54, 0.35);
 }
 
-/* Encabezado del panel con las terminales del admin abierto */
-.tabla__fila--titulo {
+/* Header of the panel with the expanded admin's terminals */
+.table__row--title {
   display: flex;
   font-weight: 600;
   font-size: var(--ab-fs-label);
@@ -71,7 +71,7 @@
   color: var(--ab-placeholder);
 }
 
-/* ---------------- Popup de promocion ---------------- */
+/* ---------------- Promotion popup ---------------- */
 .popup {
   width: min(630px, calc(100vw - 32px));
   max-height: calc(100vh - 32px);
@@ -85,7 +85,7 @@
 
 .popup::backdrop { background: rgba(25, 27, 34, 0.45); }
 
-.popup__contenido {
+.popup__content {
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -99,7 +99,7 @@
   gap: 12px;
 }
 
-.popup__titulo {
+.popup__title {
   margin: 0;
   font-family: Manrope, Inter, sans-serif;
   font-size: 24px;
@@ -107,14 +107,14 @@
   font-weight: 700;
 }
 
-.popup__head .tabla__icono {
+.popup__head .table__icon {
   padding: 0;
   border: 0;
   background: none;
   cursor: pointer;
 }
 
-.popup__usuario {
+.popup__user {
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -124,16 +124,16 @@
   background: var(--ab-card);
 }
 
-.popup__nombre { font-weight: 600; }
+.popup__name { font-weight: 600; }
 
-/* Paso 1 (super admin): tarjetas para elegir el rol */
-.popup__opciones {
+/* Step 1 (super admin): cards to choose the role */
+.popup__options {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-.popup__opcion {
+.popup__option {
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -148,29 +148,29 @@
   transition: border-color 0.15s ease, background 0.15s ease;
 }
 
-.popup__opcion:hover:not(:disabled) {
-  border-color: var(--tono);
-  background: color-mix(in srgb, var(--tono) 5%, transparent);
+.popup__option:hover:not(:disabled) {
+  border-color: var(--tone);
+  background: color-mix(in srgb, var(--tone) 5%, transparent);
 }
 
-.popup__opcion:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 2px; }
-.popup__opcion:disabled { opacity: 0.7; cursor: progress; }
+.popup__option:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 2px; }
+.popup__option:disabled { opacity: 0.7; cursor: progress; }
 
-.popup__opcion-titulo { font-weight: 700; }
+.popup__option-title { font-weight: 700; }
 
-.popup__opcion-bajada {
+.popup__option-lead {
   font-size: var(--ab-fs-body);
   color: var(--ab-body);
 }
 
-/* Paso 2: terminal a asignar */
-.popup__terminales {
+/* Step 2: terminal to assign */
+.popup__terminals {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-/* Combobox: input con aspecto de select y la lista debajo */
+/* Combobox: input that looks like a select with the list below */
 .combo { position: relative; }
 
 .combo__input {
@@ -180,7 +180,7 @@
 
 .combo__input:focus { cursor: text; }
 
-.combo__flecha {
+.combo__arrow {
   position: absolute;
   top: 50%;
   right: 14px;
@@ -190,10 +190,10 @@
   transition: transform 0.15s ease;
 }
 
-.combo--abierto .combo__flecha { transform: translateY(-50%) rotate(180deg); }
+.combo--open .combo__arrow { transform: translateY(-50%) rotate(180deg); }
 
-/* La lista va en el flujo (no flotando) para que el <dialog> no la recorte */
-.combo__lista {
+/* The list goes in the flow (not floating) so the <dialog> does not clip it */
+.combo__list {
   margin: 0;
   padding: 4px;
   list-style: none;
@@ -205,32 +205,32 @@
   box-shadow: var(--ab-shadow-card);
 }
 
-.combo__opcion {
+.combo__option {
   padding: 10px 12px;
   border-radius: var(--ab-r-input);
   cursor: pointer;
 }
 
-.combo__opcion--resaltada { background: color-mix(in srgb, var(--tono) 8%, transparent); }
+.combo__option--highlighted { background: color-mix(in srgb, var(--tone) 8%, transparent); }
 
-.combo__opcion--elegida {
+.combo__option--selected {
   font-weight: 600;
-  color: var(--tono);
+  color: var(--tone);
 }
 
-.combo__vacio {
+.combo__empty {
   padding: 10px 12px;
   color: var(--ab-placeholder);
 }
 
-.popup__acciones {
+.popup__actions {
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 16px;
 }
 
-.popup__volver {
+.popup__back {
   padding: 0;
   border: 0;
   background: none;
@@ -239,15 +239,15 @@
   cursor: pointer;
 }
 
-.popup__confirmar {
+.popup__confirm {
   width: auto;
   min-height: 48px;
   padding: 12px 20px;
   font-size: var(--ab-fs-body);
 }
 
-/* Deshabilitado por falta de terminal elegida, no porque este cargando */
-.popup__confirmar:disabled:not(.popup__confirmar--cargando) {
+/* Disabled because no terminal is chosen, not because it is loading */
+.popup__confirm:disabled:not(.popup__confirm--loading) {
   opacity: 1;
   background: var(--ab-field);
   box-shadow: none;
@@ -255,13 +255,13 @@
   cursor: not-allowed;
 }
 
-/* Confirmacion destructiva: carmin en vez del gradiente azul */
-.popup__confirmar--peligro {
-  background: $carmin;
+/* Destructive confirmation: crimson instead of the blue gradient */
+.popup__confirm--danger {
+  background: $crimson;
   box-shadow: none;
 }
 
-.popup__texto {
+.popup__text {
   margin: 0;
   font-size: var(--ab-fs-body);
   line-height: var(--ab-lh-body);

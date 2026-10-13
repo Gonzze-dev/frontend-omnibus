@@ -1,9 +1,9 @@
 import { Component, input, output, OnInit, OnDestroy } from '@angular/core';
 
 /**
- * Notificacion flotante de exito (patron "Cambios guardados con exito" del
- * Figma). Es puramente visual: no persiste nada, solo confirma al usuario
- * que una accion salio bien y se cierra sola.
+ * Floating success notification ("Changes saved successfully" pattern from the
+ * Figma). It is purely visual: it persists nothing, it only confirms to the user
+ * that an action went well and closes by itself.
  */
 @Component({
   selector: 'app-toast',
@@ -12,14 +12,14 @@ import { Component, input, output, OnInit, OnDestroy } from '@angular/core';
   styleUrl: './toast.scss',
 })
 export class Toast implements OnInit, OnDestroy {
-  readonly mensaje = input.required<string>();
-  readonly duracionMs = input(2600);
-  readonly cerrado = output<void>();
+  readonly message = input.required<string>();
+  readonly durationMs = input(2600);
+  readonly closed = output<void>();
 
   private timer?: ReturnType<typeof setTimeout>;
 
   ngOnInit(): void {
-    this.timer = setTimeout(() => this.cerrado.emit(), this.duracionMs());
+    this.timer = setTimeout(() => this.closed.emit(), this.durationMs());
   }
 
   ngOnDestroy(): void {

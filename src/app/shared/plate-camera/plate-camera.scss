@@ -2,7 +2,7 @@
   display: inline-flex;
 }
 
-.disparador {
+.trigger {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -16,10 +16,10 @@
   cursor: pointer;
 }
 
-.disparador:hover { background: color-mix(in srgb, var(--ab-primary) 14%, var(--ab-field)); }
-.disparador:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 2px; }
+.trigger:hover { background: color-mix(in srgb, var(--ab-primary) 14%, var(--ab-field)); }
+.trigger:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 2px; }
 
-.camara__fondo {
+.camera__backdrop {
   position: fixed;
   inset: 0;
   z-index: 1000;
@@ -30,8 +30,8 @@
   background: rgba(19, 27, 46, 0.7);
 }
 
-/* Panel alto y negro, como la app de camara de un celular. */
-.camara__panel {
+/* Tall black panel, like a phone's camera app. */
+.camera__panel {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -44,8 +44,8 @@
   box-shadow: var(--ab-shadow-dark);
 }
 
-.camara__barra-superior,
-.camara__controles {
+.camera__top-bar,
+.camera__controls {
   display: grid;
   grid-template-columns: 56px 1fr 56px;
   align-items: center;
@@ -53,12 +53,12 @@
   flex-shrink: 0;
 }
 
-.camara__barra-superior { padding: 14px 12px; }
-.camara__controles { padding: 20px 16px 28px; }
+.camera__top-bar { padding: 14px 12px; }
+.camera__controls { padding: 20px 16px 28px; }
 
-.camara__hueco { width: 44px; height: 44px; }
+.camera__spacer { width: 44px; height: 44px; }
 
-.camara__cerrar {
+.camera__close {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -72,9 +72,9 @@
   cursor: pointer;
 }
 
-.camara__cerrar:hover { background: rgba(255, 255, 255, 0.22); }
+.camera__close:hover { background: rgba(255, 255, 255, 0.22); }
 
-.camara__titulo {
+.camera__title {
   margin: 0;
   font-weight: 600;
   font-size: var(--ab-fs-body);
@@ -83,7 +83,7 @@
   text-align: center;
 }
 
-.camara__visor {
+.camera__viewfinder {
   position: relative;
   flex: 1;
   min-height: 0;
@@ -96,8 +96,8 @@
   background: #111;
 }
 
-.camara__video,
-.camara__foto {
+.camera__video,
+.camera__photo {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -105,11 +105,11 @@
   object-fit: cover;
 }
 
-.camara__video--espejado { transform: scaleX(-1); }
+.camera__video--mirrored { transform: scaleX(-1); }
 
-.camara__foto { object-fit: contain; background: #000; }
+.camera__photo { object-fit: contain; background: #000; }
 
-.camara__aviso {
+.camera__notice {
   margin: 0;
   padding: 24px;
   color: #fff;
@@ -118,7 +118,7 @@
   text-align: center;
 }
 
-.camara__estado {
+.camera__status {
   position: absolute;
   inset: 16px 0 auto;
   margin: 0;
@@ -129,7 +129,7 @@
   text-align: center;
 }
 
-.camara__estado--velo {
+.camera__status--veil {
   inset: 0;
   display: flex;
   align-items: center;
@@ -137,8 +137,8 @@
   background: rgba(0, 0, 0, 0.55);
 }
 
-/* Ayuda o error flotando en la parte baja del visor. */
-.camara__mensaje {
+/* Help or error floating at the bottom of the viewfinder. */
+.camera__message {
   position: absolute;
   left: 12px;
   right: 12px;
@@ -153,9 +153,9 @@
   text-align: center;
 }
 
-.camara__mensaje--error { background: color-mix(in srgb, var(--ab-danger) 85%, #000); }
+.camera__message--error { background: color-mix(in srgb, var(--ab-danger) 85%, #000); }
 
-.camara__subir {
+.camera__upload {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -169,10 +169,10 @@
   cursor: pointer;
 }
 
-.camara__subir:hover:not(:disabled) { background: rgba(255, 255, 255, 0.24); }
+.camera__upload:hover:not(:disabled) { background: rgba(255, 255, 255, 0.24); }
 
-/* Obturador: aro blanco con un circulo blanco grande adentro. */
-.camara__obturador {
+/* Shutter: white ring with a big white circle inside. */
+.camera__shutter {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -185,7 +185,7 @@
   cursor: pointer;
 }
 
-.camara__obturador-centro {
+.camera__shutter-center {
   width: 60px;
   height: 60px;
   border-radius: 999px;
@@ -193,56 +193,56 @@
   transition: transform 0.12s ease;
 }
 
-/* Reintentar: dos flechas en circulo con un punto en el medio. */
-.camara__reintentar {
+/* Retry: two arrows in a circle with a dot in the middle. */
+.camera__retry {
   color: #fff;
   transition: transform 0.12s ease;
 }
 
-.camara__obturador:active:not(:disabled) .camara__obturador-centro,
-.camara__obturador:active:not(:disabled) .camara__reintentar { transform: scale(0.88); }
+.camera__shutter:active:not(:disabled) .camera__shutter-center,
+.camera__shutter:active:not(:disabled) .camera__retry { transform: scale(0.88); }
 
-.camara__subir:disabled,
-.camara__obturador:disabled { opacity: 0.4; cursor: default; }
+.camera__upload:disabled,
+.camera__shutter:disabled { opacity: 0.4; cursor: default; }
 
-.camara__cerrar:focus-visible,
-.camara__subir:focus-visible,
-.camara__obturador:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+.camera__close:focus-visible,
+.camera__upload:focus-visible,
+.camera__shutter:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
 
-.camara__archivo { display: none; }
+.camera__file { display: none; }
 
 /* ============================================================
-   Movimiento
+   Motion
    ============================================================ */
-.camara__fondo {
-  animation: ab-funde var(--ab-dur-media) ease-out;
+.camera__backdrop {
+  animation: ab-fade var(--ab-dur-media) ease-out;
 }
 
-.camara__panel {
-  animation: ab-dialogo-entra 360ms var(--ab-ease-spring);
+.camera__panel {
+  animation: ab-dialog-in 360ms var(--ab-ease-spring);
 }
 
-/* Destello de "foto sacada" al mostrar la vista previa */
-.camara__foto {
-  animation: camara-flash 450ms ease-out;
+/* "Photo taken" flash when showing the preview */
+.camera__photo {
+  animation: camera-flash 450ms ease-out;
 }
 
-@keyframes camara-flash {
+@keyframes camera-flash {
   from { filter: brightness(2.6); }
 }
 
-/* "Leyendo patente..." late mientras espera la respuesta */
-.camara__estado--velo {
-  animation: ab-funde var(--ab-dur-media) ease-out, camara-late 1.4s ease-in-out infinite;
+/* "Reading license plate..." pulses while it waits for the response */
+.camera__status--veil {
+  animation: ab-fade var(--ab-dur-media) ease-out, camera-pulse 1.4s ease-in-out infinite;
 }
 
-@keyframes camara-late {
+@keyframes camera-pulse {
   50% { color: rgba(255, 255, 255, 0.6); }
 }
 
-.disparador svg {
+.trigger svg {
   transition: transform var(--ab-dur-media) var(--ab-ease-spring);
 }
 
-.disparador:hover svg { transform: scale(1.12); }
-.disparador:active svg { transform: scale(0.92); }
+.trigger:hover svg { transform: scale(1.12); }
+.trigger:active svg { transform: scale(0.92); }

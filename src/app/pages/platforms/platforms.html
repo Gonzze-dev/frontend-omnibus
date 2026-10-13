@@ -1,7 +1,7 @@
 <app-topbar />
 
-<div class="ab-screen crud tono--indigo">
-  <a class="crud__volver" routerLink="/dashboard">
+<div class="ab-screen crud tone--indigo">
+  <a class="crud__back" routerLink="/dashboard">
     <svg class="ab-icon" width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
       <path d="M15 7H1M1 7l5.5-5.5M1 7l5.5 5.5" stroke="currentColor" stroke-width="1.8"
             stroke-linecap="round" stroke-linejoin="round" />
@@ -9,14 +9,14 @@
     Dashboard
   </a>
 
-  <header class="crud__head crud__head--acciones">
+  <header class="crud__head crud__head--actions">
     <div>
-      <h1 class="crud__titulo">{{ vista().titulo }}</h1>
-      <p class="crud__bajada">{{ vista().bajada }}</p>
+      <h1 class="crud__title">{{ view().title }}</h1>
+      <p class="crud__lead">{{ view().lead }}</p>
     </div>
 
-    @if (accion() === 'listar') {
-      <button class="crud__agregar" type="button" aria-label="Cargar plataforma" (click)="abrirAlta()">
+    @if (action() === 'list') {
+      <button class="crud__add" type="button" aria-label="Cargar plataforma" (click)="openCreate()">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
           <path d="M10 3v14M3 10h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
         </svg>
@@ -24,40 +24,40 @@
     }
   </header>
 
-  @switch (accion()) {
-    @case ('listar') {
-      <div class="crud__filtro">
+  @switch (action()) {
+    @case ('list') {
+      <div class="crud__filter">
         <div class="ab-field">
-          <label class="ab-label" for="plataforma-filtro">Buscar terminal</label>
-          <input class="ab-input" id="plataforma-filtro" type="search" autocomplete="off"
+          <label class="ab-label" for="platform-filter">Buscar terminal</label>
+          <input class="ab-input" id="platform-filter" type="search" autocomplete="off"
                  placeholder="Nombre de la terminal, anden o codigo"
-                 [value]="filtro()" (input)="filtrar($any($event.target).value)" />
+                 [value]="filter()" (input)="applyFilter($any($event.target).value)" />
         </div>
       </div>
 
-      @if (errorListado()) {
-        <p class="ab-form-error" role="alert">{{ errorListado() }}</p>
+      @if (listError()) {
+        <p class="ab-form-error" role="alert">{{ listError() }}</p>
       }
 
-      @if (cargandoListado()) {
-        <p class="tabla__vacio">Cargando plataformas...</p>
+      @if (loadingList()) {
+        <p class="table__empty">Cargando plataformas...</p>
       } @else {
-        <ul class="tabla tabla--fija">
-          <li class="tabla__fila tabla__fila--cabecera">
+        <ul class="table table--fixed">
+          <li class="table__row table__row--header">
             <span>Terminal</span>
             <span></span>
           </li>
 
-          @for (g of grupos(); track g.uuid) {
-            <li class="tabla__item">
-              <button class="tabla__fila tabla__desplegable" type="button"
-                      [attr.aria-expanded]="abierta() === g.uuid" [attr.aria-controls]="'andenes-' + g.uuid"
-                      (click)="desplegar(g.uuid)">
-                <span class="tabla__dato">
-                  <span class="tabla__linea">{{ g.name }}</span>
-                  <span class="tabla__sub">{{ g.platforms.length }} andenes</span>
+          @for (g of groups(); track g.uuid) {
+            <li class="table__item">
+              <button class="table__row table__dropdown" type="button"
+                      [attr.aria-expanded]="expanded() === g.uuid" [attr.aria-controls]="'bays-' + g.uuid"
+                      (click)="toggle(g.uuid)">
+                <span class="table__cell">
+                  <span class="table__line">{{ g.name }}</span>
+                  <span class="table__sub">{{ g.platforms.length }} andenes</span>
                 </span>
-                <span class="tabla__flecha" [class.tabla__flecha--abierta]="abierta() === g.uuid">
+                <span class="table__arrow" [class.table__arrow--open]="expanded() === g.uuid">
                   <svg width="14" height="16" viewBox="0 0 14 16" fill="none" aria-hidden="true">
                     <path d="M1.5 5.5 7 11l5.5-5.5" stroke="currentColor" stroke-width="1.8"
                           stroke-linecap="round" stroke-linejoin="round" />
@@ -65,24 +65,24 @@
                 </span>
               </button>
 
-              @if (abierta() === g.uuid) {
-                <ul class="tabla__panel" [id]="'andenes-' + g.uuid">
+              @if (expanded() === g.uuid) {
+                <ul class="table__panel" [id]="'bays-' + g.uuid">
                   @for (p of g.platforms; track p.code) {
-                    <li class="tabla__fila tabla__fila--seleccionable"
-                        (click)="abrirEdicion(p.code)"
-                        (keydown.enter)="abrirEdicion(p.code)"
+                    <li class="table__row table__row--selectable"
+                        (click)="openEdit(p.code)"
+                        (keydown.enter)="openEdit(p.code)"
                         tabindex="0" role="button" aria-label="Editar plataforma">
-                      <span class="tabla__dato">
-                        <span class="tabla__linea">{{ p.anden }}</span>
-                        <span class="tabla__sub">Codigo {{ p.code }}</span>
+                      <span class="table__cell">
+                        <span class="table__line">{{ p.bay }}</span>
+                        <span class="table__sub">Codigo {{ p.code }}</span>
                       </span>
-                      <span class="tabla__dato">
-                        <span class="tabla__linea">{{ p.coordinates.lat }}</span>
-                        <span class="tabla__sub">{{ p.coordinates.lng }}</span>
+                      <span class="table__cell">
+                        <span class="table__line">{{ p.coordinates.lat }}</span>
+                        <span class="table__sub">{{ p.coordinates.lng }}</span>
                       </span>
-                      <span class="tabla__acciones">
-                        <button class="tabla__icono tabla__icono--carmin" type="button"
-                                (click)="$event.stopPropagation(); confirmarBaja(p.code, p.anden, g.name)"
+                      <span class="table__actions">
+                        <button class="table__icon table__icon--crimson" type="button"
+                                (click)="$event.stopPropagation(); confirmDelete(p.code, p.bay, g.name)"
                                 (keydown.enter)="$event.stopPropagation()" aria-label="Eliminar plataforma">
                           <svg width="18" height="18" viewBox="0 0 22 22" fill="none" aria-hidden="true">
                             <path d="M3 5.5h16M8.5 5.5V3h5v2.5M5.5 5.5 6.5 19h9l1-13.5" stroke="currentColor"
@@ -96,37 +96,37 @@
               }
             </li>
           } @empty {
-            <li class="tabla__vacio">No hay terminales que coincidan con el filtro.</li>
+            <li class="table__empty">No hay terminales que coincidan con el filtro.</li>
           }
 
-          @for (_ of relleno(); track $index) {
-            <li class="tabla__fila tabla__fila--relleno" aria-hidden="true">
-              <span class="tabla__dato">
-                <span class="tabla__linea">&nbsp;</span>
+          @for (_ of filler(); track $index) {
+            <li class="table__row table__row--filler" aria-hidden="true">
+              <span class="table__cell">
+                <span class="table__line">&nbsp;</span>
               </span>
             </li>
           }
         </ul>
 
-        <nav class="paginado" aria-label="Paginas del listado"
-             [class.paginado--oculto]="totalPaginas() === 1">
-          <button class="paginado__flecha" type="button" aria-label="Pagina anterior"
-                  [disabled]="paginaActual() === 1" (click)="irA(paginaActual() - 1)">
+        <nav class="pagination" aria-label="Paginas del listado"
+             [class.pagination--hidden]="totalPages() === 1">
+          <button class="pagination__arrow" type="button" aria-label="Pagina anterior"
+                  [disabled]="currentPage() === 1" (click)="goTo(currentPage() - 1)">
             <svg width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
               <path d="M10.5 1.5 4 7l6.5 5.5" stroke="currentColor" stroke-width="1.8"
                     stroke-linecap="round" stroke-linejoin="round" />
             </svg>
           </button>
 
-          @for (p of paginas(); track p) {
-            <button class="paginado__numero" type="button"
-                    [class.paginado__numero--activa]="p === paginaActual()"
-                    [attr.aria-current]="p === paginaActual() ? 'page' : null"
-                    (click)="irA(p)">{{ p }}</button>
+          @for (p of pages(); track p) {
+            <button class="pagination__number" type="button"
+                    [class.pagination__number--active]="p === currentPage()"
+                    [attr.aria-current]="p === currentPage() ? 'page' : null"
+                    (click)="goTo(p)">{{ p }}</button>
           }
 
-          <button class="paginado__flecha" type="button" aria-label="Pagina siguiente"
-                  [disabled]="paginaActual() === totalPaginas()" (click)="irA(paginaActual() + 1)">
+          <button class="pagination__arrow" type="button" aria-label="Pagina siguiente"
+                  [disabled]="currentPage() === totalPages()" (click)="goTo(currentPage() + 1)">
             <svg width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
               <path d="M5.5 1.5 12 7l-6.5 5.5" stroke="currentColor" stroke-width="1.8"
                     stroke-linecap="round" stroke-linejoin="round" />
@@ -138,123 +138,123 @@
   }
 </div>
 
-<!-- Popup para confirmar la baja. Escape o un click afuera lo cierran. -->
-<dialog #dialogoBaja class="popup" role="alertdialog" aria-labelledby="baja-titulo" aria-describedby="baja-texto"
-        (cancel)="$event.preventDefault(); cancelarBaja()"
-        (click)="clickEnPopup($event)">
-  @if (aEliminar(); as plataforma) {
-    <div class="popup__contenido">
+<!-- Popup to confirm the deletion. Escape or a click outside closes it. -->
+<dialog #deleteDialog class="popup" role="alertdialog" aria-labelledby="delete-title" aria-describedby="delete-text"
+        (cancel)="$event.preventDefault(); cancelDelete()"
+        (click)="onDeletePopupClick($event)">
+  @if (toDelete(); as platform) {
+    <div class="popup__content">
       <header class="popup__head">
-        <h2 class="popup__titulo" id="baja-titulo">Eliminar plataforma</h2>
-        <button class="popup__cerrar" type="button" aria-label="Cerrar" [disabled]="eliminando()" (click)="cancelarBaja()">
+        <h2 class="popup__title" id="delete-title">Eliminar plataforma</h2>
+        <button class="popup__close" type="button" aria-label="Cerrar" [disabled]="deleting()" (click)="cancelDelete()">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
             <path d="M1.5 1.5l11 11M12.5 1.5l-11 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
           </svg>
         </button>
       </header>
 
-      <p class="popup__texto" id="baja-texto">
+      <p class="popup__text" id="delete-text">
         Vas a eliminar este anden del sistema. La accion no se puede deshacer.
       </p>
 
-      <dl class="resultado__lista">
-        <div class="resultado__fila">
+      <dl class="result__list">
+        <div class="result__row">
           <dt>Codigo</dt>
-          <dd>{{ plataforma.code }}</dd>
+          <dd>{{ platform.code }}</dd>
         </div>
-        <div class="resultado__fila">
+        <div class="result__row">
           <dt>Anden</dt>
-          <dd>{{ plataforma.anden }}</dd>
+          <dd>{{ platform.bay }}</dd>
         </div>
-        <div class="resultado__fila">
+        <div class="result__row">
           <dt>Terminal</dt>
-          <dd>{{ plataforma.terminal }}</dd>
+          <dd>{{ platform.terminal }}</dd>
         </div>
       </dl>
 
-      @if (errorEliminar()) {
-        <p class="ab-form-error" role="alert">{{ errorEliminar() }}</p>
+      @if (deleteError()) {
+        <p class="ab-form-error" role="alert">{{ deleteError() }}</p>
       }
 
-      <div class="popup__acciones">
-        <button class="popup__cancelar" type="button" [disabled]="eliminando()" (click)="cancelarBaja()">
+      <div class="popup__actions">
+        <button class="popup__cancel" type="button" [disabled]="deleting()" (click)="cancelDelete()">
           Cancelar
         </button>
-        <button class="ab-button confirmar__boton" type="button" [disabled]="eliminando()" (click)="eliminar()">
-          {{ eliminando() ? 'Eliminando...' : 'Eliminar plataforma' }}
+        <button class="ab-button confirm__button" type="button" [disabled]="deleting()" (click)="delete()">
+          {{ deleting() ? 'Eliminando...' : 'Eliminar plataforma' }}
         </button>
       </div>
     </div>
   }
 </dialog>
 
-<!-- Popup con el formulario de alta. Escape o un click afuera lo cierran. -->
-<dialog #dialogoAlta class="popup" aria-labelledby="alta-titulo"
-        (cancel)="$event.preventDefault(); cerrarAlta()"
-        (click)="clickEnPopupAlta($event)">
-  @if (altaAbierta()) {
-    <div class="popup__contenido">
+<!-- Popup with the create form. Escape or a click outside closes it. -->
+<dialog #createDialog class="popup" aria-labelledby="create-title"
+        (cancel)="$event.preventDefault(); closeCreate()"
+        (click)="onCreatePopupClick($event)">
+  @if (createOpen()) {
+    <div class="popup__content">
       <header class="popup__head">
-        <h2 class="popup__titulo" id="alta-titulo">Cargar plataforma</h2>
-        <button class="popup__cerrar" type="button" aria-label="Cerrar" [disabled]="guardandoCrear()" (click)="cerrarAlta()">
+        <h2 class="popup__title" id="create-title">Cargar plataforma</h2>
+        <button class="popup__close" type="button" aria-label="Cerrar" [disabled]="savingCreate()" (click)="closeCreate()">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
             <path d="M1.5 1.5l11 11M12.5 1.5l-11 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
           </svg>
         </button>
       </header>
 
-      <p class="popup__texto">Alta de un anden nuevo en una terminal.</p>
+      <p class="popup__text">Alta de un anden nuevo en una terminal.</p>
 
-      <form class="crud__form" [formGroup]="formCrear" (ngSubmit)="crear()" novalidate>
+      <form class="crud__form" [formGroup]="createForm" (ngSubmit)="create()" novalidate>
         <div class="ab-field">
-          <label class="ab-label" for="terminal-crear">Terminal</label>
-          <select class="crud__select" id="terminal-crear" formControlName="bus_terminal_id"
-                   [attr.aria-invalid]="invalidoCrear('bus_terminal_id')">
+          <label class="ab-label" for="terminal-create">Terminal</label>
+          <select class="crud__select" id="terminal-create" formControlName="bus_terminal_id"
+                   [attr.aria-invalid]="createInvalid('bus_terminal_id')">
             <option value="" disabled>Elegi una terminal</option>
-            @for (t of terminales(); track t.uuid) {
+            @for (t of terminals(); track t.uuid) {
               <option [value]="t.uuid">{{ t.name }}</option>
             }
           </select>
-          @if (invalidoCrear('bus_terminal_id')) {
+          @if (createInvalid('bus_terminal_id')) {
             <p class="ab-field-error">Elegi una terminal.</p>
           }
         </div>
 
         <div class="ab-field">
-          <label class="ab-label" for="anden-crear">Anden</label>
-          <input class="ab-input" id="anden-crear" type="text" placeholder="Ej: A20" autocomplete="off"
-                 formControlName="anden" [attr.aria-invalid]="invalidoCrear('anden')" />
-          @if (invalidoCrear('anden')) {
+          <label class="ab-label" for="bay-create">Anden</label>
+          <input class="ab-input" id="bay-create" type="text" placeholder="Ej: A20" autocomplete="off"
+                 formControlName="bay" [attr.aria-invalid]="createInvalid('bay')" />
+          @if (createInvalid('bay')) {
             <p class="ab-field-error">Ingresa el anden.</p>
           }
         </div>
 
-        <div class="crud__fila">
+        <div class="crud__row">
           <div class="ab-field">
-            <label class="ab-label" for="lat-crear">Latitud</label>
-            <input class="ab-input" id="lat-crear" type="number" step="any" placeholder="-34.6037"
-                   formControlName="lat" [attr.aria-invalid]="invalidoCrear('lat')" />
+            <label class="ab-label" for="lat-create">Latitud</label>
+            <input class="ab-input" id="lat-create" type="number" step="any" placeholder="-34.6037"
+                   formControlName="lat" [attr.aria-invalid]="createInvalid('lat')" />
           </div>
 
           <div class="ab-field">
-            <label class="ab-label" for="lng-crear">Longitud</label>
-            <input class="ab-input" id="lng-crear" type="number" step="any" placeholder="-58.3816"
-                   formControlName="lng" [attr.aria-invalid]="invalidoCrear('lng')" />
+            <label class="ab-label" for="lng-create">Longitud</label>
+            <input class="ab-input" id="lng-create" type="number" step="any" placeholder="-58.3816"
+                   formControlName="lng" [attr.aria-invalid]="createInvalid('lng')" />
           </div>
         </div>
 
-        <p class="crud__nota">El codigo del anden lo asigna el sistema al crearlo.</p>
+        <p class="crud__note">El codigo del anden lo asigna el sistema al crearlo.</p>
 
-        @if (errorCrear()) {
-          <p class="ab-form-error" role="alert">{{ errorCrear() }}</p>
+        @if (createError()) {
+          <p class="ab-form-error" role="alert">{{ createError() }}</p>
         }
 
-        <div class="popup__acciones">
-          <button class="popup__cancelar" type="button" [disabled]="guardandoCrear()" (click)="cerrarAlta()">
+        <div class="popup__actions">
+          <button class="popup__cancel" type="button" [disabled]="savingCreate()" (click)="closeCreate()">
             Cancelar
           </button>
-          <button class="ab-button popup__boton" type="submit" [disabled]="guardandoCrear()">
-            {{ guardandoCrear() ? 'Cargando...' : 'Cargar plataforma' }}
+          <button class="ab-button popup__button" type="submit" [disabled]="savingCreate()">
+            {{ savingCreate() ? 'Cargando...' : 'Cargar plataforma' }}
           </button>
         </div>
       </form>
@@ -262,74 +262,74 @@
   }
 </dialog>
 
-<!-- Popup con el formulario de edicion. Escape o un click afuera lo cierran. -->
-<dialog #dialogoEdicion class="popup" aria-labelledby="edicion-titulo"
-        (cancel)="$event.preventDefault(); cerrarEdicion()"
-        (click)="clickEnPopupEdicion($event)">
-  @if (edicionAbierta()) {
-    <div class="popup__contenido">
+<!-- Popup with the edit form. Escape or a click outside closes it. -->
+<dialog #editDialog class="popup" aria-labelledby="edit-title"
+        (cancel)="$event.preventDefault(); closeEdit()"
+        (click)="onEditPopupClick($event)">
+  @if (editOpen()) {
+    <div class="popup__content">
       <header class="popup__head">
-        <h2 class="popup__titulo" id="edicion-titulo">Editar plataforma</h2>
-        <button class="popup__cerrar" type="button" aria-label="Cerrar" [disabled]="guardandoEditar()" (click)="cerrarEdicion()">
+        <h2 class="popup__title" id="edit-title">Editar plataforma</h2>
+        <button class="popup__close" type="button" aria-label="Cerrar" [disabled]="savingEdit()" (click)="closeEdit()">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
             <path d="M1.5 1.5l11 11M12.5 1.5l-11 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
           </svg>
         </button>
       </header>
 
-      <p class="popup__texto">Cambia el anden o sus coordenadas.</p>
+      <p class="popup__text">Cambia el anden o sus coordenadas.</p>
 
-      @if (cargandoSeleccionada()) {
-        <p class="popup__texto">Cargando plataforma...</p>
-      } @else if (errorSeleccionada()) {
-        <p class="ab-form-error" role="alert">{{ errorSeleccionada() }}</p>
-      } @else if (plataformaSeleccionada(); as plataforma) {
-        <form class="crud__form" [formGroup]="formEditar" (ngSubmit)="guardarEdicion()" novalidate>
-          <!-- Codigo y terminal no se editan: se muestran como texto, no como inputs -->
-          <dl class="crud__datos">
-            <div class="crud__dato">
+      @if (loadingSelected()) {
+        <p class="popup__text">Cargando plataforma...</p>
+      } @else if (selectedError()) {
+        <p class="ab-form-error" role="alert">{{ selectedError() }}</p>
+      } @else if (selectedPlatform(); as platform) {
+        <form class="crud__form" [formGroup]="editForm" (ngSubmit)="saveEdit()" novalidate>
+          <!-- Code and terminal are not editable: they are shown as text, not as inputs -->
+          <dl class="crud__details">
+            <div class="crud__cell">
               <dt class="ab-label">Codigo</dt>
-              <dd class="crud__valor">{{ plataforma.code }}</dd>
+              <dd class="crud__value">{{ platform.code }}</dd>
             </div>
-            <div class="crud__dato">
+            <div class="crud__cell">
               <dt class="ab-label">Terminal</dt>
-              <dd class="crud__valor">{{ plataforma.terminal }}</dd>
+              <dd class="crud__value">{{ platform.terminal }}</dd>
             </div>
           </dl>
 
           <div class="ab-field">
-            <label class="ab-label" for="anden-editar">Anden</label>
-            <input class="ab-input" id="anden-editar" type="text" autocomplete="off"
-                   formControlName="anden" [attr.aria-invalid]="invalidoEditar('anden')" />
-            @if (invalidoEditar('anden')) {
+            <label class="ab-label" for="bay-edit">Anden</label>
+            <input class="ab-input" id="bay-edit" type="text" autocomplete="off"
+                   formControlName="bay" [attr.aria-invalid]="editInvalid('bay')" />
+            @if (editInvalid('bay')) {
               <p class="ab-field-error">Ingresa el anden.</p>
             }
           </div>
 
-          <div class="crud__fila">
+          <div class="crud__row">
             <div class="ab-field">
-              <label class="ab-label" for="lat-editar">Latitud</label>
-              <input class="ab-input" id="lat-editar" type="number" step="any"
-                     formControlName="lat" [attr.aria-invalid]="invalidoEditar('lat')" />
+              <label class="ab-label" for="lat-edit">Latitud</label>
+              <input class="ab-input" id="lat-edit" type="number" step="any"
+                     formControlName="lat" [attr.aria-invalid]="editInvalid('lat')" />
             </div>
 
             <div class="ab-field">
-              <label class="ab-label" for="lng-editar">Longitud</label>
-              <input class="ab-input" id="lng-editar" type="number" step="any"
-                     formControlName="lng" [attr.aria-invalid]="invalidoEditar('lng')" />
+              <label class="ab-label" for="lng-edit">Longitud</label>
+              <input class="ab-input" id="lng-edit" type="number" step="any"
+                     formControlName="lng" [attr.aria-invalid]="editInvalid('lng')" />
             </div>
           </div>
 
-          @if (errorEditar()) {
-            <p class="ab-form-error" role="alert">{{ errorEditar() }}</p>
+          @if (editError()) {
+            <p class="ab-form-error" role="alert">{{ editError() }}</p>
           }
 
-          <div class="popup__acciones">
-            <button class="popup__cancelar" type="button" [disabled]="guardandoEditar()" (click)="cerrarEdicion()">
+          <div class="popup__actions">
+            <button class="popup__cancel" type="button" [disabled]="savingEdit()" (click)="closeEdit()">
               Cancelar
             </button>
-            <button class="ab-button popup__boton" type="submit" [disabled]="guardandoEditar()">
-              {{ guardandoEditar() ? 'Guardando...' : 'Guardar cambios' }}
+            <button class="ab-button popup__button" type="submit" [disabled]="savingEdit()">
+              {{ savingEdit() ? 'Guardando...' : 'Guardar cambios' }}
             </button>
           </div>
         </form>

@@ -4,447 +4,447 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, ResolveFn, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Topbar } from '../../shared/topbar/topbar';
-import { OpcionBuscador, SelectBuscador } from '../../shared/select-buscador/select-buscador';
+import { SearchOption, SearchSelect } from '../../shared/search-select/search-select';
 import { TerminalService } from '../../services/terminal.service';
-import { CiudadService } from '../../services/ciudad.service';
-import { Terminal, TerminalExterna } from '../../models/terminal.model';
-import { Ciudad } from '../../models/ciudad.model';
+import { CityService } from '../../services/city.service';
+import { ExternalTerminal, Terminal } from '../../models/terminal.model';
+import { City } from '../../models/city.model';
 
-export type AccionTerminal = 'listar' | 'crear' | 'editar';
+export type TerminalAction = 'list' | 'create' | 'edit';
 
-interface VistaTerminal {
-  titulo: string;
-  bajada: string;
+interface TerminalView {
+  title: string;
+  lead: string;
 }
 
-const VISTAS: Record<AccionTerminal, VistaTerminal> = {
-  listar: {
-    titulo: 'Gestionar terminales',
-    bajada: 'Gestionar terminales te permite ver, crear, editar y eliminar terminales del sistema.',
+const VIEWS: Record<TerminalAction, TerminalView> = {
+  list: {
+    title: 'Gestionar terminales',
+    lead: 'Gestionar terminales te permite ver, crear, editar y eliminar terminales del sistema.',
   },
-  crear: {
-    titulo: 'Cargar terminal',
-    bajada: 'Alta de una terminal nueva en una ciudad.',
+  create: {
+    title: 'Cargar terminal',
+    lead: 'Alta de una terminal nueva en una ciudad.',
   },
-  editar: {
-    titulo: 'Editar terminal',
-    bajada: 'Cambia el nombre, la ciudad o la terminal externa.',
+  edit: {
+    title: 'Editar terminal',
+    lead: 'Cambia el nombre, la ciudad o la terminal externa.',
   },
 };
 
-/** Filas que entran en una pagina del listado. */
-const POR_PAGINA = 10;
+/** Rows that fit in one page of the list. */
+const PAGE_SIZE = 10;
 
-/** Cantidad de filas que se piden al backend para filtrar/paginar en el cliente. */
-const LIMITE_BACKEND = 500;
+/** Number of rows requested from the backend to filter/paginate on the client. */
+const BACKEND_LIMIT = 500;
 
 /**
- * Pantallas de ABM de terminales. Toda la seccion es exclusiva
- * del super admin: los endpoints viven en /api/super.
+ * Terminals CRUD screens. The whole section is exclusive
+ * to the super admin: the endpoints live in /api/super.
  */
 @Component({
-  selector: 'app-terminales',
-  imports: [Topbar, RouterLink, ReactiveFormsModule, SelectBuscador],
-  templateUrl: './terminales.html',
-  styleUrl: './terminales.scss',
+  selector: 'app-terminals',
+  imports: [Topbar, RouterLink, ReactiveFormsModule, SearchSelect],
+  templateUrl: './terminals.html',
+  styleUrl: './terminals.scss',
 })
-export class Terminales {
-  private readonly ruta = inject(ActivatedRoute);
+export class Terminals {
+  private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly terminalService = inject(TerminalService);
-  private readonly ciudadService = inject(CiudadService);
+  private readonly cityService = inject(CityService);
   private readonly fb = inject(FormBuilder);
 
-  private readonly parametros = toSignal(this.ruta.paramMap, {
-    initialValue: this.ruta.snapshot.paramMap,
+  private readonly params = toSignal(this.route.paramMap, {
+    initialValue: this.route.snapshot.paramMap,
   });
 
-  protected readonly accion = computed(() => {
-    const accion = this.parametros().get('accion') as AccionTerminal | null;
-    return accion && accion in VISTAS ? accion : 'listar';
+  protected readonly action = computed(() => {
+    const action = this.params().get('action') as TerminalAction | null;
+    return action && action in VIEWS ? action : 'list';
   });
 
-  /** Uuid de la terminal a editar, si la ruta lo trae. */
-  private readonly codigo = computed(() => this.parametros().get('codigo'));
+  /** Uuid of the terminal to edit, if the route carries it. */
+  private readonly code = computed(() => this.params().get('code'));
 
-  protected readonly vista = computed(() => VISTAS[this.accion()]);
+  protected readonly view = computed(() => VIEWS[this.action()]);
 
-  protected readonly ciudades = signal<Ciudad[]>([]);
+  protected readonly cities = signal<City[]>([]);
 
-  /** Terminales del sistema de pasajes para elegir el id externo. */
-  protected readonly externas = signal<TerminalExterna[]>([]);
-  protected readonly errorExternas = signal<string | null>(null);
+  /** Terminals of the bus ticket system, to choose the external id. */
+  protected readonly externals = signal<ExternalTerminal[]>([]);
+  protected readonly externalsError = signal<string | null>(null);
 
-  protected readonly opcionesCiudades = computed<OpcionBuscador[]>(() =>
-    this.ciudades().map((c) => ({ valor: c.postal_code, etiqueta: `${c.name} (${c.postal_code})` })),
+  protected readonly cityOptions = computed<SearchOption[]>(() =>
+    this.cities().map((c) => ({ value: c.postal_code, label: `${c.name} (${c.postal_code})` })),
   );
 
-  protected readonly opcionesExternas = computed<OpcionBuscador[]>(() =>
-    this.externas().map((e) => ({ valor: e.uuid, etiqueta: e.name, deshabilitada: this.externaOcupada(e) })),
+  protected readonly externalOptions = computed<SearchOption[]>(() =>
+    this.externals().map((e) => ({ value: e.uuid, label: e.name, disabled: this.externalTaken(e) })),
   );
 
-  /** Ids externos ya asignados a alguna terminal, para no ofrecerlos de nuevo. */
-  private readonly externasEnUso = computed(
+  /** External ids already assigned to some terminal, so they are not offered again. */
+  private readonly externalsInUse = computed(
     () =>
       new Set(
-        this.todasLasTerminales()
+        this.allTerminals()
           .map((t) => t.external_terminal_id)
           .filter((id): id is string => !!id),
       ),
   );
 
-  /** Texto del filtro del listado: nombre, codigo postal o identificadores. */
-  protected readonly filtro = signal('');
+  /** List filter text: name, postal code or identifiers. */
+  protected readonly filter = signal('');
 
-  protected readonly pagina = signal(1);
+  protected readonly page = signal(1);
 
-  // --- Listado ---
-  protected readonly cargandoListado = signal(false);
-  protected readonly errorListado = signal<string | null>(null);
-  private readonly todasLasTerminales = signal<Terminal[]>([]);
+  // --- List ---
+  protected readonly loadingList = signal(false);
+  protected readonly listError = signal<string | null>(null);
+  private readonly allTerminals = signal<Terminal[]>([]);
 
-  private readonly filtradas = computed(() => {
-    const texto = this.filtro().trim().toLowerCase();
-    const terminales = this.todasLasTerminales();
-    if (!texto) return terminales;
+  private readonly filtered = computed(() => {
+    const text = this.filter().trim().toLowerCase();
+    const terminals = this.allTerminals();
+    if (!text) return terminals;
 
-    return terminales.filter((t) =>
-      [t.name, t.postal_code, t.uuid, t.external_terminal_id ?? ''].some((campo) =>
-        campo.toLowerCase().includes(texto),
+    return terminals.filter((t) =>
+      [t.name, t.postal_code, t.uuid, t.external_terminal_id ?? ''].some((field) =>
+        field.toLowerCase().includes(text),
       ),
     );
   });
 
-  protected readonly totalPaginas = computed(() =>
-    Math.max(1, Math.ceil(this.filtradas().length / POR_PAGINA)),
+  protected readonly totalPages = computed(() =>
+    Math.max(1, Math.ceil(this.filtered().length / PAGE_SIZE)),
   );
 
   /**
-   * Pagina efectiva: si el filtro dejo menos paginas de las que habia,
-   * la ultima valida, para no mostrar un listado vacio.
+   * Effective page: if the filter left fewer pages than there were,
+   * the last valid one, so an empty list is not shown.
    */
-  protected readonly paginaActual = computed(() => Math.min(this.pagina(), this.totalPaginas()));
+  protected readonly currentPage = computed(() => Math.min(this.page(), this.totalPages()));
 
-  protected readonly paginas = computed(() =>
-    Array.from({ length: this.totalPaginas() }, (_, i) => i + 1),
+  protected readonly pages = computed(() =>
+    Array.from({ length: this.totalPages() }, (_, i) => i + 1),
   );
 
-  /** Las 10 filas de la pagina actual. */
-  protected readonly terminales = computed(() => {
-    const desde = (this.paginaActual() - 1) * POR_PAGINA;
-    return this.filtradas().slice(desde, desde + POR_PAGINA);
+  /** The 10 rows of the current page. */
+  protected readonly terminals = computed(() => {
+    const from = (this.currentPage() - 1) * PAGE_SIZE;
+    return this.filtered().slice(from, from + PAGE_SIZE);
   });
 
   /**
-   * Filas en blanco que completan la pagina. La tabla mide siempre lo
-   * mismo, asi el paginado y el boton de cargar no se mueven cuando la
-   * ultima pagina o el filtro devuelven menos de 10 terminales.
+   * Blank rows that complete the page. The table always has the same
+   * height, so the pagination and the add button do not move when the
+   * last page or the filter return fewer than 10 terminals.
    */
-  protected readonly relleno = computed(() =>
-    Array.from({ length: Math.max(0, POR_PAGINA - (this.terminales().length || 1)) }),
+  protected readonly filler = computed(() =>
+    Array.from({ length: Math.max(0, PAGE_SIZE - (this.terminals().length || 1)) }),
   );
 
-  // --- Alta (popup sobre el listado) ---
-  private readonly dialogoAlta = viewChild<ElementRef<HTMLDialogElement>>('dialogoAlta');
-  protected readonly altaAbierta = signal(false);
-  protected readonly formCrear = this.fb.nonNullable.group({
+  // --- Create (popup over the list) ---
+  private readonly createDialog = viewChild<ElementRef<HTMLDialogElement>>('createDialog');
+  protected readonly createOpen = signal(false);
+  protected readonly createForm = this.fb.nonNullable.group({
     name: ['', Validators.required],
     postal_code: ['', Validators.required],
     external_terminal_id: ['', Validators.required],
   });
-  protected readonly guardandoCrear = signal(false);
-  protected readonly errorCrear = signal<string | null>(null);
+  protected readonly savingCreate = signal(false);
+  protected readonly createError = signal<string | null>(null);
 
-  // --- Edicion ---
-  protected readonly formEditar = this.fb.nonNullable.group({
+  // --- Edit ---
+  protected readonly editForm = this.fb.nonNullable.group({
     name: ['', Validators.required],
     postal_code: ['', Validators.required],
     external_terminal_id: ['', Validators.required],
   });
-  protected readonly cargandoSeleccionada = signal(false);
-  protected readonly errorSeleccionada = signal<string | null>(null);
-  protected readonly guardandoEditar = signal(false);
-  protected readonly errorEditar = signal<string | null>(null);
+  protected readonly loadingSelected = signal(false);
+  protected readonly selectedError = signal<string | null>(null);
+  protected readonly savingEdit = signal(false);
+  protected readonly editError = signal<string | null>(null);
 
-  // --- Edicion: terminal elegida (popup sobre el listado) ---
-  private readonly dialogoEdicion = viewChild<ElementRef<HTMLDialogElement>>('dialogoEdicion');
-  protected readonly edicionAbierta = signal(false);
-  protected readonly terminalSeleccionada = signal<Terminal | null>(null);
+  // --- Edit: chosen terminal (popup over the list) ---
+  private readonly editDialog = viewChild<ElementRef<HTMLDialogElement>>('editDialog');
+  protected readonly editOpen = signal(false);
+  protected readonly selectedTerminal = signal<Terminal | null>(null);
 
-  // --- Baja (popup sobre el listado) ---
-  private readonly dialogoBaja = viewChild<ElementRef<HTMLDialogElement>>('dialogoBaja');
-  protected readonly aEliminar = signal<Terminal | null>(null);
-  protected readonly eliminando = signal(false);
-  protected readonly errorEliminar = signal<string | null>(null);
+  // --- Delete (popup over the list) ---
+  private readonly deleteDialog = viewChild<ElementRef<HTMLDialogElement>>('deleteDialog');
+  protected readonly toDelete = signal<Terminal | null>(null);
+  protected readonly deleting = signal(false);
+  protected readonly deleteError = signal<string | null>(null);
 
   constructor() {
-    this.cargarCiudades();
-    this.cargarExternas();
+    this.loadCities();
+    this.loadExternals();
 
     effect(() => {
-      const accion = this.accion();
+      const action = this.action();
 
-      if (accion === 'listar') {
-        this.cargarTerminales();
-      } else if (accion === 'editar') {
-        // La URL vieja de edicion sigue andando: muestra el listado con el popup abierto
-        const codigo = this.codigo();
-        this.router.navigateByUrl('/dashboard/terminales', { replaceUrl: true });
-        untracked(() => this.abrirEdicion(codigo));
-      } else if (accion === 'crear') {
-        // La URL vieja de alta sigue andando: muestra el listado con el popup abierto
-        this.router.navigateByUrl('/dashboard/terminales', { replaceUrl: true });
-        untracked(() => this.abrirAlta());
+      if (action === 'list') {
+        this.loadTerminals();
+      } else if (action === 'edit') {
+        // The old edit URL still works: it shows the list with the popup open
+        const code = this.code();
+        this.router.navigateByUrl('/dashboard/terminals', { replaceUrl: true });
+        untracked(() => this.openEdit(code));
+      } else if (action === 'create') {
+        // The old create URL still works: it shows the list with the popup open
+        this.router.navigateByUrl('/dashboard/terminals', { replaceUrl: true });
+        untracked(() => this.openCreate());
       }
     });
 
     effect(() => {
-      const dialogo = this.dialogoAlta()?.nativeElement;
-      if (!dialogo) return;
-      if (this.altaAbierta() && !dialogo.open) dialogo.showModal();
-      if (!this.altaAbierta() && dialogo.open) dialogo.close();
+      const dialog = this.createDialog()?.nativeElement;
+      if (!dialog) return;
+      if (this.createOpen() && !dialog.open) dialog.showModal();
+      if (!this.createOpen() && dialog.open) dialog.close();
     });
 
     effect(() => {
-      const dialogo = this.dialogoEdicion()?.nativeElement;
-      if (!dialogo) return;
-      if (this.edicionAbierta() && !dialogo.open) dialogo.showModal();
-      if (!this.edicionAbierta() && dialogo.open) dialogo.close();
+      const dialog = this.editDialog()?.nativeElement;
+      if (!dialog) return;
+      if (this.editOpen() && !dialog.open) dialog.showModal();
+      if (!this.editOpen() && dialog.open) dialog.close();
     });
 
-    // El <dialog> nativo se abre con showModal() para tener fondo, foco
-    // atrapado y cierre con Escape sin escribirlos a mano.
+    // The native <dialog> is opened with showModal() to get a backdrop, trapped
+    // focus and closing with Escape without writing them by hand.
     effect(() => {
-      const dialogo = this.dialogoBaja()?.nativeElement;
-      if (!dialogo) return;
-      if (this.aEliminar() && !dialogo.open) dialogo.showModal();
-      if (!this.aEliminar() && dialogo.open) dialogo.close();
+      const dialog = this.deleteDialog()?.nativeElement;
+      if (!dialog) return;
+      if (this.toDelete() && !dialog.open) dialog.showModal();
+      if (!this.toDelete() && dialog.open) dialog.close();
     });
   }
 
-  private cargarCiudades(): void {
-    this.ciudadService.listar({ limit: LIMITE_BACKEND, order: 'ASC' }).subscribe({
-      next: (res) => this.ciudades.set(res.cities),
+  private loadCities(): void {
+    this.cityService.list({ limit: BACKEND_LIMIT, order: 'ASC' }).subscribe({
+      next: (res) => this.cities.set(res.cities),
     });
   }
 
-  private cargarExternas(): void {
-    this.errorExternas.set(null);
-    this.terminalService.listarExternas().subscribe({
-      next: (externas) =>
-        this.externas.set([...externas].sort((a, b) => a.name.localeCompare(b.name))),
-      error: () => this.errorExternas.set('No se pudieron cargar las terminales del sistema de pasajes.'),
+  private loadExternals(): void {
+    this.externalsError.set(null);
+    this.terminalService.listExternal().subscribe({
+      next: (externals) =>
+        this.externals.set([...externals].sort((a, b) => a.name.localeCompare(b.name))),
+      error: () => this.externalsError.set('No se pudieron cargar las terminales del sistema de pasajes.'),
     });
   }
 
   /**
-   * Una terminal externa ya asignada a otra terminal no se puede volver a
-   * elegir. En la edicion se permite la que ya tiene la terminal seleccionada.
+   * An external terminal already assigned to another terminal cannot be chosen
+   * again. When editing, the one the selected terminal already has is allowed.
    */
-  private externaOcupada(externa: TerminalExterna): boolean {
-    const propia = this.terminalSeleccionada()?.external_terminal_id;
-    return this.externasEnUso().has(externa.uuid) && externa.uuid !== propia;
+  private externalTaken(external: ExternalTerminal): boolean {
+    const own = this.selectedTerminal()?.external_terminal_id;
+    return this.externalsInUse().has(external.uuid) && external.uuid !== own;
   }
 
-  private cargarTerminales(): void {
-    this.cargandoListado.set(true);
-    this.errorListado.set(null);
+  private loadTerminals(): void {
+    this.loadingList.set(true);
+    this.listError.set(null);
 
-    this.terminalService.listar({ limit: LIMITE_BACKEND, order: 'ASC' }).subscribe({
+    this.terminalService.list({ limit: BACKEND_LIMIT, order: 'ASC' }).subscribe({
       next: (res) => {
-        this.todasLasTerminales.set(res.terminals);
-        this.cargandoListado.set(false);
+        this.allTerminals.set(res.terminals);
+        this.loadingList.set(false);
       },
       error: (err: HttpErrorResponse) => {
-        this.cargandoListado.set(false);
-        this.errorListado.set(mensajeError(err));
+        this.loadingList.set(false);
+        this.listError.set(errorMessage(err));
       },
     });
   }
 
-  private cargarSeleccionada(uuid: string | null): void {
-    this.terminalSeleccionada.set(null);
-    this.errorSeleccionada.set(null);
+  private loadSelected(uuid: string | null): void {
+    this.selectedTerminal.set(null);
+    this.selectedError.set(null);
 
     if (!uuid) {
-      this.errorSeleccionada.set('No se indico que terminal usar.');
+      this.selectedError.set('No se indico que terminal usar.');
       return;
     }
 
-    this.cargandoSeleccionada.set(true);
-    this.terminalService.obtener(uuid).subscribe({
+    this.loadingSelected.set(true);
+    this.terminalService.get(uuid).subscribe({
       next: (terminal) => {
-        this.cargandoSeleccionada.set(false);
-        this.terminalSeleccionada.set(terminal);
-        this.formEditar.setValue({
+        this.loadingSelected.set(false);
+        this.selectedTerminal.set(terminal);
+        this.editForm.setValue({
           name: terminal.name,
           postal_code: terminal.postal_code,
           external_terminal_id: terminal.external_terminal_id ?? '',
         });
       },
       error: (err: HttpErrorResponse) => {
-        this.cargandoSeleccionada.set(false);
-        this.errorSeleccionada.set(mensajeError(err));
+        this.loadingSelected.set(false);
+        this.selectedError.set(errorMessage(err));
       },
     });
   }
 
-  protected filtrar(texto: string): void {
-    this.filtro.set(texto);
-    this.pagina.set(1);
+  protected applyFilter(text: string): void {
+    this.filter.set(text);
+    this.page.set(1);
   }
 
-  protected irA(pagina: number): void {
-    this.pagina.set(Math.min(Math.max(pagina, 1), this.totalPaginas()));
+  protected goTo(page: number): void {
+    this.page.set(Math.min(Math.max(page, 1), this.totalPages()));
   }
 
-  protected abrirEdicion(uuid: string | null): void {
-    this.errorEditar.set(null);
-    this.edicionAbierta.set(true);
-    this.cargarSeleccionada(uuid);
+  protected openEdit(uuid: string | null): void {
+    this.editError.set(null);
+    this.editOpen.set(true);
+    this.loadSelected(uuid);
   }
 
-  protected cerrarEdicion(): void {
-    if (this.guardandoEditar()) return;
-    this.edicionAbierta.set(false);
-    this.errorEditar.set(null);
+  protected closeEdit(): void {
+    if (this.savingEdit()) return;
+    this.editOpen.set(false);
+    this.editError.set(null);
   }
 
-  /** Un click en el fondo (fuera del contenido) cierra el popup de edicion. */
-  protected clickEnPopupEdicion(event: MouseEvent): void {
-    if (event.target === event.currentTarget) this.cerrarEdicion();
+  /** A click on the backdrop (outside the content) closes the edit popup. */
+  protected onEditPopupClick(event: MouseEvent): void {
+    if (event.target === event.currentTarget) this.closeEdit();
   }
 
-  protected abrirAlta(): void {
-    this.terminalSeleccionada.set(null);
-    this.formCrear.reset();
-    this.errorCrear.set(null);
-    this.altaAbierta.set(true);
+  protected openCreate(): void {
+    this.selectedTerminal.set(null);
+    this.createForm.reset();
+    this.createError.set(null);
+    this.createOpen.set(true);
   }
 
-  protected cerrarAlta(): void {
-    if (this.guardandoCrear()) return;
-    this.altaAbierta.set(false);
-    this.errorCrear.set(null);
+  protected closeCreate(): void {
+    if (this.savingCreate()) return;
+    this.createOpen.set(false);
+    this.createError.set(null);
   }
 
-  /** Un click en el fondo (fuera del contenido) cierra el popup de alta. */
-  protected clickEnPopupAlta(event: MouseEvent): void {
-    if (event.target === event.currentTarget) this.cerrarAlta();
+  /** A click on the backdrop (outside the content) closes the create popup. */
+  protected onCreatePopupClick(event: MouseEvent): void {
+    if (event.target === event.currentTarget) this.closeCreate();
   }
 
-  protected crear(): void {
-    if (this.formCrear.invalid) {
-      this.formCrear.markAllAsTouched();
+  protected create(): void {
+    if (this.createForm.invalid) {
+      this.createForm.markAllAsTouched();
       return;
     }
 
-    this.guardandoCrear.set(true);
-    this.errorCrear.set(null);
+    this.savingCreate.set(true);
+    this.createError.set(null);
 
-    const { name, postal_code, external_terminal_id } = this.formCrear.getRawValue();
+    const { name, postal_code, external_terminal_id } = this.createForm.getRawValue();
     this.terminalService
-      .crear({
+      .create({
         name: name.trim(),
         postal_code,
         external_terminal_id,
       })
       .subscribe({
         next: () => {
-          this.guardandoCrear.set(false);
-          this.altaAbierta.set(false);
-          this.cargarTerminales();
+          this.savingCreate.set(false);
+          this.createOpen.set(false);
+          this.loadTerminals();
         },
         error: (err: HttpErrorResponse) => {
-          this.guardandoCrear.set(false);
-          this.errorCrear.set(mensajeError(err));
+          this.savingCreate.set(false);
+          this.createError.set(errorMessage(err));
         },
       });
   }
 
-  protected guardarEdicion(): void {
-    if (this.formEditar.invalid) {
-      this.formEditar.markAllAsTouched();
+  protected saveEdit(): void {
+    if (this.editForm.invalid) {
+      this.editForm.markAllAsTouched();
       return;
     }
 
-    const seleccionada = this.terminalSeleccionada();
-    if (!seleccionada) return;
+    const selected = this.selectedTerminal();
+    if (!selected) return;
 
-    this.guardandoEditar.set(true);
-    this.errorEditar.set(null);
+    this.savingEdit.set(true);
+    this.editError.set(null);
 
-    const { name, postal_code, external_terminal_id } = this.formEditar.getRawValue();
+    const { name, postal_code, external_terminal_id } = this.editForm.getRawValue();
     this.terminalService
-      .actualizar(seleccionada.uuid, {
+      .update(selected.uuid, {
         name: name.trim(),
         postal_code,
         external_terminal_id,
       })
       .subscribe({
         next: () => {
-          this.guardandoEditar.set(false);
-          this.edicionAbierta.set(false);
-          this.cargarTerminales();
+          this.savingEdit.set(false);
+          this.editOpen.set(false);
+          this.loadTerminals();
         },
         error: (err: HttpErrorResponse) => {
-          this.guardandoEditar.set(false);
-          this.errorEditar.set(mensajeError(err));
+          this.savingEdit.set(false);
+          this.editError.set(errorMessage(err));
         },
       });
   }
 
-  protected confirmarBaja(terminal: Terminal): void {
-    this.errorEliminar.set(null);
-    this.aEliminar.set(terminal);
+  protected confirmDelete(terminal: Terminal): void {
+    this.deleteError.set(null);
+    this.toDelete.set(terminal);
   }
 
-  protected cancelarBaja(): void {
-    if (this.eliminando()) return;
-    this.aEliminar.set(null);
-    this.errorEliminar.set(null);
+  protected cancelDelete(): void {
+    if (this.deleting()) return;
+    this.toDelete.set(null);
+    this.deleteError.set(null);
   }
 
-  /** Un click en el fondo (fuera del contenido) cierra el popup. */
-  protected clickEnPopup(event: MouseEvent): void {
-    if (event.target === event.currentTarget) this.cancelarBaja();
+  /** A click on the backdrop (outside the content) closes the popup. */
+  protected onDeletePopupClick(event: MouseEvent): void {
+    if (event.target === event.currentTarget) this.cancelDelete();
   }
 
-  protected eliminar(): void {
-    const seleccionada = this.aEliminar();
-    if (!seleccionada) return;
+  protected delete(): void {
+    const selected = this.toDelete();
+    if (!selected) return;
 
-    this.eliminando.set(true);
-    this.errorEliminar.set(null);
+    this.deleting.set(true);
+    this.deleteError.set(null);
 
-    this.terminalService.eliminar(seleccionada.uuid).subscribe({
+    this.terminalService.delete(selected.uuid).subscribe({
       next: () => {
-        this.eliminando.set(false);
-        this.aEliminar.set(null);
-        // Se saca la terminal del listado sin volver a pedirlo al backend
-        this.todasLasTerminales.update((terminales) =>
-          terminales.filter((t) => t.uuid !== seleccionada.uuid),
+        this.deleting.set(false);
+        this.toDelete.set(null);
+        // The terminal is removed from the list without requesting it from the backend again
+        this.allTerminals.update((terminals) =>
+          terminals.filter((t) => t.uuid !== selected.uuid),
         );
       },
       error: (err: HttpErrorResponse) => {
-        this.eliminando.set(false);
-        this.errorEliminar.set(mensajeError(err));
+        this.deleting.set(false);
+        this.deleteError.set(errorMessage(err));
       },
     });
   }
 
-  protected invalidoCrear(campo: 'name' | 'postal_code' | 'external_terminal_id'): boolean {
-    const control = this.formCrear.controls[campo];
+  protected createInvalid(field: 'name' | 'postal_code' | 'external_terminal_id'): boolean {
+    const control = this.createForm.controls[field];
     return control.invalid && control.touched;
   }
 
-  protected invalidoEditar(campo: 'name' | 'postal_code' | 'external_terminal_id'): boolean {
-    const control = this.formEditar.controls[campo];
+  protected editInvalid(field: 'name' | 'postal_code' | 'external_terminal_id'): boolean {
+    const control = this.editForm.controls[field];
     return control.invalid && control.touched;
   }
 }
 
-function mensajeError(err: HttpErrorResponse): string {
+function errorMessage(err: HttpErrorResponse): string {
   switch (err.status) {
     case 0:
       return 'No se pudo conectar con el servidor. Intenta mas tarde.';
@@ -459,7 +459,7 @@ function mensajeError(err: HttpErrorResponse): string {
   }
 }
 
-export const tituloTerminales: ResolveFn<string> = (ruta) => {
-  const accion = (ruta.paramMap.get('accion') as AccionTerminal | null) ?? 'listar';
-  return VISTAS[accion]?.titulo ?? VISTAS['listar'].titulo;
+export const terminalsTitle: ResolveFn<string> = (route) => {
+  const action = (route.paramMap.get('action') as TerminalAction | null) ?? 'list';
+  return VIEWS[action]?.title ?? VIEWS['list'].title;
 };

@@ -1,12 +1,12 @@
-/* Avisos: gestion de notificaciones con los estilos comunes del dashboard. */
+/* Notices: notification management with the common dashboard styles. */
 @use '../../../styles/crud' as *;
 
-/* Tipo | Mensaje | Terminal | Estado | acciones */
-.tabla {
+/* Type | Message | Terminal | Status | actions */
+.table {
   --cols: 0.7fr 1.8fr 1.2fr 1fr auto;
 }
 
-.estado {
+.status {
   display: inline-block;
   padding: 2px 10px;
   border-radius: 999px;
@@ -16,13 +16,13 @@
   color: #00703f;
 }
 
-.estado--vencido {
+.status--expired {
   background: rgba(116, 118, 133, 0.15);
   color: #5a5c6b;
 }
 
-/* Input de patente acotado, con el boton de la camara al lado */
-.patente-fila {
+/* Narrow license plate input, with the camera button next to it */
+.plate-row {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -33,5 +33,5 @@
   }
 }
 
-/* Popup para confirmar la baja */
-@include popup-baja;
+/* Popup to confirm the deletion */
+@include delete-popup;

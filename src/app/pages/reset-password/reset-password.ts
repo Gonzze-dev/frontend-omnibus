@@ -11,96 +11,96 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { PasswordToggle } from '../../shared/password-toggle/password-toggle';
 
-/** Estado del token que llega en el enlace del correo. */
-type EstadoToken = 'sin-token' | 'validando' | 'valido' | 'invalido';
+/** State of the token that arrives in the email link. */
+type TokenState = 'no-token' | 'validating' | 'valid' | 'invalid';
 
 @Component({
-  selector: 'app-nueva-contrasena',
+  selector: 'app-reset-password',
   imports: [RouterLink, ReactiveFormsModule, PasswordToggle],
-  templateUrl: './nueva-contrasena.html',
-  styleUrl: './nueva-contrasena.scss',
+  templateUrl: './reset-password.html',
+  styleUrl: './reset-password.scss',
 })
-export class NuevaContrasena {
+export class ResetPassword {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
 
   readonly form = inject(FormBuilder).nonNullable.group(
     {
       password: ['', [Validators.required, Validators.minLength(8)]],
-      confirmar: ['', Validators.required],
+      confirm: ['', Validators.required],
     },
-    { validators: contrasenasIguales },
+    { validators: passwordsMatch },
   );
 
-  readonly estado = signal<EstadoToken>('validando');
-  readonly cargando = signal(false);
+  readonly state = signal<TokenState>('validating');
+  readonly loading = signal(false);
   readonly error = signal<string | null>(null);
-  readonly mostrarPassword = signal(false);
-  readonly mostrarConfirmar = signal(false);
+  readonly showPassword = signal(false);
+  readonly showConfirm = signal(false);
 
-  /** Token del enlace: se lee una sola vez, no cambia mientras dura la pantalla. */
+  /** Link token: it is read only once, it does not change while the screen lasts. */
   private readonly token = inject(ActivatedRoute).snapshot.queryParamMap.get('token')?.trim() ?? '';
 
   constructor() {
     if (!this.token) {
-      this.estado.set('sin-token');
+      this.state.set('no-token');
       return;
     }
 
-    // Se valida antes de mostrar el formulario para no hacer escribir la
-    // contraseña dos veces con un enlace ya vencido.
+    // It is validated before showing the form so the password is not typed
+    // twice with an already expired link.
     this.auth.validateRecoveryToken(this.token).subscribe({
-      next: (res) => this.estado.set(res.valid ? 'valido' : 'invalido'),
-      error: () => this.estado.set('invalido'),
+      next: (res) => this.state.set(res.valid ? 'valid' : 'invalid'),
+      error: () => this.state.set('invalid'),
     });
   }
 
-  guardar(): void {
+  save(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
 
-    this.cargando.set(true);
+    this.loading.set(true);
     this.error.set(null);
 
     this.auth.resetPassword(this.token, this.form.getRawValue().password).subscribe({
       next: () => {
-        this.cargando.set(false);
-        // El backend invalida los refresh tokens del usuario: si habia sesion
-        // abierta ya no sirve, y sin ella el login no redirige al inicio.
-        this.auth.descartarSesion();
-        // El login avisa que el cambio salio bien con ?cambio=ok
-        this.router.navigate(['/login'], { queryParams: { cambio: 'ok' } });
+        this.loading.set(false);
+        // The backend invalidates the user's refresh tokens: if there was an open
+        // session it no longer works, and without it the login does not redirect home.
+        this.auth.discardSession();
+        // The login announces that the change went well with ?changed=ok
+        this.router.navigate(['/login'], { queryParams: { changed: 'ok' } });
       },
       error: (err: HttpErrorResponse) => {
-        this.cargando.set(false);
+        this.loading.set(false);
         if (err.status === 401) {
-          this.estado.set('invalido');
+          this.state.set('invalid');
           return;
         }
-        this.error.set(mensajeError(err));
+        this.error.set(errorMessage(err));
       },
     });
   }
 
-  invalido(campo: 'password' | 'confirmar'): boolean {
-    const control = this.form.controls[campo];
+  invalid(field: 'password' | 'confirm'): boolean {
+    const control = this.form.controls[field];
     return control.invalid && control.touched;
   }
 
-  noCoinciden(): boolean {
-    return this.form.hasError('noCoinciden') && this.form.controls.confirmar.touched;
+  mismatch(): boolean {
+    return this.form.hasError('mismatch') && this.form.controls.confirm.touched;
   }
 }
 
-function contrasenasIguales(group: AbstractControl): ValidationErrors | null {
+function passwordsMatch(group: AbstractControl): ValidationErrors | null {
   const password = group.get('password')?.value;
-  const confirmar = group.get('confirmar')?.value;
-  return confirmar && password !== confirmar ? { noCoinciden: true } : null;
+  const confirm = group.get('confirm')?.value;
+  return confirm && password !== confirm ? { mismatch: true } : null;
 }
 
-function mensajeError(err: HttpErrorResponse): string {
+function errorMessage(err: HttpErrorResponse): string {
   switch (err.status) {
     case 0:
       return 'No se pudo conectar con el servidor. Intenta mas tarde.';

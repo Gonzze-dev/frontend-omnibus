@@ -1,26 +1,26 @@
 <app-topbar />
 
-<div class="ab-screen avisos">
-  <h1 class="avisos__titulo">Notificaciones</h1>
-  <p class="avisos__bajada">
+<div class="ab-screen notices">
+  <h1 class="notices__title">Notificaciones</h1>
+  <p class="notices__lead">
     Actualizaciones en tiempo real sobre asignaciones de andén, retrasos, y
-    notificaciones de adminsitradores.
+    notificaciones de administradores.
   </p>
 
-  @if (lista().length) {
-    <ul class="avisos__lista" animate.leave="ab-sale-izquierda">
-      @for (aviso of lista(); track aviso.id) {
-        <li class="aviso">
-          <span class="aviso__icono" [class]="'aviso__icono--' + aviso.tipo">
-            @switch (aviso.tipo) {
-              @case ('retraso') {
+  @if (list().length) {
+    <ul class="notices__list" animate.leave="ab-leave-left">
+      @for (notice of list(); track notice.id) {
+        <li class="notice">
+          <span class="notice__icon" [class]="'notice__icon--' + notice.kind">
+            @switch (notice.kind) {
+              @case ('delay') {
                 <svg width="22" height="19" viewBox="0 0 22 19" fill="none" aria-hidden="true">
                   <path d="M11 1.5 21 18H1L11 1.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
                   <path d="M11 7v5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
                   <circle cx="11" cy="15" r="1" fill="currentColor" />
                 </svg>
               }
-              @case ('llegada') {
+              @case ('arrival') {
                 <svg width="20" height="23" viewBox="0 0 20 23" fill="none" aria-hidden="true">
                   <rect x="1" y="1" width="18" height="16" rx="3" stroke="currentColor" stroke-width="1.8" />
                   <path d="M1 11h18" stroke="currentColor" stroke-width="1.8" />
@@ -29,7 +29,7 @@
                   <path d="M5 17v4M15 17v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
                 </svg>
               }
-              @case ('servicio') {
+              @case ('service') {
                 <svg width="20" height="23" viewBox="0 0 20 20" fill="none" aria-hidden="true">
                   <circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.8" />
                   <path d="M1 10h18M10 1c2.5 2.4 3.8 5.5 3.8 9S12.5 16.6 10 19C7.5 16.6 6.2 13.5 6.2 10S7.5 3.4 10 1Z"
@@ -39,18 +39,18 @@
             }
           </span>
 
-          <div class="aviso__texto">
-            <h2 class="aviso__titulo">{{ aviso.titulo }}</h2>
-            <p class="aviso__detalle">{{ aviso.detalle }}</p>
+          <div class="notice__text">
+            <h2 class="notice__title">{{ notice.title }}</h2>
+            <p class="notice__detail">{{ notice.detail }}</p>
           </div>
         </li>
       }
     </ul>
 
-    <button class="avisos__limpiar" type="button" animate.leave="ab-sale-izquierda" (click)="limpiar()">
+    <button class="notices__clear" type="button" animate.leave="ab-leave-left" (click)="clear()">
       Limpiar notificaciones
     </button>
   } @else {
-    <p class="avisos__vacio">No tenes notificaciones nuevas.</p>
+    <p class="notices__empty">No tenes notificaciones nuevas.</p>
   }
 </div>

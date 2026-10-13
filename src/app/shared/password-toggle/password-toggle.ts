@@ -8,7 +8,7 @@ export class PasswordToggle {
   @Input() visible = false;
   @Output() readonly visibleChange = new EventEmitter<boolean>();
 
-  alternar(): void {
+  toggle(): void {
     this.visibleChange.emit(!this.visible);
   }
 }

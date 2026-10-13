@@ -1,36 +1,36 @@
-/** Coordenadas del anden, tal como viajan en la columna jsonb coordinates. */
-export interface Coordenadas {
+/** Bay coordinates, as stored in the jsonb coordinates column. */
+export interface Coordinates {
   lat: number;
   lng: number;
 }
 
-/** Plataforma devuelta por POST/PUT /api/admin/platforms (models.Platform). */
-export interface Plataforma {
+/** Platform returned by POST/PUT /api/admin/platforms (models.Platform). */
+export interface Platform {
   code: number;
-  anden: string;
-  coordinates: Coordenadas;
+  bay: string;
+  coordinates: Coordinates;
   bus_terminal_id: string;
 }
 
-/** Plataforma dentro de un grupo de terminal (models.PlatformResponse). */
-export interface PlataformaEnGrupo {
+/** Platform inside a terminal group (models.PlatformResponse). */
+export interface GroupedPlatform {
   code: number;
-  anden: string;
-  coordinates: Coordenadas;
+  bay: string;
+  coordinates: Coordinates;
 }
 
-/** Terminal con sus andenes (models.BusTerminalWithPlatformsResponse). */
-export interface TerminalConPlataformas {
+/** Terminal with its bays (models.BusTerminalWithPlatformsResponse). */
+export interface TerminalWithPlatforms {
   uuid: string;
   external_terminal_id?: string | null;
   postal_code: string;
   name: string;
-  platforms: PlataformaEnGrupo[];
+  platforms: GroupedPlatform[];
 }
 
 /** GET /api/admin/platforms (models.ListPlatformsResponse). */
-export interface ListPlataformasResponse {
-  platforms: TerminalConPlataformas[];
+export interface ListPlatformsResponse {
+  platforms: TerminalWithPlatforms[];
   page: number;
   next: number | null;
   prev: number | null;
@@ -38,7 +38,7 @@ export interface ListPlataformasResponse {
   total_elements: number;
 }
 
-export interface ListPlataformasParams {
+export interface ListPlatformsParams {
   page?: number;
   limit?: number;
   order?: 'ASC' | 'DESC';
@@ -46,14 +46,14 @@ export interface ListPlataformasParams {
 }
 
 /** POST /api/admin/platforms */
-export interface CreatePlataformaRequest {
-  anden: string;
-  coordinates: Coordenadas;
+export interface CreatePlatformRequest {
+  bay: string;
+  coordinates: Coordinates;
   bus_terminal_id: string;
 }
 
-/** PUT /api/admin/platforms/:code (campos opcionales, models.UpdatePlatformRequest). */
-export interface UpdatePlataformaRequest {
-  anden?: string;
-  coordinates?: Coordenadas;
+/** PUT /api/admin/platforms/:code (optional fields, models.UpdatePlatformRequest). */
+export interface UpdatePlatformRequest {
+  bay?: string;
+  coordinates?: Coordinates;
 }

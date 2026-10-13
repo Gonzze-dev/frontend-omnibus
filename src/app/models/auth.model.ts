@@ -1,18 +1,18 @@
-/** Roles definidos en el backend (internal/roles/roles.go). */
-export type Rol = 'user' | 'admin' | 'super_admin';
+/** Roles defined in the backend (internal/roles/roles.go). */
+export type Role = 'user' | 'admin' | 'super_admin';
 
 export interface UserTerminalRef {
   uuid: string;
   name: string;
 }
 
-/** Usuario tal como lo devuelve el backend (models.UserResponse). */
+/** User as returned by the backend (models.UserResponse). */
 export interface User {
   uuid: string;
   first_name: string;
   last_name: string;
   email: string;
-  rol: Rol;
+  role: Role;
   created_at?: string;
   updated_at?: string;
   terminals?: UserTerminalRef[];
@@ -29,7 +29,7 @@ export interface LoginResponse {
   user: User;
 }
 
-/** POST /api/auth/register (responde 201 con el usuario, sin tokens). */
+/** POST /api/auth/register (responds 201 with the user, no tokens). */
 export interface RegisterRequest {
   first_name: string;
   last_name: string;
@@ -37,7 +37,7 @@ export interface RegisterRequest {
   password: string;
 }
 
-/** POST /api/auth/refresh: solo devuelve el access token nuevo. */
+/** POST /api/auth/refresh: only returns the new access token. */
 export interface RefreshResponse {
   access_token: string;
 }
@@ -48,23 +48,23 @@ export interface ForgotPasswordRequest {
 }
 
 /**
- * El backend responde siempre el mismo mensaje, exista o no el email, para
- * no revelar que cuentas estan registradas.
+ * The backend always responds with the same message, whether or not the email
+ * exists, so it does not reveal which accounts are registered.
  */
 export interface ForgotPasswordResponse {
   message: string;
 }
 
 /**
- * POST /api/auth/validate-recovery-token: el token de recuperacion viaja en
- * el header Authorization, no en el body.
+ * POST /api/auth/validate-recovery-token: the recovery token travels in the
+ * Authorization header, not in the body.
  */
 export interface ValidateRecoveryTokenResponse {
   valid: boolean;
   expires_at?: string;
 }
 
-/** POST /api/auth/reset-password (token en el header Authorization). */
+/** POST /api/auth/reset-password (token in the Authorization header). */
 export interface ResetPasswordRequest {
   password: string;
 }
@@ -74,8 +74,8 @@ export interface ResetPasswordResponse {
 }
 
 /**
- * PUT /api/users/me: patch parcial, solo viajan los campos que cambiaron
- * (el backend exige al menos uno y responde con el usuario actualizado).
+ * PUT /api/users/me: partial patch, only the fields that changed are sent
+ * (the backend requires at least one and responds with the updated user).
  */
 export interface UpdateProfileRequest {
   first_name?: string;

@@ -1,10 +1,10 @@
-# Build context: raíz del repo (docker build -f infra.prod/Dockerfile .)
-# En Railway: RAILWAY_DOCKERFILE_PATH=infra.prod/Dockerfile
+# Build context: repo root (docker build -f infra.prod/Dockerfile .)
+# On Railway: RAILWAY_DOCKERFILE_PATH=infra.prod/Dockerfile
 #
-# Variables de entorno en runtime:
-#   BACKEND_UPSTREAM   URL base del backend omnibus, sin barra final (ej: http://omnibus-backend.railway.internal:4989)
-#   REALTIME_UPSTREAM  URL base del microservicio RealTime, sin /realtime (ej: http://realtime.railway.internal:4988)
-#   PORT               puerto de escucha (Railway lo inyecta)
+# Runtime environment variables:
+#   BACKEND_UPSTREAM   Base URL of the omnibus backend, without trailing slash (e.g. http://omnibus-backend.railway.internal:4989)
+#   REALTIME_UPSTREAM  Base URL of the RealTime microservice, without /realtime (e.g. http://realtime.railway.internal:4988)
+#   PORT               listening port (injected by Railway)
 
 FROM node:24-alpine AS build
 WORKDIR /app

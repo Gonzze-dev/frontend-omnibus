@@ -1,20 +1,20 @@
 /* ============================================================
-   Dashboard admin (Figma nodo 37:312)
+   Admin dashboard (Figma node 37:312)
    ============================================================ */
 
-@use '../../../styles/pantalla' as *;
+@use '../../../styles/screen' as *;
 
 .panel {
-  --tinta: #131B2E;  /* titulos de las cards */
+  --ink: #131B2E;  /* card titles */
 
   min-height: calc(100dvh - var(--ab-topbar-h));
   padding-top: 44px;
   padding-bottom: 64px;
-  @include pantalla-card;
+  @include screen-card;
 }
 
-/* El dashboard es mas ancho que el resto de las pantallas para que
-   las tres metricas entren en fila con aire entre ellas */
+/* The dashboard is wider than the rest of the screens so that
+   the three metrics fit in a row with breathing room between them */
 @media (min-width: 768px) {
   .panel { max-width: 760px; }
 }
@@ -23,19 +23,19 @@
   .panel { max-width: 1000px; }
 }
 
-/* Cada metrica y cada acceso toma su color de un tono */
-.tono--azul    { --tono: #0050CB; }
-.tono--indigo  { --tono: #4648D4; }
-.tono--carmin  { --tono: #B40036; }
-.tono--tinta   { --tono: var(--tinta); }
-.tono--naranja { --tono: var(--ab-accent); }
+/* Each metric and each shortcut takes its color from a tone */
+.tone--blue    { --tone: #0050CB; }
+.tone--indigo  { --tone: #4648D4; }
+.tone--crimson  { --tone: #B40036; }
+.tone--ink   { --tone: var(--ink); }
+.tone--orange { --tone: var(--ab-accent); }
 
-/* ---------------- Encabezado ---------------- */
+/* ---------------- Header ---------------- */
 .panel__head {
   text-align: center;
 }
 
-.panel__titulo {
+.panel__title {
   margin: 0;
   font-weight: 700;
   font-size: var(--ab-fs-title);
@@ -43,16 +43,16 @@
   color: var(--ab-primary);
 }
 
-.panel__bajada {
+.panel__lead {
   margin: 0;
   font-size: calc(var(--ab-fs-body) + 1px);
   line-height: var(--ab-lh-lead);
   color: var(--ab-body);
 }
 
-/* ---------------- Metricas ---------------- */
-/* En el mockup esta columna es 20px mas angosta que el contenido */
-.metricas {
+/* ---------------- Metrics ---------------- */
+/* In the mockup this column is 20px narrower than the content */
+.metrics {
   display: flex;
   flex-direction: column;
   gap: 28px;
@@ -61,21 +61,21 @@
   list-style: none;
 }
 
-/* En pantallas anchas las metricas van una al lado de la otra */
+/* On wide screens the metrics go side by side */
 @media (min-width: 768px) {
-  .metricas {
+  .metrics {
     flex-direction: row;
     gap: 40px;
     margin-inline: 0;
   }
 
-  .metricas > .metrica {
+  .metrics > .metric {
     flex: 1 1 0;
     min-width: 0;
   }
 }
 
-.metrica {
+.metric {
   display: flex;
   flex-direction: column;
   padding: 24px;
@@ -84,39 +84,39 @@
   background: #F2F3FF;
 }
 
-/* Caja de tamaño fijo: cada glifo tiene su propio alto (16 a 23px) y,
-   si la caja dependiera de el, la etiqueta y el numero quedarian a
-   distinta altura en cada card. */
-.metrica__icono {
+/* Fixed-size box: each glyph has its own height (16 to 23px) and,
+   if the box depended on it, the label and the number would end up at
+   a different height on each card. */
+.metric__icon {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 56px;
   height: 56px;
   border-radius: var(--ab-r-card);
-  background: color-mix(in srgb, var(--tono) 10%, transparent);
-  color: var(--tono);
+  background: color-mix(in srgb, var(--tone) 10%, transparent);
+  color: var(--tone);
 }
 
-.metrica__etiqueta {
+.metric__label {
   margin-top: 16px;
   font-size: calc(var(--ab-fs-body) + 2px);
   line-height: 1.5;
   color: var(--ab-body);
 }
 
-.metrica__valor {
+.metric__value {
   margin-top: 4px;
   font-family: "Hanken Grotesk", Inter, sans-serif;
   font-weight: 600;
   font-size: var(--ab-fs-hero);
   line-height: 1.25;
   letter-spacing: -0.01em;
-  color: var(--tono);
+  color: var(--tone);
 }
 
-/* ---------------- Accesos ---------------- */
-.accesos {
+/* ---------------- Shortcuts ---------------- */
+.shortcuts {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 18px 16px;
@@ -125,12 +125,12 @@
   list-style: none;
 }
 
-.accesos > li { display: flex; }
+.shortcuts > li { display: flex; }
 
-/* Si la cantidad es impar, el ultimo ocupa la fila entera */
-.accesos > li:last-child:nth-child(odd) { grid-column: 1 / -1; }
+/* If the count is odd, the last one takes the whole row */
+.shortcuts > li:last-child:nth-child(odd) { grid-column: 1 / -1; }
 
-.acceso {
+.shortcut {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -147,92 +147,92 @@
   cursor: pointer;
 }
 
-/* Las cards son links al menu de su gestion */
-a.acceso { text-decoration: none; }
+/* The cards are links to their management menu */
+a.shortcut { text-decoration: none; }
 
-.acceso:hover { border-color: rgba(196, 197, 214, 0.8); }
-.acceso:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 2px; }
+.shortcut:hover { border-color: rgba(196, 197, 214, 0.8); }
+.shortcut:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 2px; }
 
-.acceso__icono { color: var(--tono); }
+.shortcut__icon { color: var(--tone); }
 
-.acceso__titulo {
+.shortcut__title {
   padding: 11.25px 0 0.75px;
   font-family: "Hanken Grotesk", Inter, sans-serif;
   font-weight: 400;
   font-size: var(--ab-fs-h3);
   line-height: 1.25;
-  color: var(--tinta);
+  color: var(--ink);
 }
 
-.acceso__bajada {
+.shortcut__lead {
   font-size: calc(var(--ab-fs-body) + 2px);
   line-height: 1.5;
   color: var(--ab-body);
 }
 
-/* Marca de agua recortada por el borde de la card */
-.acceso__marca {
+/* Watermark clipped by the card border */
+.shortcut__mark {
   position: absolute;
   right: -15px;
   bottom: -15px;
-  color: var(--tinta);
+  color: var(--ink);
   opacity: 0.05;
   pointer-events: none;
 }
 
 /* ============================================================
-   Movimiento
+   Motion
    ============================================================ */
-/* Metricas y accesos entran en cascada detras de su lista */
-.metricas > .metrica,
-.accesos > li {
-  animation: ab-sube var(--ab-dur-lenta) var(--ab-ease-out) backwards;
+/* Metrics and shortcuts come in staggered behind their list */
+.metrics > .metric,
+.shortcuts > li {
+  animation: ab-rise var(--ab-dur-lenta) var(--ab-ease-out) backwards;
 }
 
 @for $i from 1 through 3 {
-  .metricas > .metrica:nth-child(#{$i}) { animation-delay: #{100 + $i * 70}ms; }
+  .metrics > .metric:nth-child(#{$i}) { animation-delay: #{100 + $i * 70}ms; }
 }
 
 @for $i from 1 through 6 {
-  .accesos > li:nth-child(#{$i}) { animation-delay: #{180 + $i * 60}ms; }
+  .shortcuts > li:nth-child(#{$i}) { animation-delay: #{180 + $i * 60}ms; }
 }
 
-.metrica__icono {
+.metric__icon {
   animation: ab-pop var(--ab-dur-lenta) var(--ab-ease-spring) backwards;
 }
 
 @for $i from 1 through 3 {
-  .metrica:nth-child(#{$i}) .metrica__icono { animation-delay: #{260 + $i * 70}ms; }
+  .metric:nth-child(#{$i}) .metric__icon { animation-delay: #{260 + $i * 70}ms; }
 }
 
-.acceso {
+.shortcut {
   transition:
     transform var(--ab-dur-media) var(--ab-ease-out),
     box-shadow var(--ab-dur-media) ease,
     border-color var(--ab-dur-media) ease;
 }
 
-.acceso__icono,
-.acceso__marca {
+.shortcut__icon,
+.shortcut__mark {
   transition: transform var(--ab-dur-lenta) var(--ab-ease-spring), opacity var(--ab-dur-media) ease;
 }
 
 @media (hover: hover) {
-  .acceso:hover {
+  .shortcut:hover {
     transform: translateY(-3px);
     box-shadow: var(--ab-shadow-card);
   }
 
-  .acceso:hover .acceso__icono { transform: scale(1.12) rotate(-4deg); }
+  .shortcut:hover .shortcut__icon { transform: scale(1.12) rotate(-4deg); }
 
-  /* La marca de agua se asoma un poco mas */
-  .acceso:hover .acceso__marca {
+  /* The watermark peeks out a bit more */
+  .shortcut:hover .shortcut__mark {
     transform: scale(1.15) rotate(-8deg);
     opacity: 0.09;
   }
 }
 
-.acceso:active {
+.shortcut:active {
   transform: scale(0.98);
   transition-duration: 80ms;
 }

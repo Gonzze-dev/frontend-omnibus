@@ -7,380 +7,380 @@ import { Toast } from '../../shared/toast/toast';
 import { AuthService } from '../../services/auth.service';
 import { UserService } from '../../services/user.service';
 import { TerminalService } from '../../services/terminal.service';
-import { UsuarioService } from '../../services/usuario.service';
-import { TerminalAsignada, UsuarioListado } from '../../models/usuario.model';
+import { UserManagementService } from '../../services/user-management.service';
+import { AssignedTerminal, ListedUser } from '../../models/user-management.model';
 
-/** Filas que entran en una pagina del listado de usuarios. */
-const POR_PAGINA = 10;
+/** Rows that fit in one page of the users list. */
+const PAGE_SIZE = 10;
 
 /**
- * Control de permisos: listado paginado de usuarios desde donde se
- * busca una cuenta y se le sube o baja el rol (admin o super admin).
+ * Permission control: paginated list of users from which an account is
+ * searched and its role is raised or lowered (admin or super admin).
  */
 @Component({
-  selector: 'app-permisos',
+  selector: 'app-permissions',
   imports: [Topbar, RouterLink, Toast],
-  templateUrl: './permisos.html',
-  styleUrl: './permisos.scss',
+  templateUrl: './permissions.html',
+  styleUrl: './permissions.scss',
 })
-export class Permisos {
-  // --- Listado de usuarios ---
-  // A diferencia de ciudades, el paginado y la busqueda los hace el
-  // backend: cada cambio de pagina o busqueda es un pedido nuevo.
-  private readonly usuarioService = inject(UsuarioService);
+export class Permissions {
+  // --- Users list ---
+  // Unlike cities, pagination and search are done by the
+  // backend: every page change or search is a new request.
+  private readonly userManagement = inject(UserManagementService);
 
-  /** Lo que esta escrito en el buscador, todavia sin aplicar. */
-  protected readonly textoBusqueda = signal('');
-  /** Busqueda aplicada con el boton: la que se manda al backend. */
-  private readonly busqueda = signal('');
+  /** What is typed in the search box, not applied yet. */
+  protected readonly searchText = signal('');
+  /** Search applied with the button: the one sent to the backend. */
+  private readonly search = signal('');
 
-  protected readonly pagina = signal(1);
-  /** Se incrementa para volver a pedir la pagina actual (despues de un cambio de rol). */
-  private readonly recarga = signal(0);
-  protected readonly totalElementos = signal(0);
-  protected readonly usuarios = signal<UsuarioListado[]>([]);
-  protected readonly cargandoListado = signal(false);
-  protected readonly errorListado = signal<string | null>(null);
+  protected readonly page = signal(1);
+  /** Incremented to request the current page again (after a role change). */
+  private readonly reload = signal(0);
+  protected readonly totalElements = signal(0);
+  protected readonly users = signal<ListedUser[]>([]);
+  protected readonly loadingList = signal(false);
+  protected readonly listError = signal<string | null>(null);
 
-  protected readonly totalPaginas = computed(() =>
-    Math.max(1, Math.ceil(this.totalElementos() / POR_PAGINA)),
+  protected readonly totalPages = computed(() =>
+    Math.max(1, Math.ceil(this.totalElements() / PAGE_SIZE)),
   );
 
-  protected readonly paginas = computed(() =>
-    Array.from({ length: this.totalPaginas() }, (_, i) => i + 1),
+  protected readonly pages = computed(() =>
+    Array.from({ length: this.totalPages() }, (_, i) => i + 1),
   );
 
-  /** Filas en blanco que completan la pagina, para que la tabla no cambie de alto. */
-  protected readonly relleno = computed(() =>
-    Array.from({ length: Math.max(0, POR_PAGINA - (this.usuarios().length || 1)) }),
+  /** Blank rows that complete the page, so the table does not change height. */
+  protected readonly filler = computed(() =>
+    Array.from({ length: Math.max(0, PAGE_SIZE - (this.users().length || 1)) }),
   );
 
   constructor() {
     effect(() => {
-      this.recarga();
-      this.cargarUsuarios(this.pagina(), this.busqueda());
+      this.reload();
+      this.loadUsers(this.page(), this.search());
     });
 
-    // El - del detalle depende de las terminales propias del admin: se
-    // refresca el perfil porque la sesion guardada puede estar vieja.
-    if (this.auth.user()?.rol === 'admin') {
-      this.userService.obtenerPerfil().subscribe({ error: () => {} });
+    // The detail's - depends on the admin's own terminals: the profile is
+    // refreshed because the stored session may be stale.
+    if (this.auth.user()?.role === 'admin') {
+      this.userService.getProfile().subscribe({ error: () => {} });
     }
 
-    // El <dialog> nativo se abre con showModal() para tener fondo, foco
-    // atrapado y cierre con Escape sin escribirlos a mano.
+    // The native <dialog> is opened with showModal() to get a backdrop, trapped
+    // focus and closing with Escape without writing them by hand.
     effect(() => {
-      const dialogo = this.dialogo()?.nativeElement;
-      if (!dialogo) return;
-      if (this.objetivo() && !dialogo.open) dialogo.showModal();
-      if (!this.objetivo() && dialogo.open) dialogo.close();
+      const dialog = this.dialog()?.nativeElement;
+      if (!dialog) return;
+      if (this.target() && !dialog.open) dialog.showModal();
+      if (!this.target() && dialog.open) dialog.close();
     });
   }
 
-  private cargarUsuarios(pagina: number, busqueda: string): void {
-    this.cargandoListado.set(true);
-    this.errorListado.set(null);
-    this.abierto.set(null);
+  private loadUsers(page: number, search: string): void {
+    this.loadingList.set(true);
+    this.listError.set(null);
+    this.expanded.set(null);
 
-    this.usuarioService
-      .listar({ page: pagina, limit: POR_PAGINA, order: 'ASC', search: busqueda })
+    this.userManagement
+      .list({ page, limit: PAGE_SIZE, order: 'ASC', search })
       .subscribe({
         next: (res) => {
-          this.usuarios.set(res.users);
-          this.totalElementos.set(res.total_elements);
-          this.cargandoListado.set(false);
+          this.users.set(res.users);
+          this.totalElements.set(res.total_elements);
+          this.loadingList.set(false);
         },
         error: (err: HttpErrorResponse) => {
-          this.usuarios.set([]);
-          this.totalElementos.set(0);
-          this.cargandoListado.set(false);
-          this.errorListado.set(mensajeErrorListado(err));
+          this.users.set([]);
+          this.totalElements.set(0);
+          this.loadingList.set(false);
+          this.listError.set(listErrorMessage(err));
         },
       });
   }
 
-  protected buscar(): void {
-    this.busqueda.set(this.textoBusqueda().trim());
-    this.pagina.set(1);
+  protected applySearch(): void {
+    this.search.set(this.searchText().trim());
+    this.page.set(1);
   }
 
-  protected irA(pagina: number): void {
-    this.pagina.set(Math.min(Math.max(pagina, 1), this.totalPaginas()));
+  protected goTo(page: number): void {
+    this.page.set(Math.min(Math.max(page, 1), this.totalPages()));
   }
 
-  /** Usuario con el detalle de terminales abierto. Uno a la vez. */
-  protected readonly abierto = signal<string | null>(null);
+  /** User with the terminals detail expanded. One at a time. */
+  protected readonly expanded = signal<string | null>(null);
 
-  protected esAdmin(u: UsuarioListado): boolean {
-    return u.rol === 'admin';
+  protected isAdmin(u: ListedUser): boolean {
+    return u.role === 'admin';
   }
 
-  /** Volver a tocar el usuario abierto lo cierra. */
-  protected desplegar(uuid: string): void {
-    this.abierto.update((actual) => (actual === uuid ? null : uuid));
+  /** Tapping the expanded user again collapses it. */
+  protected toggle(uuid: string): void {
+    this.expanded.update((current) => (current === uuid ? null : uuid));
   }
 
-  // --- Popup de promocion ---
+  // --- Promotion popup ---
   private readonly auth = inject(AuthService);
   private readonly userService = inject(UserService);
   private readonly terminalService = inject(TerminalService);
 
-  private readonly dialogo = viewChild<ElementRef<HTMLDialogElement>>('dialogo');
+  private readonly dialog = viewChild<ElementRef<HTMLDialogElement>>('dialog');
 
-  protected readonly soySuper = this.auth.esSuper;
+  protected readonly iAmSuper = this.auth.isSuper;
 
-  /** Usuario al que se le esta cambiando el rol. null = popup cerrado. */
-  protected readonly objetivo = signal<UsuarioListado | null>(null);
+  /** User whose role is being changed. null = popup closed. */
+  protected readonly target = signal<ListedUser | null>(null);
   /**
-   * El mismo popup sirve para subir el rol (+), bajar a un super admin (-)
-   * o sacarle una terminal a un admin (- en el detalle).
+   * The same popup is used to raise the role (+), lower a super admin (-)
+   * or remove a terminal from an admin (- in the detail).
    */
-  protected readonly modo = signal<'promover' | 'degradar' | 'quitar-terminal'>('promover');
-  /** Terminal que se le saca al admin en el modo 'quitar-terminal'. */
-  protected readonly terminalAQuitar = signal<TerminalAsignada | null>(null);
-  /** El super admin primero elige el rol; el admin va directo a la terminal. */
-  protected readonly paso = signal<'rol' | 'terminal'>('terminal');
+  protected readonly mode = signal<'promote' | 'demote' | 'remove-terminal'>('promote');
+  /** Terminal removed from the admin in 'remove-terminal' mode. */
+  protected readonly terminalToRemove = signal<AssignedTerminal | null>(null);
+  /** The super admin first chooses the role; the admin goes straight to the terminal. */
+  protected readonly step = signal<'role' | 'terminal'>('terminal');
 
-  /** Terminales que quien esta logueado puede dar: todas si es super, las propias si es admin. */
-  private readonly terminalesDisponibles = signal<TerminalAsignada[]>([]);
-  protected readonly cargandoTerminales = signal(false);
-  protected readonly terminalElegida = signal<string | null>(null);
+  /** Terminals the logged-in user can grant: all of them if super, their own if admin. */
+  private readonly availableTerminals = signal<AssignedTerminal[]>([]);
+  protected readonly loadingTerminals = signal(false);
+  protected readonly chosenTerminal = signal<string | null>(null);
 
-  /** No se ofrecen las terminales que el usuario ya tiene a cargo. */
-  protected readonly terminalesOfrecidas = computed(() => {
-    const yaTiene = new Set(this.objetivo()?.terminals.map((t) => t.uuid) ?? []);
-    return this.terminalesDisponibles().filter((t) => !yaTiene.has(t.uuid));
+  /** The terminals the user already manages are not offered. */
+  protected readonly offeredTerminals = computed(() => {
+    const alreadyHas = new Set(this.target()?.terminals.map((t) => t.uuid) ?? []);
+    return this.availableTerminals().filter((t) => !alreadyHas.has(t.uuid));
   });
 
-  // --- Selector de terminal con busqueda ---
-  /** Lo escrito en el selector. Al elegir una terminal pasa a ser su nombre. */
-  protected readonly textoTerminal = signal('');
-  protected readonly listaTerminalesAbierta = signal(false);
-  /** Opcion resaltada con las flechas del teclado. */
-  protected readonly resaltada = signal(0);
+  // --- Terminal selector with search ---
+  /** What is typed in the selector. When a terminal is chosen it becomes its name. */
+  protected readonly terminalText = signal('');
+  protected readonly terminalListOpen = signal(false);
+  /** Option highlighted with the keyboard arrows. */
+  protected readonly highlighted = signal(0);
 
-  protected readonly terminalesFiltradas = computed(() => {
-    const texto = normalizar(this.textoTerminal());
-    const elegida = this.terminalElegida();
-    const ofrecidas = this.terminalesOfrecidas();
-    // Con una ya elegida se muestran todas, para poder cambiarla sin borrar el texto.
-    if (!texto || elegida) return ofrecidas;
-    return ofrecidas.filter((t) => normalizar(t.name).includes(texto));
+  protected readonly filteredTerminals = computed(() => {
+    const text = normalize(this.terminalText());
+    const chosen = this.chosenTerminal();
+    const offered = this.offeredTerminals();
+    // With one already chosen all of them are shown, so it can be changed without deleting the text.
+    if (!text || chosen) return offered;
+    return offered.filter((t) => normalize(t.name).includes(text));
   });
 
-  protected escribirTerminal(texto: string): void {
-    this.textoTerminal.set(texto);
-    this.terminalElegida.set(null);
-    this.resaltada.set(0);
-    this.listaTerminalesAbierta.set(true);
+  protected typeTerminal(text: string): void {
+    this.terminalText.set(text);
+    this.chosenTerminal.set(null);
+    this.highlighted.set(0);
+    this.terminalListOpen.set(true);
   }
 
-  protected elegirTerminal(t: TerminalAsignada): void {
-    this.terminalElegida.set(t.uuid);
-    this.textoTerminal.set(t.name);
-    this.listaTerminalesAbierta.set(false);
+  protected chooseTerminal(t: AssignedTerminal): void {
+    this.chosenTerminal.set(t.uuid);
+    this.terminalText.set(t.name);
+    this.terminalListOpen.set(false);
   }
 
-  protected teclaTerminal(event: KeyboardEvent): void {
-    const opciones = this.terminalesFiltradas();
+  protected onTerminalKey(event: KeyboardEvent): void {
+    const options = this.filteredTerminals();
     switch (event.key) {
       case 'ArrowDown':
         event.preventDefault();
-        if (!this.listaTerminalesAbierta()) return this.listaTerminalesAbierta.set(true);
-        this.resaltada.update((i) => Math.min(i + 1, opciones.length - 1));
+        if (!this.terminalListOpen()) return this.terminalListOpen.set(true);
+        this.highlighted.update((i) => Math.min(i + 1, options.length - 1));
         break;
       case 'ArrowUp':
         event.preventDefault();
-        this.resaltada.update((i) => Math.max(i - 1, 0));
+        this.highlighted.update((i) => Math.max(i - 1, 0));
         break;
       case 'Enter': {
-        const t = opciones[this.resaltada()];
-        if (this.listaTerminalesAbierta() && t) {
+        const t = options[this.highlighted()];
+        if (this.terminalListOpen() && t) {
           event.preventDefault();
-          this.elegirTerminal(t);
+          this.chooseTerminal(t);
         }
         break;
       }
       case 'Escape':
-        // Con la lista abierta, Escape cierra la lista y no el popup.
-        if (this.listaTerminalesAbierta()) {
+        // With the list open, Escape closes the list and not the popup.
+        if (this.terminalListOpen()) {
           event.preventDefault();
           event.stopPropagation();
-          this.listaTerminalesAbierta.set(false);
+          this.terminalListOpen.set(false);
         }
         break;
     }
   }
 
-  protected readonly promoviendo = signal(false);
-  protected readonly errorPromocion = signal<string | null>(null);
-  protected readonly exito = signal<string | null>(null);
+  protected readonly promoting = signal(false);
+  protected readonly promotionError = signal<string | null>(null);
+  protected readonly success = signal<string | null>(null);
 
   /**
-   * El + aparece en las cuentas a las que se les puede subir el rol:
-   * nunca en la propia ni en un super admin, que ya es el rol mas alto.
+   * The + appears on the accounts whose role can be raised:
+   * never on your own nor on a super admin, which is already the highest role.
    */
-  protected puedePromover(u: UsuarioListado): boolean {
-    return u.rol !== 'super_admin' && u.uuid !== this.auth.user()?.uuid;
+  protected canPromote(u: ListedUser): boolean {
+    return u.role !== 'super_admin' && u.uuid !== this.auth.user()?.uuid;
   }
 
-  /** El - solo lo ve un super admin, sobre otro super admin (nunca sobre si mismo). */
-  protected puedeDegradar(u: UsuarioListado): boolean {
-    return this.soySuper() && u.rol === 'super_admin' && u.uuid !== this.auth.user()?.uuid;
+  /** Only a super admin sees the -, on another super admin (never on themselves). */
+  protected canDemote(u: ListedUser): boolean {
+    return this.iAmSuper() && u.role === 'super_admin' && u.uuid !== this.auth.user()?.uuid;
   }
 
-  protected abrirDegradacion(u: UsuarioListado): void {
-    this.objetivo.set(u);
-    this.modo.set('degradar');
-    this.errorPromocion.set(null);
+  protected openDemotion(u: ListedUser): void {
+    this.target.set(u);
+    this.mode.set('demote');
+    this.promotionError.set(null);
   }
 
-  protected degradarSuper(): void {
-    const u = this.objetivo();
+  protected demoteSuper(): void {
+    const u = this.target();
     if (!u) return;
-    this.ejecutarPromocion(
-      this.usuarioService.degradarSuper(u.email),
+    this.runPromotion(
+      this.userManagement.demoteSuper(u.email),
       `${u.first_name} ${u.last_name} ahora es usuario`,
     );
   }
 
   /**
-   * El - del detalle: un super admin lo ve en cualquier terminal; un admin,
-   * solo en las que el tambien tiene a cargo. Nunca sobre la propia cuenta.
+   * The detail's -: a super admin sees it on any terminal; an admin,
+   * only on the ones they also manage. Never on their own account.
    */
-  protected puedeQuitarTerminal(u: UsuarioListado, t: TerminalAsignada): boolean {
+  protected canRemoveTerminal(u: ListedUser, t: AssignedTerminal): boolean {
     if (u.uuid === this.auth.user()?.uuid) return false;
-    if (this.soySuper()) return true;
-    return this.auth.user()?.terminals?.some((propia) => propia.uuid === t.uuid) ?? false;
+    if (this.iAmSuper()) return true;
+    return this.auth.user()?.terminals?.some((own) => own.uuid === t.uuid) ?? false;
   }
 
-  protected abrirQuitarTerminal(u: UsuarioListado, t: TerminalAsignada): void {
-    this.objetivo.set(u);
-    this.terminalAQuitar.set(t);
-    this.modo.set('quitar-terminal');
-    this.errorPromocion.set(null);
+  protected openRemoveTerminal(u: ListedUser, t: AssignedTerminal): void {
+    this.target.set(u);
+    this.terminalToRemove.set(t);
+    this.mode.set('remove-terminal');
+    this.promotionError.set(null);
   }
 
-  protected quitarTerminal(): void {
-    const u = this.objetivo();
-    const t = this.terminalAQuitar();
+  protected removeTerminal(): void {
+    const u = this.target();
+    const t = this.terminalToRemove();
     if (!u || !t) return;
-    const ultima = u.terminals.length <= 1;
-    this.ejecutarPromocion(
-      this.usuarioService.degradarAdmin(u.email, t.uuid),
-      ultima
+    const last = u.terminals.length <= 1;
+    this.runPromotion(
+      this.userManagement.demoteAdmin(u.email, t.uuid),
+      last
         ? `${u.first_name} ${u.last_name} ahora es usuario`
         : `${u.first_name} ${u.last_name} ya no esta a cargo de ${t.name}`,
     );
   }
 
-  protected abrirPromocion(u: UsuarioListado): void {
-    this.objetivo.set(u);
-    this.modo.set('promover');
-    this.paso.set(this.soySuper() ? 'rol' : 'terminal');
-    this.terminalElegida.set(null);
-    this.errorPromocion.set(null);
-    if (!this.soySuper()) this.cargarTerminales();
+  protected openPromotion(u: ListedUser): void {
+    this.target.set(u);
+    this.mode.set('promote');
+    this.step.set(this.iAmSuper() ? 'role' : 'terminal');
+    this.chosenTerminal.set(null);
+    this.promotionError.set(null);
+    if (!this.iAmSuper()) this.loadTerminals();
   }
 
-  protected cerrarPromocion(): void {
-    if (this.promoviendo()) return;
-    this.objetivo.set(null);
+  protected closePromotion(): void {
+    if (this.promoting()) return;
+    this.target.set(null);
   }
 
   /**
-   * Un click en el fondo (el propio <dialog>, fuera del contenido) lo cierra.
-   * No devuelve nada a proposito: si el handler devolviera false, Angular
-   * haria preventDefault y los radios de adentro no se podrian marcar.
+   * A click on the backdrop (the <dialog> itself, outside the content) closes it.
+   * It deliberately returns nothing: if the handler returned false, Angular
+   * would call preventDefault and the radios inside could not be checked.
    */
-  protected clickEnPopup(event: MouseEvent): void {
-    if (event.target === event.currentTarget) this.cerrarPromocion();
+  protected onPopupClick(event: MouseEvent): void {
+    if (event.target === event.currentTarget) this.closePromotion();
   }
 
-  /** Paso del super admin: admin lleva a elegir la terminal. */
-  protected elegirAdmin(): void {
-    this.paso.set('terminal');
-    this.errorPromocion.set(null);
-    this.cargarTerminales();
+  /** Super admin step: admin leads to choosing the terminal. */
+  protected chooseAdmin(): void {
+    this.step.set('terminal');
+    this.promotionError.set(null);
+    this.loadTerminals();
   }
 
-  protected volverARol(): void {
-    this.paso.set('rol');
-    this.errorPromocion.set(null);
+  protected backToRole(): void {
+    this.step.set('role');
+    this.promotionError.set(null);
   }
 
-  private cargarTerminales(): void {
-    this.cargandoTerminales.set(true);
-    this.terminalElegida.set(null);
-    this.textoTerminal.set('');
-    this.listaTerminalesAbierta.set(false);
+  private loadTerminals(): void {
+    this.loadingTerminals.set(true);
+    this.chosenTerminal.set(null);
+    this.terminalText.set('');
+    this.terminalListOpen.set(false);
 
-    // El admin solo puede dar sus terminales: las trae del perfil, que es
-    // la fuente actualizada (la sesion guardada puede estar vieja).
-    const terminales$: Observable<TerminalAsignada[]> = this.soySuper()
-      ? this.terminalService.listarPublicas().pipe(map((ts) => ts.map((t) => ({ uuid: t.uuid, name: t.name }))))
-      : this.userService.obtenerPerfil().pipe(map((u) => u.terminals ?? []));
+    // The admin can only grant their terminals: they come from the profile, which is
+    // the up-to-date source (the stored session may be stale).
+    const terminals$: Observable<AssignedTerminal[]> = this.iAmSuper()
+      ? this.terminalService.listPublic().pipe(map((ts) => ts.map((t) => ({ uuid: t.uuid, name: t.name }))))
+      : this.userService.getProfile().pipe(map((u) => u.terminals ?? []));
 
-    terminales$.subscribe({
-      next: (terminales) => {
-        this.terminalesDisponibles.set(terminales);
-        this.cargandoTerminales.set(false);
-        // Con una sola opcion no hace falta hacerla elegir.
-        const ofrecidas = this.terminalesOfrecidas();
-        if (ofrecidas.length === 1) this.elegirTerminal(ofrecidas[0]);
+    terminals$.subscribe({
+      next: (terminals) => {
+        this.availableTerminals.set(terminals);
+        this.loadingTerminals.set(false);
+        // With a single option there is no need to make them choose.
+        const offered = this.offeredTerminals();
+        if (offered.length === 1) this.chooseTerminal(offered[0]);
       },
       error: (err: HttpErrorResponse) => {
-        this.terminalesDisponibles.set([]);
-        this.cargandoTerminales.set(false);
-        this.errorPromocion.set(mensajeErrorPromocion(err));
+        this.availableTerminals.set([]);
+        this.loadingTerminals.set(false);
+        this.promotionError.set(promotionErrorMessage(err));
       },
     });
   }
 
-  protected promoverSuper(): void {
-    const u = this.objetivo();
+  protected promoteSuper(): void {
+    const u = this.target();
     if (!u) return;
-    this.ejecutarPromocion(
-      this.usuarioService.promoverSuper(u.email),
+    this.runPromotion(
+      this.userManagement.promoteSuper(u.email),
       `${u.first_name} ${u.last_name} ahora es super admin`,
     );
   }
 
-  protected promoverAdmin(): void {
-    const u = this.objetivo();
-    const terminal = this.terminalElegida();
+  protected promoteAdmin(): void {
+    const u = this.target();
+    const terminal = this.chosenTerminal();
     if (!u || !terminal) return;
-    this.ejecutarPromocion(
-      this.usuarioService.promoverAdmin(u.email, terminal),
+    this.runPromotion(
+      this.userManagement.promoteAdmin(u.email, terminal),
       `${u.first_name} ${u.last_name} ahora es admin`,
     );
   }
 
-  private ejecutarPromocion(pedido: Observable<unknown>, mensajeExito: string): void {
-    this.promoviendo.set(true);
-    this.errorPromocion.set(null);
+  private runPromotion(request: Observable<unknown>, successMessage: string): void {
+    this.promoting.set(true);
+    this.promotionError.set(null);
 
-    pedido.subscribe({
+    request.subscribe({
       next: () => {
-        this.promoviendo.set(false);
-        this.objetivo.set(null);
-        this.exito.set(mensajeExito);
-        this.recarga.update((n) => n + 1);
+        this.promoting.set(false);
+        this.target.set(null);
+        this.success.set(successMessage);
+        this.reload.update((n) => n + 1);
       },
       error: (err: HttpErrorResponse) => {
-        this.promoviendo.set(false);
-        this.errorPromocion.set(mensajeErrorPromocion(err));
+        this.promoting.set(false);
+        this.promotionError.set(promotionErrorMessage(err));
       },
     });
   }
 }
 
-/** Para buscar sin importar mayusculas ni tildes ("gualeguaychu" encuentra "Gualeguaychú"). */
-function normalizar(texto: string): string {
-  return texto.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+/** To search ignoring case and accents ("gualeguaychu" finds "Gualeguaychú"). */
+function normalize(text: string): string {
+  return text.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 }
 
-function mensajeErrorListado(err: HttpErrorResponse): string {
+function listErrorMessage(err: HttpErrorResponse): string {
   switch (err.status) {
     case 0:
       return 'No se pudo conectar con el servidor. Intenta mas tarde.';
@@ -392,7 +392,7 @@ function mensajeErrorListado(err: HttpErrorResponse): string {
   }
 }
 
-function mensajeErrorPromocion(err: HttpErrorResponse): string {
+function promotionErrorMessage(err: HttpErrorResponse): string {
   switch (err.status) {
     case 0:
       return 'No se pudo conectar con el servidor. Intenta mas tarde.';
@@ -407,4 +407,4 @@ function mensajeErrorPromocion(err: HttpErrorResponse): string {
   }
 }
 
-export const tituloPermisos = 'Control de Permisos';
+export const permissionsTitle = 'Control de Permisos';

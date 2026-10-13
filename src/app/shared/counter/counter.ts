@@ -1,56 +1,56 @@
 import { DestroyRef, Directive, ElementRef, effect, inject, input } from '@angular/core';
 
-const FORMATO = new Intl.NumberFormat('es-AR');
-const DURACION_MS = 900;
+const FORMAT = new Intl.NumberFormat('es-AR');
+const DURATION_MS = 900;
 
 /**
- * Escribe un numero en el elemento contando desde el valor anterior
- * (o desde 0 la primera vez) hasta el nuevo. Mientras no hay dato
- * muestra una raya, igual que el formateo que reemplaza.
+ * Writes a number into the element counting from the previous value
+ * (or from 0 the first time) up to the new one. While there is no data
+ * it shows a dash, just like the formatting it replaces.
  *
- *   <span [abContador]="total()"></span>
+ *   <span [abCounter]="total()"></span>
  */
-@Directive({ selector: '[abContador]' })
-export class Contador {
-  readonly abContador = input.required<number | null>();
+@Directive({ selector: '[abCounter]' })
+export class Counter {
+  readonly abCounter = input.required<number | null>();
 
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
-  private actual = 0;
+  private current = 0;
   private frame = 0;
 
   constructor() {
-    effect(() => this.animar(this.abContador()));
+    effect(() => this.animate(this.abCounter()));
     inject(DestroyRef).onDestroy(() => cancelAnimationFrame(this.frame));
   }
 
-  private animar(destino: number | null): void {
+  private animate(target: number | null): void {
     cancelAnimationFrame(this.frame);
 
-    if (destino === null) {
-      this.actual = 0;
+    if (target === null) {
+      this.current = 0;
       this.el.textContent = '—';
       return;
     }
 
-    const desde = this.actual;
-    const sinMovimiento = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (sinMovimiento || desde === destino) {
-      this.pintar(destino);
+    const from = this.current;
+    const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reducedMotion || from === target) {
+      this.paint(target);
       return;
     }
 
-    const inicio = performance.now();
-    const paso = (ahora: number) => {
-      const t = Math.min((ahora - inicio) / DURACION_MS, 1);
-      const suave = 1 - Math.pow(1 - t, 3); // ease-out cubico
-      this.pintar(Math.round(desde + (destino - desde) * suave));
-      if (t < 1) this.frame = requestAnimationFrame(paso);
+    const start = performance.now();
+    const step = (now: number) => {
+      const t = Math.min((now - start) / DURATION_MS, 1);
+      const eased = 1 - Math.pow(1 - t, 3); // cubic ease-out
+      this.paint(Math.round(from + (target - from) * eased));
+      if (t < 1) this.frame = requestAnimationFrame(step);
     };
-    this.frame = requestAnimationFrame(paso);
+    this.frame = requestAnimationFrame(step);
   }
 
-  private pintar(valor: number): void {
-    this.actual = valor;
-    this.el.textContent = FORMATO.format(valor);
+  private paint(value: number): void {
+    this.current = value;
+    this.el.textContent = FORMAT.format(value);
   }
 }

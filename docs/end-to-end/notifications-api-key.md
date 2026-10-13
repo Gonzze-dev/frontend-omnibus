@@ -1,55 +1,55 @@
-# Flujo end-to-end: notificaciones con API Key
+# End-to-end flow: notifications with API Key
 
-Este documento describe los pasos que ocurren entre la cámara/dispositivo edge, el backend (Go), el microservicio realtime (SignalR) y el frontend (Angular), para las notificaciones protegidas por API Key.
+This document describes the steps that take place between the camera/edge device, the backend (Go), the realtime microservice (SignalR) and the frontend (Angular), for the notifications protected by an API Key.
 
-Hay dos API keys distintas, cada una protege un tramo diferente de la cadena:
+There are two different API keys; each one protects a different leg of the chain:
 
-| Key | Variable de entorno | Default (si no está en `.env`) | Protege |
+| Key | Environment variable | Default (if not in `.env`) | Protects |
 |---|---|---|---|
-| Cámara → Backend | `CAMERA_NOTIFICATION_API_KEY` | `DEFAULT_API_KEY` | Endpoints públicos `/notify_passengers` y `/notify_camera_error` |
-| Backend/Frontend → Realtime | `REALTIME_API_KEY` | `agag2J26sgJ2SAV6ATAJ6aG26sg26JG` | Conexión SignalR al hub `/realtime` |
+| Camera → Backend | `CAMERA_NOTIFICATION_API_KEY` | `DEFAULT_API_KEY` | Public endpoints `/notify_passengers` and `/notify_camera_error` |
+| Backend/Frontend → Realtime | `REALTIME_API_KEY` | `agag2J26sgJ2SAV6ATAJ6aG26sg26JG` | SignalR connection to the `/realtime` hub |
 
-Definidas en [internal/config/config.go](../../../../backend/omnibus-backend/internal/config/config.go) (backend) y en `RealTime/appsettings.json` (`ApiKey`) del microservicio realtime.
+Defined in [internal/config/config.go](../../../../backend/omnibus-backend/internal/config/config.go) (backend) and in `RealTime/appsettings.json` (`ApiKey`) of the realtime microservice.
 
-## 1. Cámara → Backend (`X-API-Key`)
+## 1. Camera → Backend (`X-API-Key`)
 
-1. La cámara/dispositivo detecta la llegada de un colectivo a una plataforma o un error, y hace `POST /notify_passengers` o `POST /notify_camera_error`.
-2. Envía el header `X-API-Key: <CAMERA_NOTIFICATION_API_KEY>`.
-3. El middleware `middleware.CameraAPIKey` ([internal/middleware/apikey.go](../../../../backend/omnibus-backend/internal/middleware/apikey.go)) compara ese header contra `cfg.CameraNotificationAPIKey`. Si no coincide, corta la request con 401 antes de llegar al handler.
-4. Si es válida, el request llega a `NotificationService` ([internal/service/notification.go](../../../../backend/omnibus-backend/internal/service/notification.go)):
-   - Resuelve la plataforma por `code`/`code_camera` y su terminal asociado.
-   - Construye el mensaje (`BUS_ARRIVAL` o `CAMERA`) y lo persiste en la tabla `notifications`.
-   - Si es `BUS_ARRIVAL`, además marca como notificados los `awaited_trip` de esa combinación patente+terminal y dispara mails de "tu bus ha llegado" a quienes lo estaban esperando.
+1. The camera/device detects a bus arriving at a platform, or an error, and sends `POST /notify_passengers` or `POST /notify_camera_error`.
+2. It sends the header `X-API-Key: <CAMERA_NOTIFICATION_API_KEY>`.
+3. The `middleware.CameraAPIKey` middleware ([internal/middleware/apikey.go](../../../../backend/omnibus-backend/internal/middleware/apikey.go)) compares that header against `cfg.CameraNotificationAPIKey`. If it does not match, it cuts the request with a 401 before it reaches the handler.
+4. If it is valid, the request reaches `NotificationService` ([internal/service/notification.go](../../../../backend/omnibus-backend/internal/service/notification.go)):
+   - It resolves the platform by `code`/`code_camera` and its associated terminal.
+   - It builds the message (`BUS_ARRIVAL` or `CAMERA`) and persists it in the `notifications` table.
+   - If it is `BUS_ARRIVAL`, it also marks the `awaited_trip` rows of that plate+terminal combination as notified and sends "your bus has arrived" emails to the people who were waiting for it.
 
-## 2. Backend → Microservicio Realtime (SignalR, `apiKey` en query string)
+## 2. Backend → Realtime microservice (SignalR, `apiKey` in the query string)
 
-1. El backend mantiene un cliente SignalR (`realtime.NewClient`, [pkg/realtime/client.go](../../../../backend/omnibus-backend/pkg/realtime/client.go)) que agrega `?apiKey=<REALTIME_API_KEY>` a la URL del hub al conectarse.
-2. Tras persistir la notificación, el backend invoca un método remoto del hub según el tipo de evento:
-   - `SendToFrontend` — llegada de colectivo (grupo `frontend/{patente}:{terminal}`).
-   - `SendToFrontendGlobal` — notificación global de super admin.
-   - `NotifyDelayBus` — demora cargada por un admin.
-   - `NotifyAdminFromCamera` — error de cámara, va al grupo de admins de esa terminal.
-   - `DeleteNotification` — borrado manual de una notificación.
-3. En `RealtimeHub.OnConnectedAsync` ([realtime/RealTime/Hubs/RealtimeHub.cs](../../../../realtime/RealTime/Hubs/RealtimeHub.cs)), el hub lee el query param `apiKey` y lo compara contra `ApiKey` de `appsettings.json`. Si no coincide, aborta la conexión — aplica tanto a la conexión del backend como a la del frontend.
-4. Si la key es válida, el hub reenvía el payload (`ReceiveNotification`) a todos los clientes conectados al grupo (`Clients.Group(groupName).SendAsync(...)`).
+1. The backend keeps a SignalR client (`realtime.NewClient`, [pkg/realtime/client.go](../../../../backend/omnibus-backend/pkg/realtime/client.go)) that appends `?apiKey=<REALTIME_API_KEY>` to the hub URL when connecting.
+2. After persisting the notification, the backend invokes a remote hub method according to the event type:
+   - `SendToFrontend` — bus arrival (group `frontend/{plate}:{terminal}`).
+   - `SendToFrontendGlobal` — super admin global notification.
+   - `NotifyDelayBus` — delay entered by an admin.
+   - `NotifyAdminFromCamera` — camera error, goes to the admins group of that terminal.
+   - `DeleteNotification` — manual deletion of a notification.
+3. In `RealtimeHub.OnConnectedAsync` ([realtime/RealTime/Hubs/RealtimeHub.cs](../../../../realtime/RealTime/Hubs/RealtimeHub.cs)), the hub reads the `apiKey` query param and compares it against `ApiKey` in `appsettings.json`. If it does not match, it aborts the connection — this applies both to the backend connection and to the frontend one.
+4. If the key is valid, the hub forwards the payload (`ReceiveNotification`) to every client connected to the group (`Clients.Group(groupName).SendAsync(...)`).
 
-## 3. Frontend → Microservicio Realtime (misma API key, conexión propia)
+## 3. Frontend → Realtime microservice (same API key, its own connection)
 
-1. El frontend abre su propia conexión SignalR desde `RealtimeService.conectar()` ([src/app/services/realtime.service.ts](../../src/app/services/realtime.service.ts)), agregando `?apiKey=<realtimeApiKey>` a la URL del hub (`APP_CONFIG.realtimeUrl`, definido en [src/app/config.ts](../../src/app/config.ts)).
-2. Al conectar, el frontend hace `JoinFrontend(groupKey)` para unirse al grupo de su viaje/terminal. El hub, al unir al cliente, le reenvía las notificaciones guardadas en Postgres que aún no vencieron (así si el colectivo llegó antes de abrir la app, el aviso igual aparece).
-3. Cuando el backend invoca `SendToFrontend` / `NotifyDelayBus` / etc., el hub emite `receiveNotification` a ese grupo, y `RealtimeService.recibir()` actualiza los signals `llegada` o `demora` según `msg.type` (`BUS_ARRIVAL` / `BUS_DELAY`), que la UI consume reactivamente.
-4. Si la conexión se cae y SignalR reconecta automáticamente, el frontend vuelve a hacer `JoinFrontend` para el grupo activo (SignalR no conserva membership de grupos entre reconexiones).
+1. The frontend opens its own SignalR connection from `RealtimeService.connect()` ([src/app/services/realtime.service.ts](../../src/app/services/realtime.service.ts)), appending `?apiKey=<realtimeApiKey>` to the hub URL (`APP_CONFIG.realtimeUrl`, defined in [src/app/config.ts](../../src/app/config.ts)).
+2. When connecting, the frontend calls `JoinFrontend(groupKey)` to join the group of its trip/terminal. When adding the client, the hub resends the notifications stored in Postgres that have not expired yet (so if the bus arrived before the app was opened, the notice still shows up).
+3. When the backend invokes `SendToFrontend` / `NotifyDelayBus` / etc., the hub emits `receiveNotification` to that group, and `RealtimeService.receive()` updates the `arrival` or `delay` signals according to `msg.type` (`BUS_ARRIVAL` / `BUS_DELAY`), which the UI consumes reactively.
+4. If the connection drops and SignalR reconnects automatically, the frontend calls `JoinFrontend` again for the active group (SignalR does not keep group membership between reconnections).
 
-## Resumen visual
+## Visual summary
 
 ```
-[Cámara/Edge] --X-API-Key--> [Backend Go] --apiKey (query)--> [Hub SignalR] <--apiKey (query)-- [Frontend Angular]
+[Camera/Edge] --X-API-Key--> [Go Backend] --apiKey (query)--> [SignalR Hub] <--apiKey (query)-- [Angular Frontend]
                                   |                                  |
-                            guarda en Postgres              reenvía a grupo (receiveNotification)
-                            (tabla notifications)
+                          stores in Postgres                forwards to group (receiveNotification)
+                         (notifications table)
 ```
 
-## Notas
+## Notes
 
-- Si `CAMERA_NOTIFICATION_API_KEY` o `REALTIME_API_KEY` no están seteadas en el `.env` del backend, se usan los defaults hardcodeados en `config.go`. **Esto es solo apto para desarrollo**: en producción hay que setear ambas variables con valores propios y mantener sincronizado `REALTIME_API_KEY` (backend) con `ApiKey` (`appsettings.json` del realtime) y con `realtimeApiKey` (`config.ts` del frontend), ya que las tres deben coincidir para que la conexión al hub sea aceptada.
-- El grupo `frontend/{patente}:{terminal}` es el mismo que usa el backend al invocar `SendToFrontend`; si no coincide exactamente (normalización de patente, uuid de terminal), el frontend no recibe el evento aunque la conexión esté autenticada.
+- If `CAMERA_NOTIFICATION_API_KEY` or `REALTIME_API_KEY` are not set in the backend `.env`, the defaults hardcoded in `config.go` are used. **This is only suitable for development**: in production both variables must be set with your own values, and `REALTIME_API_KEY` (backend) must be kept in sync with `ApiKey` (realtime `appsettings.json`) and with `realtimeApiKey` (frontend `config.ts`), since all three must match for the hub connection to be accepted.
+- The `frontend/{plate}:{terminal}` group is the same one the backend uses when invoking `SendToFrontend`; if it does not match exactly (plate normalization, terminal uuid), the frontend does not receive the event even though the connection is authenticated.

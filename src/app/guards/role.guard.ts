@@ -1,15 +1,15 @@
 import { inject } from '@angular/core';
 import { CanMatchFn, Router } from '@angular/router';
-import { Rol } from '../models/auth.model';
+import { Role } from '../models/auth.model';
 import { AuthService } from '../services/auth.service';
 
 /**
- * La ruta solo existe para esos roles; el resto vuelve a su pantalla
- * inicial. Es solo para la navegacion: quien autoriza es el backend.
+ * The route only exists for those roles; everyone else goes back to their initial
+ * screen. It is only for navigation: the backend is the one that authorizes.
  */
-export const soloRoles =
-  (...roles: Rol[]): CanMatchFn =>
+export const rolesOnly =
+  (...roles: Role[]): CanMatchFn =>
   () => {
     const auth = inject(AuthService);
-    return auth.tieneRol(...roles) || inject(Router).parseUrl(auth.rutaInicio());
+    return auth.hasRole(...roles) || inject(Router).parseUrl(auth.homeRoute());
   };

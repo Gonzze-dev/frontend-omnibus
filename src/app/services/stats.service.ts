@@ -4,30 +4,30 @@ import { map, Observable } from 'rxjs';
 import { APP_CONFIG } from '../config';
 import { CountResponse } from '../models/stats.model';
 
-/** Totales del dashboard contra /api/admin/stats (admin y super admin). */
+/** Dashboard totals against /api/admin/stats (admin and super admin). */
 @Injectable({ providedIn: 'root' })
 export class StatsService {
   private readonly http = inject(HttpClient);
   private readonly statsUrl = `${APP_CONFIG.apiUrl}/admin/stats`;
 
-  /** Cantidad de terminales registradas. */
-  totalTerminales(): Observable<number> {
-    return this.contar('terminals');
+  /** Number of registered terminals. */
+  totalTerminals(): Observable<number> {
+    return this.count('terminals');
   }
 
-  /** Cantidad de plataformas registradas. */
-  totalPlataformas(): Observable<number> {
-    return this.contar('platforms');
+  /** Number of registered platforms. */
+  totalPlatforms(): Observable<number> {
+    return this.count('platforms');
   }
 
-  /** Cantidad de ciudades registradas. */
-  totalCiudades(): Observable<number> {
-    return this.contar('cities');
+  /** Number of registered cities. */
+  totalCities(): Observable<number> {
+    return this.count('cities');
   }
 
-  private contar(recurso: 'terminals' | 'platforms' | 'cities'): Observable<number> {
+  private count(resource: 'terminals' | 'platforms' | 'cities'): Observable<number> {
     return this.http
-      .get<CountResponse>(`${this.statsUrl}/${recurso}`)
+      .get<CountResponse>(`${this.statsUrl}/${resource}`)
       .pipe(map((res) => res.total));
   }
 }

@@ -1,24 +1,24 @@
 /* ============================================================
-   Notificaciones (Figma nodo 35:217)
+   Notifications (Figma node 35:217)
    ============================================================ */
 
-@use '../../../styles/pantalla' as *;
+@use '../../../styles/screen' as *;
 
-.avisos {
+.notices {
   min-height: calc(100dvh - var(--ab-topbar-h));
   padding-bottom: 23px;
-  @include pantalla-card;
+  @include screen-card;
 }
 
-/* Dentro de la card el titulo necesita aire arriba y abajo */
+/* Inside the card the title needs room above and below */
 @media (min-width: 768px) {
-  .avisos {
+  .notices {
     padding-top: 34px;
     padding-bottom: 48px;
   }
 }
 
-.avisos__titulo {
+.notices__title {
   margin: 0;
   padding-top: 15px;
   font-family: Manrope, Inter, sans-serif;
@@ -29,14 +29,14 @@
   color: var(--ab-primary);
 }
 
-.avisos__bajada {
+.notices__lead {
   margin: 24px 0 0;
   font-size: var(--ab-fs-lead);
   line-height: var(--ab-lh-lead);
   color: var(--ab-body);
 }
 
-.avisos__lista {
+.notices__list {
   display: flex;
   flex-direction: column;
   gap: 32px;
@@ -45,10 +45,10 @@
   list-style: none;
 }
 
-/* --- Tarjeta de aviso --- */
-/* 116px es el alto del mockup; un titulo largo puede estirarla,
-   que es lo que corresponde cuando los datos sean reales. */
-.aviso {
+/* --- Notice card --- */
+/* 116px is the mockup height; a long title can stretch it,
+   which is what should happen when the data is real. */
+.notice {
   display: flex;
   align-items: flex-start;
   gap: 20px;
@@ -58,7 +58,7 @@
   background: var(--ab-card);
 }
 
-.aviso__icono {
+.notice__icon {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -70,18 +70,18 @@
   color: var(--ab-white);
 }
 
-.aviso__icono--retraso  { background: #FD6C00; }
-.aviso__icono--llegada  { background: #34C759; }
-.aviso__icono--servicio { background: #FFCC00; }
+.notice__icon--delay  { background: #FD6C00; }
+.notice__icon--arrival  { background: #34C759; }
+.notice__icon--service { background: #FFCC00; }
 
-.aviso__texto {
+.notice__text {
   display: flex;
   flex-direction: column;
   gap: 2.75px;
   min-width: 0;
 }
 
-.aviso__titulo {
+.notice__title {
   margin: 0;
   font-family: Manrope, Inter, sans-serif;
   font-weight: 700;
@@ -91,15 +91,15 @@
   color: var(--ab-ink);
 }
 
-.aviso__detalle {
+.notice__detail {
   margin: 0;
   font-size: var(--ab-fs-body);
   line-height: 22.8px;
   color: var(--ab-body);
 }
 
-/* --- Pie --- */
-.avisos__limpiar {
+/* --- Footer --- */
+.notices__clear {
   display: block;
   margin: 95px auto 0;
   padding: 12px 32px;
@@ -115,11 +115,11 @@
   cursor: pointer;
 }
 
-.avisos__limpiar:hover { background: #D5D6E2; }
-.avisos__limpiar:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 2px; }
+.notices__clear:hover { background: #D5D6E2; }
+.notices__clear:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 2px; }
 
-/* Estado vacio: no esta en el mockup, hace falta al limpiar la lista */
-.avisos__vacio {
+/* Empty state: it is not in the mockup, it is needed when clearing the list */
+.notices__empty {
   margin: 45px 0 0;
   font-size: var(--ab-fs-lead);
   line-height: var(--ab-lh-lead);
@@ -128,28 +128,28 @@
 }
 
 /* ============================================================
-   Movimiento
+   Motion
    ============================================================ */
-/* Cada aviso entra desde la izquierda, uno detras de otro */
-.aviso {
-  animation: ab-desde-izquierda var(--ab-dur-lenta) var(--ab-ease-out) backwards;
+/* Each notice comes in from the left, one after another */
+.notice {
+  animation: ab-from-left var(--ab-dur-lenta) var(--ab-ease-out) backwards;
 }
 
-.aviso__icono {
+.notice__icon {
   animation: ab-pop var(--ab-dur-lenta) var(--ab-ease-spring) backwards;
 }
 
 @for $i from 1 through 8 {
-  .aviso:nth-child(#{$i}) { animation-delay: #{120 + $i * 60}ms; }
-  .aviso:nth-child(#{$i}) .aviso__icono { animation-delay: #{220 + $i * 60}ms; }
+  .notice:nth-child(#{$i}) { animation-delay: #{120 + $i * 60}ms; }
+  .notice:nth-child(#{$i}) .notice__icon { animation-delay: #{220 + $i * 60}ms; }
 }
 
-/* Al limpiar, la lista sale y recien despues aparece el vacio
-   (asi no se ve un instante debajo de los avisos que se van) */
-.ab-screen > .avisos__vacio { animation-delay: 300ms; }
+/* When clearing, the list leaves and only then the empty state appears
+   (so it is not seen for an instant below the notices that are leaving) */
+.ab-screen > .notices__empty { animation-delay: 300ms; }
 
-.avisos__limpiar {
+.notices__clear {
   transition: background-color var(--ab-dur-rapida) ease, transform var(--ab-dur-rapida) var(--ab-ease-out);
 }
 
-.avisos__limpiar:active { transform: scale(0.97); }
+.notices__clear:active { transform: scale(0.97); }

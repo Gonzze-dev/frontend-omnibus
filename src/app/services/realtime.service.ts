@@ -2,92 +2,88 @@ import { Injectable, signal } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
 import { Subject } from 'rxjs';
 import { APP_CONFIG } from '../config';
-import {
-  DemoraColectivo,
-  LlegadaColectivo,
-  NotificacionPasajero,
-} from '../models/viaje.model';
+import { BusArrival, BusDelay, PassengerNotification } from '../models/trip.model';
 
-/** Grupo de los avisos GLOBAL (el hub lo arma como `frontend/global`). */
-const GRUPO_GLOBAL = 'global';
+/** Group of the GLOBAL notices (the hub builds it as `frontend/global`). */
+const GLOBAL_GROUP = 'global';
 
 /**
- * Conexion con el hub de SignalR (microservicio realtime).
+ * Connection to the SignalR hub (realtime microservice).
  *
- * Grupos a los que se suscribe el pasajero (el hub les antepone `frontend/`):
- * - `global`: avisos GLOBAL del super admin. Siempre.
- * - `{uuid_terminal}`: avisos LOCAL de la terminal donde espera.
- * - `{PATENTE}:{uuid_terminal}`: llegada (BUS_ARRIVAL, la dispara la camara)
- *   y demoras (BUS_DELAY, las carga un admin) de su colectivo.
+ * Groups the passenger subscribes to (the hub prefixes them with `frontend/`):
+ * - `global`: GLOBAL notices from the super admin. Always.
+ * - `{terminal_uuid}`: LOCAL notices of the terminal where they wait.
+ * - `{PLATE}:{terminal_uuid}`: arrival (BUS_ARRIVAL, fired by the camera)
+ *   and delays (BUS_DELAY, entered by an admin) of their bus.
  *
- * El backend guarda cada notificacion y, al unirse a un grupo, el hub reenvia
- * las que no vencieron. Asi, si el aviso salio antes de que el usuario abriera
- * la app, le llega igual. Por eso un mismo aviso puede llegar mas de una vez
- * (por ejemplo al reconectar): quien escucha tiene que deduplicar por id.
+ * The backend stores every notification and, when joining a group, the hub resends
+ * the ones that have not expired. So if the notice went out before the user opened
+ * the app, it still arrives. That is why the same notice can arrive more than once
+ * (for example when reconnecting): listeners have to deduplicate by id.
  */
 @Injectable({ providedIn: 'root' })
 export class RealtimeService {
   private connection: signalR.HubConnection | null = null;
-  private conectando: Promise<signalR.HubConnection> | null = null;
-  /** Grupos del viaje que se esta siguiendo: [patente:terminal, terminal]. */
-  private gruposViaje: string[] = [];
+  private connecting: Promise<signalR.HubConnection> | null = null;
+  /** Groups of the trip being followed: [plate:terminal, terminal]. */
+  private tripGroups: string[] = [];
 
-  readonly conectado = signal(false);
-  readonly llegada = signal<LlegadaColectivo | null>(null);
-  readonly demora = signal<DemoraColectivo | null>(null);
+  readonly connected = signal(false);
+  readonly arrival = signal<BusArrival | null>(null);
+  readonly delay = signal<BusDelay | null>(null);
 
-  private readonly _recibidas = new Subject<NotificacionPasajero>();
-  private readonly _eliminadas = new Subject<string>();
-  /** Cada notificacion que emite el hub, incluidas las reenviadas al unirse. */
-  readonly recibidas$ = this._recibidas.asObservable();
-  /** Ids de notificaciones que un admin borro. */
-  readonly eliminadas$ = this._eliminadas.asObservable();
+  private readonly _received = new Subject<PassengerNotification>();
+  private readonly _deleted = new Subject<string>();
+  /** Every notification the hub emits, including the ones resent when joining. */
+  readonly received$ = this._received.asObservable();
+  /** Ids of notifications an admin deleted. */
+  readonly deleted$ = this._deleted.asObservable();
 
-  /** Abre la conexion y se suscribe a los avisos globales. */
-  async iniciar(): Promise<void> {
-    await this.conectar();
+  /** Opens the connection and subscribes to the global notices. */
+  async start(): Promise<void> {
+    await this.connect();
   }
 
-  /** Se suscribe a los avisos de un viaje; deja el anterior si habia uno. */
-  async seguirViaje(groupKey: string, terminalUuid: string): Promise<void> {
-    const grupos = [groupKey, terminalUuid];
-    if (grupos.join() !== this.gruposViaje.join()) {
-      await this.dejarViaje();
+  /** Subscribes to a trip's notices; leaves the previous one if there was one. */
+  async followTrip(groupKey: string, terminalUuid: string): Promise<void> {
+    const groups = [groupKey, terminalUuid];
+    if (groups.join() !== this.tripGroups.join()) {
+      await this.leaveTrip();
     }
 
-    const connection = await this.conectar();
-    this.gruposViaje = grupos;
-    for (const grupo of grupos) {
-      await connection.invoke('JoinFrontend', grupo);
+    const connection = await this.connect();
+    this.tripGroups = groups;
+    for (const group of groups) {
+      await connection.invoke('JoinFrontend', group);
     }
   }
 
-  async dejarViaje(): Promise<void> {
-    const grupos = this.gruposViaje;
-    this.gruposViaje = [];
-    this.llegada.set(null);
-    this.demora.set(null);
+  async leaveTrip(): Promise<void> {
+    const groups = this.tripGroups;
+    this.tripGroups = [];
+    this.arrival.set(null);
+    this.delay.set(null);
 
     if (this.connection?.state !== signalR.HubConnectionState.Connected) return;
-    for (const grupo of grupos) {
+    for (const group of groups) {
       try {
-        await this.connection.invoke('LeaveFrontendGroup', grupo);
+        await this.connection.invoke('LeaveFrontendGroup', group);
       } catch {
-        // Si el hub no responde, el grupo se pierde igual al cerrar la conexion
+        // If the hub does not respond, the group is lost anyway when the connection closes
       }
     }
   }
 
-  private conectar(): Promise<signalR.HubConnection> {
+  private connect(): Promise<signalR.HubConnection> {
     if (this.connection?.state === signalR.HubConnectionState.Connected) {
       return Promise.resolve(this.connection);
     }
-    // Varias pantallas pueden pedir la conexion a la vez: se comparte el intento.
-    this.conectando ??= this.abrir().finally(() => (this.conectando = null));
-    return this.conectando;
+    // Several screens can request the connection at once: the attempt is shared.
+    this.connecting ??= this.open().finally(() => (this.connecting = null));
+    return this.connecting;
   }
 
-  private async abrir(): Promise<signalR.HubConnection> {
+  private async open(): Promise<signalR.HubConnection> {
     if (!this.connection) {
       const apiKey = encodeURIComponent(APP_CONFIG.realtimeApiKey);
       this.connection = new signalR.HubConnectionBuilder()
@@ -95,59 +91,59 @@ export class RealtimeService {
         .withAutomaticReconnect()
         .build();
 
-      this.connection.on('receiveNotification', (msg: NotificacionPasajero) => this.recibir(msg));
-      this.connection.on('deleteNotification', (id: string) => this.eliminar(id));
+      this.connection.on('receiveNotification', (msg: PassengerNotification) => this.receive(msg));
+      this.connection.on('deleteNotification', (id: string) => this.remove(id));
 
-      // SignalR no conserva los grupos al reconectar: hay que volver a unirse.
-      this.connection.onreconnecting(() => this.conectado.set(false));
+      // SignalR does not keep the groups when reconnecting: they have to be joined again.
+      this.connection.onreconnecting(() => this.connected.set(false));
       this.connection.onreconnected(async () => {
-        this.conectado.set(true);
-        await this.unirseAGrupos();
+        this.connected.set(true);
+        await this.joinGroups();
       });
-      this.connection.onclose(() => this.conectado.set(false));
+      this.connection.onclose(() => this.connected.set(false));
     }
 
     if (this.connection.state === signalR.HubConnectionState.Disconnected) {
       await this.connection.start();
-      this.conectado.set(true);
-      await this.unirseAGrupos();
+      this.connected.set(true);
+      await this.joinGroups();
     }
     return this.connection;
   }
 
-  private async unirseAGrupos(): Promise<void> {
-    for (const grupo of [GRUPO_GLOBAL, ...this.gruposViaje]) {
+  private async joinGroups(): Promise<void> {
+    for (const group of [GLOBAL_GROUP, ...this.tripGroups]) {
       try {
-        await this.connection?.invoke('JoinFrontend', grupo);
+        await this.connection?.invoke('JoinFrontend', group);
       } catch {
-        // Se reintenta en la proxima reconexion
+        // Retried on the next reconnection
       }
     }
   }
 
-  private recibir(msg: NotificacionPasajero): void {
+  private receive(msg: PassengerNotification): void {
     if (!msg?.type) return;
 
     switch (msg.type) {
       case 'BUS_ARRIVAL': {
-        const llegada = msg.payload as LlegadaColectivo;
-        // El reenvio al reconectar no tiene que volver a disparar el aviso.
-        if (this.llegada()?.id !== llegada.id) this.llegada.set(llegada);
+        const arrival = msg.payload as BusArrival;
+        // The resend on reconnect must not fire the notice again.
+        if (this.arrival()?.id !== arrival.id) this.arrival.set(arrival);
         break;
       }
       case 'BUS_DELAY': {
-        const demora = msg.payload as DemoraColectivo;
-        if (this.demora()?.id !== demora.id) this.demora.set(demora);
+        const delay = msg.payload as BusDelay;
+        if (this.delay()?.id !== delay.id) this.delay.set(delay);
         break;
       }
     }
 
-    this._recibidas.next(msg);
+    this._received.next(msg);
   }
 
-  private eliminar(id: string): void {
-    if (this.llegada()?.id === id) this.llegada.set(null);
-    if (this.demora()?.id === id) this.demora.set(null);
-    this._eliminadas.next(id);
+  private remove(id: string): void {
+    if (this.arrival()?.id === id) this.arrival.set(null);
+    if (this.delay()?.id === id) this.delay.set(null);
+    this._deleted.next(id);
   }
 }

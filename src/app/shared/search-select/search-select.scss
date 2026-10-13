@@ -1,9 +1,9 @@
 :host { display: block; }
 
-.buscador { position: relative; }
+.search { position: relative; }
 
-/* Mismo aspecto que .crud__select */
-.buscador__input {
+/* Same look as .crud__select */
+.search__input {
   width: 100%;
   height: var(--ab-input-h);
   padding: 0 36px 0 12px;
@@ -15,11 +15,11 @@
   font-size: var(--ab-fs-input);
 }
 
-.buscador__input::placeholder { color: var(--ab-placeholder); }
-.buscador__input:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 2px; }
-.buscador__input:disabled { opacity: 0.6; }
+.search__input::placeholder { color: var(--ab-placeholder); }
+.search__input:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 2px; }
+.search__input:disabled { opacity: 0.6; }
 
-.buscador__flecha {
+.search__arrow {
   position: absolute;
   top: 50%;
   right: 12px;
@@ -28,8 +28,8 @@
   pointer-events: none;
 }
 
-/* Popover en la top layer: top, left y width los pone posicionar() */
-.buscador__lista {
+/* Popover in the top layer: top, left and width are set by position() */
+.search__list {
   position: fixed;
   inset: auto;
   box-sizing: border-box;
@@ -44,7 +44,7 @@
   box-shadow: var(--ab-shadow-dark);
 }
 
-.buscador__opcion {
+.search__option {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
@@ -56,13 +56,13 @@
   cursor: pointer;
 }
 
-.buscador__opcion--activa { background: var(--ab-card); }
-.buscador__opcion--elegida { color: var(--ab-primary); font-weight: 600; }
+.search__option--active { background: var(--ab-card); }
+.search__option--selected { color: var(--ab-primary); font-weight: 600; }
 
-.buscador__etiqueta { min-width: 0; overflow-wrap: anywhere; }
+.search__label { min-width: 0; overflow-wrap: anywhere; }
 
-/* Dato secundario alineado a la derecha (ej: codigo del anden) */
-.buscador__detalle {
+/* Secondary detail aligned to the right (e.g. bay code) */
+.search__detail {
   flex-shrink: 0;
   color: var(--ab-muted);
   font-size: 0.85em;
@@ -70,13 +70,13 @@
   font-weight: 400;
 }
 
-.buscador__opcion[aria-disabled='true'] {
+.search__option[aria-disabled='true'] {
   color: var(--ab-muted);
   cursor: not-allowed;
   opacity: 0.6;
 }
 
-.buscador__vacio {
+.search__empty {
   padding: 10px 12px;
   color: var(--ab-muted);
   font-size: var(--ab-fs-body);

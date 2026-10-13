@@ -1,74 +1,74 @@
 /* ============================================================
-   Ya llegó - estilos globales
-   Tokens extraidos del Figma "FRONTEND" (mobile, 393px)
+   Ya llegó - global styles
+   Tokens extracted from the "FRONTEND" Figma (mobile, 393px)
 
-   La escala es mobile-first: los valores base son los del
-   mockup y las media queries solo los agrandan. Los botones
-   quedan fuera de la escala a proposito: mantienen su tamaño
-   en todos los anchos.
+   The scale is mobile-first: the base values are the
+   mockup's and the media queries only enlarge them. The buttons
+   stay out of the scale on purpose: they keep their size
+   at every width.
    ============================================================ */
 
 @use 'sass:meta';
 
 :root {
   /* --- Color --- */
-  --ab-bg:            #F9F9FF;  /* fondo de pantalla        */
-  --ab-primary:       #002C98;  /* azul de marca            */
-  --ab-primary-2:     #1A43BF;  /* fin del degrade          */
-  --ab-ink:           #191B22;  /* titulos                  */
-  --ab-body:          #444654;  /* texto y labels           */
-  --ab-field:         #E1E2EB;  /* fondo de inputs          */
-  --ab-placeholder:   #747685;  /* placeholder (al 50%)     */
-  --ab-card:          #F3F3FC;  /* card clara               */
+  --ab-bg:            #F9F9FF;  /* screen background        */
+  --ab-primary:       #002C98;  /* brand blue               */
+  --ab-primary-2:     #1A43BF;  /* end of the gradient      */
+  --ab-ink:           #191B22;  /* titles                   */
+  --ab-body:          #444654;  /* text and labels          */
+  --ab-field:         #E1E2EB;  /* input background         */
+  --ab-placeholder:   #747685;  /* placeholder (at 50%)     */
+  --ab-card:          #F3F3FC;  /* light card               */
   --ab-line:          rgba(196, 197, 214, 0.30);
   --ab-white:         #FFFFFF;
-  --ab-accent:        #9F4200;  /* pin de ubicacion         */
-  --ab-badge:         #F97316;  /* burbuja de notificacion  */
-  --ab-ok:            #16A34A;  /* aviso de colectivo en anden */
-  --ab-success:       #34C759;  /* toast "guardado con exito" del Figma */
-  --ab-danger:        #BA1A1A;  /* errores de formulario    */
+  --ab-accent:        #9F4200;  /* location pin             */
+  --ab-badge:         #F97316;  /* notification bubble      */
+  --ab-ok:            #16A34A;  /* bus-at-bay notice */
+  --ab-success:       #34C759;  /* Figma "saved successfully" toast */
+  --ab-danger:        #BA1A1A;  /* form errors              */
   --ab-icon-muted:    #64748B;
   --ab-icon-nav:      #1D4ED8;
   --ab-muted:         #6B7280;
   --ab-barcode:       #C4C5D6;
 
-  /* --- Degrade de botones --- */
+  /* --- Button gradient --- */
   --ab-gradient: linear-gradient(135deg, #002C98 0%, #1A43BF 100%);
 
-  /* --- Radios --- */
+  /* --- Radii --- */
   --ab-r-input:  4px;
   --ab-r-card:   8px;
   --ab-r-button: 12px;
 
-  /* --- Sombras --- */
+  /* --- Shadows --- */
   --ab-shadow-card:   0 24px 48px rgba(0, 44, 152, 0.08);
   --ab-shadow-button: 0 4px 6px rgba(0, 44, 152, 0.20), 0 10px 15px rgba(0, 44, 152, 0.20);
   --ab-shadow-dark:   0 4px 6px rgba(0, 0, 0, 0.10), 0 10px 15px rgba(0, 0, 0, 0.10);
   --ab-shadow-bar:    0 1px 2px rgba(0, 0, 0, 0.05);
 
   /* --- Layout --- */
-  --ab-screen-max: 393px;  /* ancho del contenedor centrado */
+  --ab-screen-max: 393px;  /* width of the centered container */
   --ab-gutter:      25px;
   --ab-topbar-h:    60px;
   --ab-drawer-w:   269px;
 
-  /* --- Escala tipografica --- */
-  --ab-fs-brand: 24px;  --ab-lh-brand: 32px;   /* "Ya llegó", H1 de pantalla */
-  --ab-fs-title: 24px;  --ab-lh-title: 32px;   /* "Iniciar Sesion"             */
-  --ab-fs-display: 48px;  /* "Notificaciones" */
-  --ab-fs-hero:  32px;  --ab-lh-hero:  28px;   /* "RASTREA TU VIAJE"           */
-  --ab-fs-lead:  18px;  --ab-lh-lead:  28px;   /* bajada del home              */
-  --ab-fs-h3:    18px;  --ab-lh-h3:    28px;   /* "Buscar Terminal"            */
+  /* --- Type scale --- */
+  --ab-fs-brand: 24px;  --ab-lh-brand: 32px;   /* "Ya llegó", screen H1 */
+  --ab-fs-title: 24px;  --ab-lh-title: 32px;   /* "Log In"                     */
+  --ab-fs-display: 48px;  /* "Notifications" */
+  --ab-fs-hero:  32px;  --ab-lh-hero:  28px;   /* "TRACK YOUR TRIP"            */
+  --ab-fs-lead:  18px;  --ab-lh-lead:  28px;   /* home lead                    */
+  --ab-fs-h3:    18px;  --ab-lh-h3:    28px;   /* "Find Terminal"              */
   --ab-fs-body:  14px;  --ab-lh-body:  20px;
   --ab-fs-label: 12px;
   --ab-fs-input: 16px;
   --ab-fs-drawer: 20px;
   --ab-lead-max: 283px;
-  --ab-lead-max-sm: 276px;  /* bajadas de registro / olvidar */
+  --ab-lead-max-sm: 276px;  /* sign up / forgot password leads */
 
-  /* --- Medidas de bloque --- */
+  /* --- Block measurements --- */
   --ab-input-h:     47px;
-  --ab-row-h:       60px;  /* filas blancas de "Buscar Terminal" */
+  --ab-row-h:       60px;  /* white "Find Terminal" rows */
   --ab-card-pad:    32px;
   --ab-card-pad-sm: 24px;
   --ab-card-gap:    32px;
@@ -148,9 +148,9 @@ body {
 }
 
 /* ============================================================
-   Contenedor de pantalla - mobile first.
-   La base es el mockup de 393px; a medida que hay lugar el
-   contenido crece hasta 720px y se mantiene centrado.
+   Screen container - mobile first.
+   The base is the 393px mockup; as room becomes available the
+   content grows up to 720px and stays centered.
    ============================================================ */
 .ab-screen {
   width: 100%;
@@ -162,7 +162,7 @@ body {
 }
 
 /* ============================================================
-   Tipografia
+   Typography
    ============================================================ */
 .ab-brand {
   margin: 0;
@@ -193,7 +193,7 @@ body {
 }
 
 /* ============================================================
-   Campos de formulario
+   Form fields
    ============================================================ */
 .ab-field { display: flex; flex-direction: column; gap: 6.5px; }
 
@@ -230,7 +230,7 @@ body {
 .ab-input:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 2px; }
 .ab-input[aria-invalid="true"] { box-shadow: inset 0 0 0 1px var(--ab-danger); }
 
-/* Campo de contraseña con boton para mostrar/ocultar */
+/* Password field with a show/hide button */
 .ab-password { position: relative; display: flex; }
 .ab-password .ab-input { padding-right: 44px; }
 
@@ -253,7 +253,7 @@ body {
 .ab-password__toggle:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: -2px; border-radius: var(--ab-r-input); }
 .ab-password__toggle svg { width: 20px; height: 20px; }
 
-/* Mensaje bajo un campo invalido */
+/* Message under an invalid field */
 .ab-field-error {
   margin: 0;
   font-size: var(--ab-fs-label);
@@ -261,7 +261,7 @@ body {
   color: var(--ab-danger);
 }
 
-/* Error general del formulario (respuesta del servidor) */
+/* General form error (server response) */
 .ab-form-error {
   margin: 0;
   padding: 12px 16px;
@@ -272,7 +272,7 @@ body {
   line-height: var(--ab-lh-body);
 }
 
-/* Confirmacion general del formulario (par de .ab-form-error) */
+/* General form confirmation (counterpart of .ab-form-error) */
 .ab-form-ok {
   margin: 0;
   padding: 12px 16px;
@@ -284,9 +284,9 @@ body {
 }
 
 /* ============================================================
-   Botones y enlaces
-   Los botones NO escalan: mantienen el tamaño del mockup en
-   todos los anchos.
+   Buttons and links
+   Buttons do NOT scale: they keep the mockup size at
+   every width.
    ============================================================ */
 .ab-button {
   display: flex;
@@ -340,5 +340,5 @@ body {
 
 .ab-icon { display: block; flex: none; }
 
-/* Animaciones y transiciones: al final para ganar sobre lo de arriba */
-@include meta.load-css('styles/movimiento');
+/* Animations and transitions: at the end so they win over what is above */
+@include meta.load-css('styles/motion');

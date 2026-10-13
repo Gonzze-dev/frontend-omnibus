@@ -1,80 +1,80 @@
-/** Tipos que puede enviar un administrador (GET /api/admin/notification-types). */
-export type TipoAvisoAdmin = 'LOCAL' | 'GLOBAL' | 'BUS_DELAY' | 'BUS_ARRIVAL';
+/** Types an administrator can send (GET /api/admin/notification-types). */
+export type AdminNoticeType = 'LOCAL' | 'GLOBAL' | 'BUS_DELAY' | 'BUS_ARRIVAL';
 
 /** GET /api/admin/notification-types (models.AdminNotificationTypesResponse). */
-export interface TiposAvisoResponse {
-  types: TipoAvisoAdmin[];
+export interface NoticeTypesResponse {
+  types: AdminNoticeType[];
 }
 
 /** POST /api/admin/notifications (models.AdminSendNotificationRequest). */
-export interface EnviarAvisoRequest {
+export interface SendNoticeRequest {
   type: 'LOCAL' | 'GLOBAL';
   payload: {
     message: string;
-    /** Minutos de vida de la notificacion. */
+    /** Notification lifetime in minutes. */
     time_life: number;
   };
 }
 
-export interface EnviarAvisoResponse {
+export interface SendNoticeResponse {
   message: string;
 }
 
 /** POST /api/admin/notify-bus-delay (models.NotifyBusDelayRequest). */
-export interface NotificarRetrasoRequest {
+export interface NotifyDelayRequest {
   type: 'BUS_DELAY';
-  license_patent: string;
-  /** Obligatorio para el super admin y el admin con varias terminales. */
+  license_plate: string;
+  /** Required for the super admin and for an admin with several terminals. */
   uuid_terminal?: string;
-  /** Fecha del viaje (YYYY-MM-DD). */
+  /** Trip date (YYYY-MM-DD). */
   start_date: string;
   payload: {
-    /** Minutos de demora. */
+    /** Delay in minutes. */
     time_delay: number;
-    /** Minutos de vida de la notificacion. */
+    /** Notification lifetime in minutes. */
     time_life: number;
   };
 }
 
-export interface NotificarRetrasoResponse {
+export interface NotifyDelayResponse {
   message: string;
 }
 
 /**
- * POST /notify_passengers (models.NotifyPassengersRequest). Lo usa la camara
- * con X-API-Key; el admin lo usa con su JWT cuando la camara falla.
+ * POST /notify_passengers (models.NotifyPassengersRequest). The camera uses it
+ * with X-API-Key; the admin uses it with their JWT when the camera fails.
  */
-export interface NotificarArriboRequest {
-  license_patent: string;
-  /** Codigo del anden (plataforma) donde llego el colectivo. */
+export interface NotifyArrivalRequest {
+  license_plate: string;
+  /** Code of the bay (platform) where the bus arrived. */
   code: string;
-  /** Minutos de vida de la notificacion. */
+  /** Notification lifetime in minutes. */
   time_life: number;
 }
 
-export interface NotificarArriboResponse {
+export interface NotifyArrivalResponse {
   message: string;
 }
 
-/** Tipos de notificacion que guarda el backend (models.PassengerNotificationType). */
-export type TipoNotificacion = 'BUS_ARRIVAL' | 'BUS_DELAY' | 'LOCAL' | 'GLOBAL' | 'CAMERA';
+/** Notification types stored by the backend (models.PassengerNotificationType). */
+export type NotificationType = 'BUS_ARRIVAL' | 'BUS_DELAY' | 'LOCAL' | 'GLOBAL' | 'CAMERA';
 
-/** Notificacion del listado de admin (models.AdminNotificationListItem). */
-export interface NotificacionAdmin {
+/** Notification in the admin list (models.AdminNotificationListItem). */
+export interface AdminNotification {
   id: string;
-  type: TipoNotificacion;
-  /** null en las notificaciones globales. */
+  type: NotificationType;
+  /** null in global notifications. */
   terminal: { uuid: string; name: string } | null;
   date: string;
   expiration: string;
   expired: boolean;
-  /** Varia segun el tipo: message, license_patent, time_delay, anden... */
+  /** Depends on the type: message, license_plate, time_delay, bay... */
   payload: Record<string, unknown>;
 }
 
 /** GET /api/admin/notifications (models.ListAdminNotificationsResponse). */
-export interface ListNotificacionesResponse {
-  notifications: NotificacionAdmin[];
+export interface ListNotificationsResponse {
+  notifications: AdminNotification[];
   page: number;
   next: number | null;
   prev: number | null;
@@ -82,13 +82,13 @@ export interface ListNotificacionesResponse {
   total_elements: number;
 }
 
-export type EstadoNotificacion = 'all' | 'active' | 'expired';
+export type NotificationStatus = 'all' | 'active' | 'expired';
 
-export interface ListNotificacionesParams {
+export interface ListNotificationsParams {
   page?: number;
   limit?: number;
   order?: 'ASC' | 'DESC';
-  type?: TipoNotificacion;
-  status?: EstadoNotificacion;
+  type?: NotificationType;
+  status?: NotificationStatus;
   terminal_uuid?: string;
 }

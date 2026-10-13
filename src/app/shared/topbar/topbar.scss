@@ -1,9 +1,9 @@
-/* El host no participa del layout: asi el `position: sticky` de la
-   barra se resuelve contra la pagina y no contra el componente. */
+/* The host does not take part in the layout: that way the bar's `position: sticky`
+   is resolved against the page and not against the component. */
 :host { display: contents; }
 
-/* La barra va de borde a borde y sus dos controles se apoyan
-   en las esquinas de la pantalla, no en la columna de contenido. */
+/* The bar goes edge to edge and its two controls rest
+   on the corners of the screen, not on the content column. */
 .topbar {
   position: sticky;
   top: 0;
@@ -29,8 +29,8 @@
   cursor: pointer;
 }
 
-/* Es un <a> hacia /notificaciones: hay que apagar el subrayado
-   que el navegador le pone al numero del badge. */
+/* It is an <a> to /notifications: the underline the browser
+   puts on the badge number has to be turned off. */
 .topbar__bell {
   position: relative;
   display: flex;
@@ -70,8 +70,8 @@
 }
 
 /* ============================================================
-   Menu en linea (tablet y escritorio)
-   En celulares queda oculto y se usa el drawer.
+   Inline menu (tablet and desktop)
+   On phones it stays hidden and the drawer is used.
    ============================================================ */
 .topbar__actions {
   display: flex;
@@ -123,7 +123,7 @@
 }
 
 /* ============================================================
-   Movimiento
+   Motion
    ============================================================ */
 .topbar__menu {
   transition: background-color var(--ab-dur-rapida) ease, transform var(--ab-dur-rapida) var(--ab-ease-out);
@@ -136,7 +136,7 @@
   transition: background-color var(--ab-dur-rapida) ease;
 }
 
-/* El badge aparece de un salto y la campana suena una vez */
+/* The badge pops in and the bell rings once */
 .topbar__badge {
   animation: ab-pop 420ms var(--ab-ease-spring) backwards;
 }
@@ -144,9 +144,9 @@
 .topbar__bell svg { transform-origin: 50% 10%; }
 
 .topbar__bell:has(.topbar__badge) svg {
-  animation: ab-campana 900ms 250ms ease-in-out;
+  animation: ab-bell 900ms 250ms ease-in-out;
 }
 
 @media (hover: hover) {
-  .topbar__bell:hover svg { animation: ab-campana 900ms ease-in-out; }
+  .topbar__bell:hover svg { animation: ab-bell 900ms ease-in-out; }
 }

@@ -1,35 +1,35 @@
 /**
- * No todas las empresas de micros generan el QR del pasaje con el mismo
- * formato. Cada parser sabe reconocer y extraer el numero de boleto de
- * UN formato particular; devuelve null si el texto no le pertenece.
+ * Not every bus company generates the ticket QR with the same
+ * format. Each parser knows how to recognize and extract the ticket number of
+ * ONE particular format; it returns null if the text does not belong to it.
  *
- * `parsearBoleto` los prueba en orden hasta que alguno reconozca el
- * contenido. Si ninguno lo hace, el QR no es un pasaje valido (o es un
- * formato que todavia no se soporta).
+ * `parseTicket` tries them in order until one recognizes the
+ * content. If none does, the QR is not a valid bus ticket (or it is a
+ * format that is not supported yet).
  */
-export type ParserBoleto = (texto: string) => string | null;
+export type TicketParser = (text: string) => string | null;
 
-export class QrBoletoError extends Error {}
+export class QrTicketError extends Error {}
 
-export function parsearBoleto(parsers: ParserBoleto[], texto: string): string {
+export function parseTicket(parsers: TicketParser[], text: string): string {
   for (const parser of parsers) {
-    const boleto = parser(texto);
-    if (boleto) return boleto;
+    const ticket = parser(text);
+    if (ticket) return ticket;
   }
 
-  throw new QrBoletoError('No se pudo escanear el QR correctamente.');
+  throw new QrTicketError('No se pudo escanear el QR correctamente.');
 }
 
-/** Formato "Nuevo Expreso": texto plano con una linea "Boleto: <codigo>". */
-export const parserEtiquetaBoleto: ParserBoleto = (texto) => {
-  const match = texto.match(/boleto:\s*(\S+)/i);
+/** "Nuevo Expreso" format: plain text with a "Boleto: <code>" line. */
+export const ticketLabelParser: TicketParser = (text) => {
+  const match = text.match(/boleto:\s*(\S+)/i);
   return match ? match[1] : null;
 };
 
-/** El QR trae unicamente el codigo del boleto, sin texto alrededor. */
-export const parserCodigoSuelto: ParserBoleto = (texto) => {
-  const valor = texto.trim();
-  return /^[A-Z]{2,5}-\d{4,}-\d+$/i.test(valor) ? valor : null;
+/** The QR only carries the ticket code, with no surrounding text. */
+export const bareCodeParser: TicketParser = (text) => {
+  const value = text.trim();
+  return /^[A-Z]{2,5}-\d{4,}-\d+$/i.test(value) ? value : null;
 };
 
-export const PARSERS_BOLETO: ParserBoleto[] = [parserEtiquetaBoleto, parserCodigoSuelto];
+export const TICKET_PARSERS: TicketParser[] = [ticketLabelParser, bareCodeParser];

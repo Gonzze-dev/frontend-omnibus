@@ -1,85 +1,85 @@
 import { Routes } from '@angular/router';
-import { soloAutenticados, soloInvitados } from './guards/auth.guard';
-import { soloRoles } from './guards/rol.guard';
+import { authenticatedOnly, guestsOnly } from './guards/auth.guard';
+import { rolesOnly } from './guards/role.guard';
 import { Login } from './pages/login/login';
-import { Registro } from './pages/registro/registro';
-import { OlvidarContrasena } from './pages/olvidar-contrasena/olvidar-contrasena';
-import { NuevaContrasena } from './pages/nueva-contrasena/nueva-contrasena';
+import { Register } from './pages/register/register';
+import { ForgotPassword } from './pages/forgot-password/forgot-password';
+import { ResetPassword } from './pages/reset-password/reset-password';
 import { Home } from './pages/home/home';
-import { Notificaciones } from './pages/notificaciones/notificaciones';
-import { Perfil } from './pages/perfil/perfil';
+import { Notifications } from './pages/notifications/notifications';
+import { Profile } from './pages/profile/profile';
 import { Dashboard } from './pages/dashboard/dashboard';
-import { Gestion, tituloGestion } from './pages/gestion/gestion';
-import { Ciudades, tituloCiudades } from './pages/ciudades/ciudades';
-import { Plataformas, tituloPlataformas } from './pages/plataformas/plataformas';
-import { Terminales, tituloTerminales } from './pages/terminales/terminales';
-import { Permisos, tituloPermisos } from './pages/permisos/permisos';
-import { Avisos, tituloAvisos } from './pages/avisos/avisos';
+import { Management, managementTitle } from './pages/management/management';
+import { Cities, citiesTitle } from './pages/cities/cities';
+import { Platforms, platformsTitle } from './pages/platforms/platforms';
+import { Terminals, terminalsTitle } from './pages/terminals/terminals';
+import { Permissions, permissionsTitle } from './pages/permissions/permissions';
+import { Notices, noticesTitle } from './pages/notices/notices';
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'login' },
-  { path: 'login', component: Login, title: 'Iniciar Sesion', canMatch: [soloInvitados] },
-  { path: 'registro', component: Registro, title: 'Create una cuenta', canMatch: [soloInvitados] },
+  { path: 'login', component: Login, title: 'Iniciar Sesion', canMatch: [guestsOnly] },
+  { path: 'register', component: Register, title: 'Creá una cuenta', canMatch: [guestsOnly] },
   {
-    path: 'olvidar-contrasena',
-    component: OlvidarContrasena,
+    path: 'forgot-password',
+    component: ForgotPassword,
     title: 'Olvidaste tu contraseña?',
-    canMatch: [soloInvitados],
+    canMatch: [guestsOnly],
   },
-  // La ruta la arma el backend en el mail (FRONT_END_BASE_LINK + /reset-password?token=...)
-  { path: 'reset-password', component: NuevaContrasena, title: 'Nueva contraseña' },
-  { path: 'home', component: Home, title: 'Rastrea tu viaje', canMatch: [soloAutenticados] },
+  // The backend builds this route in the email (FRONT_END_BASE_LINK + /reset-password?token=...)
+  { path: 'reset-password', component: ResetPassword, title: 'Nueva contraseña' },
+  { path: 'home', component: Home, title: 'Rastrea tu viaje', canMatch: [authenticatedOnly] },
   {
-    path: 'notificaciones',
-    component: Notificaciones,
+    path: 'notifications',
+    component: Notifications,
     title: 'Notificaciones',
-    canMatch: [soloAutenticados],
+    canMatch: [authenticatedOnly],
   },
   {
-    path: 'perfil',
-    component: Perfil,
+    path: 'profile',
+    component: Profile,
     title: 'Informacion sobre tu perfil',
-    canMatch: [soloAutenticados],
+    canMatch: [authenticatedOnly],
   },
   {
     path: 'dashboard',
-    canMatch: [soloAutenticados, soloRoles('admin', 'super_admin')],
+    canMatch: [authenticatedOnly, rolesOnly('admin', 'super_admin')],
     children: [
       { path: '', component: Dashboard, title: 'Dashboard' },
-      // El ABM de ciudades es solo de super_admin: un admin no ve la card ni puede entrar por URL.
+      // Cities CRUD is super_admin only: an admin does not see the card nor can enter by URL.
       {
-        path: 'ciudades',
-        canMatch: [soloRoles('super_admin')],
+        path: 'cities',
+        canMatch: [rolesOnly('super_admin')],
         children: [
-          { path: '', pathMatch: 'full', component: Ciudades, title: tituloCiudades },
-          { path: 'listar', redirectTo: '' },
-          { path: ':accion/:codigo', component: Ciudades, title: tituloCiudades },
-          { path: ':accion', component: Ciudades, title: tituloCiudades },
+          { path: '', pathMatch: 'full', component: Cities, title: citiesTitle },
+          { path: 'list', redirectTo: '' },
+          { path: ':action/:code', component: Cities, title: citiesTitle },
+          { path: ':action', component: Cities, title: citiesTitle },
         ],
       },
-      { path: 'plataformas', component: Plataformas, title: tituloPlataformas },
-      { path: 'plataformas/listar', redirectTo: 'plataformas' },
-      { path: 'plataformas/:accion/:codigo', component: Plataformas, title: tituloPlataformas },
-      { path: 'plataformas/:accion', component: Plataformas, title: tituloPlataformas },
-      // Los endpoints viven en /api/super: un admin no ve la card ni puede entrar por URL.
+      { path: 'platforms', component: Platforms, title: platformsTitle },
+      { path: 'platforms/list', redirectTo: 'platforms' },
+      { path: 'platforms/:action/:code', component: Platforms, title: platformsTitle },
+      { path: 'platforms/:action', component: Platforms, title: platformsTitle },
+      // The endpoints live in /api/super: an admin does not see the card nor can enter by URL.
       {
-        path: 'terminales',
-        canMatch: [soloRoles('super_admin')],
+        path: 'terminals',
+        canMatch: [rolesOnly('super_admin')],
         children: [
-          { path: '', pathMatch: 'full', component: Terminales, title: tituloTerminales },
-          { path: 'listar', redirectTo: '' },
-          { path: ':accion/:codigo', component: Terminales, title: tituloTerminales },
-          { path: ':accion', component: Terminales, title: tituloTerminales },
+          { path: '', pathMatch: 'full', component: Terminals, title: terminalsTitle },
+          { path: 'list', redirectTo: '' },
+          { path: ':action/:code', component: Terminals, title: terminalsTitle },
+          { path: ':action', component: Terminals, title: terminalsTitle },
         ],
       },
-      { path: 'permisos', component: Permisos, title: tituloPermisos },
-      { path: 'permisos/:accion', redirectTo: 'permisos' },
-      { path: 'notificaciones/retraso', redirectTo: 'notificaciones/aviso' },
-      { path: 'notificaciones', component: Avisos, title: tituloAvisos },
-      { path: 'notificaciones/listar', redirectTo: 'notificaciones' },
-      { path: 'notificaciones/:accion/:codigo', component: Avisos, title: tituloAvisos },
-      { path: 'notificaciones/:accion', component: Avisos, title: tituloAvisos },
-      { path: ':seccion', component: Gestion, title: tituloGestion },
+      { path: 'permissions', component: Permissions, title: permissionsTitle },
+      { path: 'permissions/:action', redirectTo: 'permissions' },
+      { path: 'notifications/delay', redirectTo: 'notifications/send' },
+      { path: 'notifications', component: Notices, title: noticesTitle },
+      { path: 'notifications/list', redirectTo: 'notifications' },
+      { path: 'notifications/:action/:code', component: Notices, title: noticesTitle },
+      { path: 'notifications/:action', component: Notices, title: noticesTitle },
+      { path: ':section', component: Management, title: managementTitle },
     ],
   },
   { path: '**', redirectTo: 'login' },

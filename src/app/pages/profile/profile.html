@@ -1,41 +1,41 @@
 <app-topbar />
 
-@if (mostrarExito()) {
-  <app-toast animate.leave="ab-sale-arriba" mensaje="Cambios guardados con éxito" (cerrado)="mostrarExito.set(false)" />
+@if (showSuccess()) {
+  <app-toast animate.leave="ab-leave-up" message="Cambios guardados con éxito" (closed)="showSuccess.set(false)" />
 }
 
-<div class="ab-screen perfil">
-  <header class="perfil__head">
-    <h1 class="ab-brand perfil__titulo">Informacion sobre tu perfil</h1>
-    <p class="perfil__bajada">
+<div class="ab-screen profile">
+  <header class="profile__head">
+    <h1 class="ab-brand profile__title">Informacion sobre tu perfil</h1>
+    <p class="profile__lead">
       Actualiza tus datos personales y tu información de contacto.
     </p>
   </header>
 
-  @if (cargando()) {
-    <p class="perfil__estado">Cargando perfil...</p>
-  } @else if (errorCarga()) {
-    <div class="perfil__estado">
-      <p class="ab-form-error" role="alert">{{ errorCarga() }}</p>
-      <button class="ab-button" type="button" (click)="cargarPerfil()">Reintentar</button>
+  @if (loading()) {
+    <p class="profile__status">Cargando perfil...</p>
+  } @else if (loadError()) {
+    <div class="profile__status">
+      <p class="ab-form-error" role="alert">{{ loadError() }}</p>
+      <button class="ab-button" type="button" (click)="loadProfile()">Reintentar</button>
     </div>
   } @else {
-    <form class="perfil__form" [formGroup]="form" (ngSubmit)="guardar()" novalidate>
-      <div class="perfil__row">
+    <form class="profile__form" [formGroup]="form" (ngSubmit)="save()" novalidate>
+      <div class="profile__row">
         <div class="ab-field">
-          <label class="ab-label" for="nombre">Nombre</label>
-          <input class="ab-input" id="nombre" type="text" autocomplete="given-name"
-                 formControlName="nombre" [attr.aria-invalid]="invalido('nombre')" />
-          @if (invalido('nombre')) {
+          <label class="ab-label" for="firstName">Nombre</label>
+          <input class="ab-input" id="firstName" type="text" autocomplete="given-name"
+                 formControlName="firstName" [attr.aria-invalid]="invalid('firstName')" />
+          @if (invalid('firstName')) {
             <p class="ab-field-error">Ingresa tu nombre.</p>
           }
         </div>
 
         <div class="ab-field">
-          <label class="ab-label" for="apellido">Apellido</label>
-          <input class="ab-input" id="apellido" type="text" autocomplete="family-name"
-                 formControlName="apellido" [attr.aria-invalid]="invalido('apellido')" />
-          @if (invalido('apellido')) {
+          <label class="ab-label" for="lastName">Apellido</label>
+          <input class="ab-input" id="lastName" type="text" autocomplete="family-name"
+                 formControlName="lastName" [attr.aria-invalid]="invalid('lastName')" />
+          @if (invalid('lastName')) {
             <p class="ab-field-error">Ingresa tu apellido.</p>
           }
         </div>
@@ -44,8 +44,8 @@
       <div class="ab-field">
         <label class="ab-label" for="email">Email</label>
         <input class="ab-input" id="email" type="email" autocomplete="email"
-               formControlName="email" [attr.aria-invalid]="invalido('email')" />
-        @if (invalido('email')) {
+               formControlName="email" [attr.aria-invalid]="invalid('email')" />
+        @if (invalid('email')) {
           <p class="ab-field-error">Ingresa un email valido.</p>
         }
       </div>
@@ -53,25 +53,25 @@
       <div class="ab-field">
         <label class="ab-label" for="password">Nueva contraseña</label>
         <div class="ab-password">
-          <input class="ab-input" id="password" [type]="mostrarPassword() ? 'text' : 'password'"
+          <input class="ab-input" id="password" [type]="showPassword() ? 'text' : 'password'"
                  placeholder="Dejala vacia para no cambiarla" autocomplete="new-password"
-                 formControlName="password" [attr.aria-invalid]="invalido('password')" />
-          <app-password-toggle [visible]="mostrarPassword()" (visibleChange)="mostrarPassword.set($event)" />
+                 formControlName="password" [attr.aria-invalid]="invalid('password')" />
+          <app-password-toggle [visible]="showPassword()" (visibleChange)="showPassword.set($event)" />
         </div>
-        @if (invalido('password')) {
+        @if (invalid('password')) {
           <p class="ab-field-error">La contraseña debe tener al menos 8 caracteres.</p>
         }
       </div>
 
       <div class="ab-field">
-        <label class="ab-label" for="confirmar">Confirmar contraseña</label>
+        <label class="ab-label" for="confirm">Confirmar contraseña</label>
         <div class="ab-password">
-          <input class="ab-input" id="confirmar" [type]="mostrarConfirmar() ? 'text' : 'password'"
+          <input class="ab-input" id="confirm" [type]="showConfirm() ? 'text' : 'password'"
                  placeholder="••••••••" autocomplete="new-password"
-                 formControlName="confirmar" [attr.aria-invalid]="noCoinciden()" />
-          <app-password-toggle [visible]="mostrarConfirmar()" (visibleChange)="mostrarConfirmar.set($event)" />
+                 formControlName="confirm" [attr.aria-invalid]="mismatch()" />
+          <app-password-toggle [visible]="showConfirm()" (visibleChange)="showConfirm.set($event)" />
         </div>
-        @if (noCoinciden()) {
+        @if (mismatch()) {
           <p class="ab-field-error">Las contraseñas no coinciden.</p>
         }
       </div>
@@ -80,43 +80,43 @@
         <p class="ab-form-error" role="alert">{{ error() }}</p>
       }
 
-      <button class="ab-button ab-button--lg perfil__guardar" type="submit" [disabled]="guardando()">
-        {{ guardando() ? 'Guardando...' : 'Guardar cambios' }}
+      <button class="ab-button ab-button--lg profile__save" type="submit" [disabled]="saving()">
+        {{ saving() ? 'Guardando...' : 'Guardar cambios' }}
       </button>
     </form>
 
-    <button class="perfil__eliminar" type="button" (click)="confirmandoBaja.set(true)">Eliminar cuenta</button>
+    <button class="profile__delete" type="button" (click)="confirmingDelete.set(true)">Eliminar cuenta</button>
   }
 </div>
 
-<!-- Popup para confirmar la baja. Escape o un click afuera lo cierran. -->
-<dialog #dialogoBaja class="popup" role="alertdialog" aria-labelledby="baja-titulo" aria-describedby="baja-texto"
-        (cancel)="$event.preventDefault(); cancelarBaja()"
-        (click)="clickEnPopup($event)">
-  <div class="popup__contenido">
+<!-- Popup to confirm the deletion. Escape or a click outside closes it. -->
+<dialog #deleteDialog class="popup" role="alertdialog" aria-labelledby="delete-title" aria-describedby="delete-text"
+        (cancel)="$event.preventDefault(); cancelDelete()"
+        (click)="onPopupClick($event)">
+  <div class="popup__content">
     <header class="popup__head">
-      <h2 class="popup__titulo" id="baja-titulo">Eliminar cuenta</h2>
-      <button class="popup__cerrar" type="button" aria-label="Cerrar" [disabled]="eliminando()" (click)="cancelarBaja()">
+      <h2 class="popup__title" id="delete-title">Eliminar cuenta</h2>
+      <button class="popup__close" type="button" aria-label="Cerrar" [disabled]="deleting()" (click)="cancelDelete()">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
           <path d="M1.5 1.5l11 11M12.5 1.5l-11 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
         </svg>
       </button>
     </header>
 
-    <p class="popup__texto" id="baja-texto">
+    <p class="popup__text" id="delete-text">
       ¿Seguro que queres eliminar tu cuenta? Se borra de forma permanente y la accion no se puede deshacer.
     </p>
 
-    @if (errorEliminar()) {
-      <p class="ab-form-error" role="alert">{{ errorEliminar() }}</p>
+    @if (deleteError()) {
+      <p class="ab-form-error" role="alert">{{ deleteError() }}</p>
     }
 
-    <div class="popup__acciones">
-      <button class="popup__cancelar" type="button" [disabled]="eliminando()" (click)="cancelarBaja()">
+    <div class="popup__actions">
+      <button class="popup__cancel" type="button" [disabled]="deleting()" (click)="cancelDelete()">
         Cancelar
       </button>
-      <button class="ab-button popup__eliminar" type="button" [disabled]="eliminando()" (click)="eliminarCuenta()">
-        {{ eliminando() ? 'Eliminando...' : 'Eliminar cuenta' }}
+      <button class="ab-button popup__delete" type="button" [disabled]="deleting()" (click)="deleteAccount()">
+        {{ deleting() ? 'Eliminando...' : 'Eliminar cuenta' }}
       </button>
     </div>
   </div>

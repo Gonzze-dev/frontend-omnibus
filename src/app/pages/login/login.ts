@@ -20,45 +20,45 @@ export class Login {
     password: ['', Validators.required],
   });
 
-  readonly cargando = signal(false);
+  readonly loading = signal(false);
   readonly error = signal<string | null>(null);
-  readonly mostrarPassword = signal(false);
+  readonly showPassword = signal(false);
 
-  /** Aviso que deja /reset-password al terminar de cambiar la contraseña. */
-  readonly cambioOk = signal(
-    inject(ActivatedRoute).snapshot.queryParamMap.get('cambio') === 'ok',
+  /** Notice left by /reset-password after the password is changed. */
+  readonly passwordChanged = signal(
+    inject(ActivatedRoute).snapshot.queryParamMap.get('changed') === 'ok',
   );
 
-  ingresar(): void {
+  signIn(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
 
-    this.cargando.set(true);
+    this.loading.set(true);
     this.error.set(null);
-    this.cambioOk.set(false);
+    this.passwordChanged.set(false);
 
     const { email, password } = this.form.getRawValue();
     this.auth.login({ email: email.trim(), password }).subscribe({
       next: (user) => {
-        this.cargando.set(false);
-        this.router.navigateByUrl(this.auth.rutaInicio(user));
+        this.loading.set(false);
+        this.router.navigateByUrl(this.auth.homeRoute(user));
       },
       error: (err: HttpErrorResponse) => {
-        this.cargando.set(false);
-        this.error.set(mensajeError(err));
+        this.loading.set(false);
+        this.error.set(errorMessage(err));
       },
     });
   }
 
-  invalido(campo: 'email' | 'password'): boolean {
-    const control = this.form.controls[campo];
+  invalid(field: 'email' | 'password'): boolean {
+    const control = this.form.controls[field];
     return control.invalid && control.touched;
   }
 }
 
-function mensajeError(err: HttpErrorResponse): string {
+function errorMessage(err: HttpErrorResponse): string {
   switch (err.status) {
     case 0:
       return 'No se pudo conectar con el servidor. Intenta mas tarde.';

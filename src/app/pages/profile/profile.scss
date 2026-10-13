@@ -1,49 +1,49 @@
 /* ============================================================
-   Ver perfil (Figma "Info perfil", nodo 27:518)
+   View profile (Figma "Info perfil", node 27:518)
    ============================================================ */
 
-@use '../../../styles/pantalla' as *;
+@use '../../../styles/screen' as *;
 
-.perfil {
+.profile {
   display: flex;
   flex-direction: column;
   min-height: calc(100dvh - var(--ab-topbar-h));
   padding-bottom: 34px;
-  @include pantalla-card;
+  @include screen-card;
 }
 
-.perfil__head {
+.profile__head {
   display: flex;
   flex-direction: column;
   gap: 5px;
   padding-top: 34px;
 }
 
-/* A diferencia del resto de las pantallas, este titulo va alineado
-   a la izquierda. */
-.perfil__titulo {
+/* Unlike the rest of the screens, this title is aligned
+   to the left. */
+.profile__title {
   text-align: left;
 }
 
-.perfil__bajada {
+.profile__lead {
   margin: 0;
   font-size: var(--ab-fs-body);
   line-height: var(--ab-lh-body);
   color: var(--ab-body);
 }
 
-.perfil__form {
+.profile__form {
   display: flex;
   flex-direction: column;
   gap: 24px;
   margin-top: 59px;
 }
 
-.perfil__guardar {
+.profile__save {
   margin-top: 92px;
 }
 
-.perfil__eliminar {
+.profile__delete {
   margin: 35px auto 0;
   padding: 0;
   border: 0;
@@ -56,16 +56,16 @@
   cursor: pointer;
 }
 
-.perfil__eliminar:hover { text-decoration: underline; }
-.perfil__eliminar:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 4px; }
+.profile__delete:hover { text-decoration: underline; }
+.profile__delete:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 4px; }
 
-.perfil__row {
+.profile__row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
 }
 
-.perfil__estado {
+.profile__status {
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -74,7 +74,7 @@
   color: var(--ab-body);
 }
 
-/* ---------------- Popup para confirmar la baja ---------------- */
+/* ---------------- Popup to confirm the deletion ---------------- */
 .popup {
   width: min(630px, calc(100vw - 32px));
   max-height: calc(100vh - 32px);
@@ -88,7 +88,7 @@
 
 .popup::backdrop { background: rgba(25, 27, 34, 0.45); }
 
-.popup__contenido {
+.popup__content {
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -102,7 +102,7 @@
   gap: 12px;
 }
 
-.popup__titulo {
+.popup__title {
   margin: 0;
   font-family: Manrope, Inter, sans-serif;
   font-size: 24px;
@@ -110,7 +110,7 @@
   font-weight: 700;
 }
 
-.popup__cerrar {
+.popup__close {
   display: inline-flex;
   padding: 4px;
   border: 0;
@@ -119,21 +119,21 @@
   cursor: pointer;
 }
 
-.popup__texto {
+.popup__text {
   margin: 0;
   font-size: var(--ab-fs-body);
   line-height: var(--ab-lh-body);
   color: var(--ab-body);
 }
 
-.popup__acciones {
+.popup__actions {
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 16px;
 }
 
-.popup__cancelar {
+.popup__cancel {
   padding: 0;
   border: 0;
   background: transparent;
@@ -144,10 +144,10 @@
   cursor: pointer;
 }
 
-.popup__cancelar:hover:not(:disabled) { text-decoration: underline; }
+.popup__cancel:hover:not(:disabled) { text-decoration: underline; }
 
-/* Confirmacion destructiva: carmin en vez del gradiente azul */
-.popup__eliminar {
+/* Destructive confirmation: crimson instead of the blue gradient */
+.popup__delete {
   width: auto;
   min-height: 48px;
   padding: 12px 20px;

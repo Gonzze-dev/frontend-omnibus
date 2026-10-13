@@ -1,22 +1,22 @@
-/** Terminal a cargo de un admin (models.ProfileTerminalRef). */
-export interface TerminalAsignada {
+/** Terminal managed by an admin (models.ProfileTerminalRef). */
+export interface AssignedTerminal {
   uuid: string;
   name: string;
 }
 
-/** Usuario dentro del listado de GET /api/admin/users (models.UserListItem). */
-export interface UsuarioListado {
+/** User in the GET /api/admin/users list (models.UserListItem). */
+export interface ListedUser {
   uuid: string;
   first_name: string;
   last_name: string;
   email: string;
-  rol: string;
-  terminals: TerminalAsignada[];
+  role: string;
+  terminals: AssignedTerminal[];
 }
 
 /** GET /api/admin/users (models.ListUsersResponse). */
-export interface ListUsuariosResponse {
-  users: UsuarioListado[];
+export interface ListUsersResponse {
+  users: ListedUser[];
   page: number;
   next: number | null;
   prev: number | null;
@@ -24,10 +24,10 @@ export interface ListUsuariosResponse {
   total_elements: number;
 }
 
-export interface ListUsuariosParams {
+export interface ListUsersParams {
   page?: number;
   limit?: number;
   order?: 'ASC' | 'DESC';
-  /** Filtra por nombre o email. */
+  /** Filters by name or email. */
   search?: string;
 }

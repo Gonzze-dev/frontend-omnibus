@@ -1,4 +1,4 @@
-/** Terminal tal como la devuelve el backend (models.BusTerminal). */
+/** Terminal as returned by the backend (models.BusTerminal). */
 export interface Terminal {
   uuid: string;
   external_terminal_id?: string | null;
@@ -6,8 +6,8 @@ export interface Terminal {
   name: string;
 }
 
-/** Terminal del sistema de pasajes (GET /api/super/get-external-terminals). */
-export interface TerminalExterna {
+/** Terminal of the bus ticket system (GET /api/super/get-external-terminals). */
+export interface ExternalTerminal {
   uuid: string;
   name: string;
 }
@@ -19,7 +19,7 @@ export interface CreateTerminalRequest {
   name: string;
 }
 
-/** PUT /api/super/terminals/:uuid (campos opcionales, models.UpdateBusTerminalRequest). */
+/** PUT /api/super/terminals/:uuid (optional fields, models.UpdateBusTerminalRequest). */
 export interface UpdateTerminalRequest {
   external_terminal_id?: string;
   postal_code?: string;
@@ -27,7 +27,7 @@ export interface UpdateTerminalRequest {
 }
 
 /** GET /api/super/terminals (models.ListTerminalsResponse). */
-export interface ListTerminalesResponse {
+export interface ListTerminalsResponse {
   terminals: Terminal[];
   page: number;
   next: number | null;
@@ -36,7 +36,7 @@ export interface ListTerminalesResponse {
   total_elements: number;
 }
 
-export interface ListTerminalesParams {
+export interface ListTerminalsParams {
   page?: number;
   limit?: number;
   order?: 'ASC' | 'DESC';

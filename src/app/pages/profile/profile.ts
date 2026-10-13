@@ -13,75 +13,75 @@ import { Toast } from '../../shared/toast/toast';
 import { UserService } from '../../services/user.service';
 import { UpdateProfileRequest, User } from '../../models/auth.model';
 
-type Campo = 'nombre' | 'apellido' | 'email' | 'password' | 'confirmar';
+type Field = 'firstName' | 'lastName' | 'email' | 'password' | 'confirm';
 
 @Component({
-  selector: 'app-perfil',
+  selector: 'app-profile',
   imports: [Topbar, PasswordToggle, Toast, ReactiveFormsModule],
-  templateUrl: './perfil.html',
-  styleUrl: './perfil.scss',
+  templateUrl: './profile.html',
+  styleUrl: './profile.scss',
 })
-export class Perfil implements OnInit {
+export class Profile implements OnInit {
   private readonly userService = inject(UserService);
 
-  private readonly dialogoBaja = viewChild<ElementRef<HTMLDialogElement>>('dialogoBaja');
+  private readonly deleteDialog = viewChild<ElementRef<HTMLDialogElement>>('deleteDialog');
 
-  /** La contraseña es opcional: vacia significa "no cambiarla". */
+  /** The password is optional: empty means "do not change it". */
   protected readonly form = inject(FormBuilder).nonNullable.group(
     {
-      nombre: ['', Validators.required],
-      apellido: ['', Validators.required],
+      firstName: ['', Validators.required],
+      lastName: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       password: ['', Validators.minLength(8)],
-      confirmar: [''],
+      confirm: [''],
     },
-    { validators: contrasenasIguales },
+    { validators: passwordsMatch },
   );
 
-  /** Ultimos datos confirmados por el backend, para mandar solo lo que cambio. */
-  private perfil: User | null = null;
+  /** Latest data confirmed by the backend, to send only what changed. */
+  private profile: User | null = null;
 
-  protected readonly cargando = signal(true);
-  protected readonly errorCarga = signal<string | null>(null);
+  protected readonly loading = signal(true);
+  protected readonly loadError = signal<string | null>(null);
 
-  protected readonly guardando = signal(false);
+  protected readonly saving = signal(false);
   protected readonly error = signal<string | null>(null);
-  protected readonly mostrarExito = signal(false);
+  protected readonly showSuccess = signal(false);
 
-  protected readonly confirmandoBaja = signal(false);
-  protected readonly eliminando = signal(false);
-  protected readonly errorEliminar = signal<string | null>(null);
+  protected readonly confirmingDelete = signal(false);
+  protected readonly deleting = signal(false);
+  protected readonly deleteError = signal<string | null>(null);
 
-  protected readonly mostrarPassword = signal(false);
-  protected readonly mostrarConfirmar = signal(false);
+  protected readonly showPassword = signal(false);
+  protected readonly showConfirm = signal(false);
 
   constructor() {
-    // El <dialog> nativo se abre con showModal() para tener fondo, foco
-    // atrapado y cierre con Escape sin escribirlos a mano.
+    // The native <dialog> is opened with showModal() to get a backdrop, trapped
+    // focus and closing with Escape without writing them by hand.
     effect(() => {
-      const dialogo = this.dialogoBaja()?.nativeElement;
-      if (!dialogo) return;
-      if (this.confirmandoBaja() && !dialogo.open) dialogo.showModal();
-      if (!this.confirmandoBaja() && dialogo.open) dialogo.close();
+      const dialog = this.deleteDialog()?.nativeElement;
+      if (!dialog) return;
+      if (this.confirmingDelete() && !dialog.open) dialog.showModal();
+      if (!this.confirmingDelete() && dialog.open) dialog.close();
     });
   }
 
   ngOnInit(): void {
-    this.cargarPerfil();
+    this.loadProfile();
   }
 
-  protected cargarPerfil(): void {
-    this.cargando.set(true);
-    this.errorCarga.set(null);
+  protected loadProfile(): void {
+    this.loading.set(true);
+    this.loadError.set(null);
 
-    this.userService.obtenerPerfil().subscribe({
+    this.userService.getProfile().subscribe({
       next: (user) => {
-        this.cargarFormulario(user);
-        this.cargando.set(false);
+        this.fillForm(user);
+        this.loading.set(false);
       },
       error: (err: HttpErrorResponse) => {
-        this.cargando.set(false);
-        this.errorCarga.set(
+        this.loading.set(false);
+        this.loadError.set(
           err.status === 0
             ? 'No se pudo conectar con el servidor. Intenta mas tarde.'
             : 'No se pudo cargar tu perfil. Intenta de nuevo.',
@@ -90,43 +90,43 @@ export class Perfil implements OnInit {
     });
   }
 
-  protected guardar(): void {
+  protected save(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
 
-    const cambios = this.cambios();
-    if (!Object.keys(cambios).length) {
+    const changes = this.changes();
+    if (!Object.keys(changes).length) {
       this.error.set('No hay cambios para guardar.');
       return;
     }
 
-    this.guardando.set(true);
+    this.saving.set(true);
     this.error.set(null);
 
-    this.userService.actualizarPerfil(cambios).subscribe({
+    this.userService.updateProfile(changes).subscribe({
       next: (user) => {
-        this.guardando.set(false);
-        this.cargarFormulario(user);
-        this.mostrarExito.set(true);
+        this.saving.set(false);
+        this.fillForm(user);
+        this.showSuccess.set(true);
       },
       error: (err: HttpErrorResponse) => {
-        this.guardando.set(false);
-        this.error.set(mensajeError(err));
+        this.saving.set(false);
+        this.error.set(errorMessage(err));
       },
     });
   }
 
-  protected eliminarCuenta(): void {
-    this.eliminando.set(true);
-    this.errorEliminar.set(null);
+  protected deleteAccount(): void {
+    this.deleting.set(true);
+    this.deleteError.set(null);
 
-    // Si sale bien el servicio limpia la sesion y manda al login
-    this.userService.eliminarCuenta().subscribe({
+    // If it goes well the service clears the session and goes to login
+    this.userService.deleteAccount().subscribe({
       error: (err: HttpErrorResponse) => {
-        this.eliminando.set(false);
-        this.errorEliminar.set(
+        this.deleting.set(false);
+        this.deleteError.set(
           err.status === 0
             ? 'No se pudo conectar con el servidor. Intenta mas tarde.'
             : 'No se pudo eliminar la cuenta. Intenta de nuevo.',
@@ -135,58 +135,58 @@ export class Perfil implements OnInit {
     });
   }
 
-  protected cancelarBaja(): void {
-    if (this.eliminando()) return;
-    this.confirmandoBaja.set(false);
-    this.errorEliminar.set(null);
+  protected cancelDelete(): void {
+    if (this.deleting()) return;
+    this.confirmingDelete.set(false);
+    this.deleteError.set(null);
   }
 
-  /** Un click en el fondo (fuera del contenido) cierra el popup. */
-  protected clickEnPopup(event: MouseEvent): void {
-    if (event.target === event.currentTarget) this.cancelarBaja();
+  /** A click on the backdrop (outside the content) closes the popup. */
+  protected onPopupClick(event: MouseEvent): void {
+    if (event.target === event.currentTarget) this.cancelDelete();
   }
 
-  protected invalido(campo: Campo): boolean {
-    const control = this.form.controls[campo];
+  protected invalid(field: Field): boolean {
+    const control = this.form.controls[field];
     return control.invalid && control.touched;
   }
 
-  protected noCoinciden(): boolean {
-    return this.form.hasError('noCoinciden') && this.form.controls.confirmar.touched;
+  protected mismatch(): boolean {
+    return this.form.hasError('mismatch') && this.form.controls.confirm.touched;
   }
 
-  private cargarFormulario(user: User): void {
-    this.perfil = user;
+  private fillForm(user: User): void {
+    this.profile = user;
     this.form.reset({
-      nombre: user.first_name,
-      apellido: user.last_name,
+      firstName: user.first_name,
+      lastName: user.last_name,
       email: user.email,
       password: '',
-      confirmar: '',
+      confirm: '',
     });
   }
 
-  /** Arma el patch con los campos que difieren de lo guardado. */
-  private cambios(): UpdateProfileRequest {
-    const { nombre, apellido, email, password } = this.form.getRawValue();
-    const cambios: UpdateProfileRequest = {};
+  /** Builds the patch with the fields that differ from what is stored. */
+  private changes(): UpdateProfileRequest {
+    const { firstName, lastName, email, password } = this.form.getRawValue();
+    const changes: UpdateProfileRequest = {};
 
-    if (nombre.trim() !== this.perfil?.first_name) cambios.first_name = nombre.trim();
-    if (apellido.trim() !== this.perfil?.last_name) cambios.last_name = apellido.trim();
-    if (email.trim() !== this.perfil?.email) cambios.email = email.trim();
-    if (password) cambios.password = password;
+    if (firstName.trim() !== this.profile?.first_name) changes.first_name = firstName.trim();
+    if (lastName.trim() !== this.profile?.last_name) changes.last_name = lastName.trim();
+    if (email.trim() !== this.profile?.email) changes.email = email.trim();
+    if (password) changes.password = password;
 
-    return cambios;
+    return changes;
   }
 }
 
-function contrasenasIguales(group: AbstractControl): ValidationErrors | null {
+function passwordsMatch(group: AbstractControl): ValidationErrors | null {
   const password = group.get('password')?.value;
-  const confirmar = group.get('confirmar')?.value;
-  return (password || confirmar) && password !== confirmar ? { noCoinciden: true } : null;
+  const confirm = group.get('confirm')?.value;
+  return (password || confirm) && password !== confirm ? { mismatch: true } : null;
 }
 
-function mensajeError(err: HttpErrorResponse): string {
+function errorMessage(err: HttpErrorResponse): string {
   switch (err.status) {
     case 0:
       return 'No se pudo conectar con el servidor. Intenta mas tarde.';

@@ -3,49 +3,49 @@ import { NgTemplateOutlet } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { Observable } from 'rxjs';
 import { Topbar } from '../../shared/topbar/topbar';
-import { Contador } from '../../shared/contador/contador';
+import { Counter } from '../../shared/counter/counter';
 import { StatsService } from '../../services/stats.service';
 import { AuthService } from '../../services/auth.service';
 import { UserService } from '../../services/user.service';
 
-type Glifo =
-  | 'ciudad'
-  | 'plataforma'
+type Glyph =
+  | 'city'
+  | 'platform'
   | 'terminal'
-  | 'sede'
-  | 'ajustes'
+  | 'site'
+  | 'settings'
   | 'monitor'
-  | 'permisos'
+  | 'permissions'
   | 'roles'
-  | 'avisos';
+  | 'notices';
 
-type Tono = 'azul' | 'indigo' | 'carmin' | 'tinta' | 'naranja';
+type Tone = 'blue' | 'indigo' | 'crimson' | 'ink' | 'orange';
 
-interface Metrica {
+interface Metric {
   id: string;
-  etiqueta: string;
-  /** null mientras carga o si el endpoint fallo. */
-  valor: WritableSignal<number | null>;
-  icono: Glifo;
-  tono: Tono;
-  cargar: () => Observable<number>;
+  label: string;
+  /** null while loading or if the endpoint failed. */
+  value: WritableSignal<number | null>;
+  icon: Glyph;
+  tone: Tone;
+  load: () => Observable<number>;
 }
 
-interface Acceso {
+interface Shortcut {
   id: string;
-  titulo: string;
-  bajada: string;
-  icono: Glifo;
-  /** Icono grande y casi transparente de la esquina inferior derecha. */
-  marca: Glifo;
-  tono: Tono;
-  /** Sus endpoints viven en /api/super: solo la ve un super admin. */
-  soloSuper?: boolean;
+  title: string;
+  lead: string;
+  icon: Glyph;
+  /** Big, almost transparent icon in the bottom right corner. */
+  mark: Glyph;
+  tone: Tone;
+  /** Its endpoints live in /api/super: only a super admin sees it. */
+  superOnly?: boolean;
 }
 
 @Component({
   selector: 'app-dashboard',
-  imports: [Topbar, NgTemplateOutlet, RouterLink, Contador],
+  imports: [Topbar, NgTemplateOutlet, RouterLink, Counter],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
 })
@@ -56,80 +56,79 @@ export class Dashboard implements OnInit {
   private readonly router = inject(Router);
 
   /**
-   * Los glifos se dibujan a tamaño de icono chico (escala 1) y se
-   * agrandan segun donde aparecen, como en el mockup.
+   * Glyphs are drawn at small icon size (scale 1) and are
+   * enlarged depending on where they appear, as in the mockup.
    */
-  protected readonly escala = { metrica: 1, acceso: 4 / 3, marca: 10 / 3 };
+  protected readonly scale = { metric: 1, shortcut: 4 / 3, mark: 10 / 3 };
 
-  /** Cada metrica se pide por separado: si un conteo falla, los demas se siguen viendo. */
-  protected readonly metricas: readonly Metrica[] = [
+  /** Each metric is requested separately: if one count fails, the others are still shown. */
+  protected readonly metrics: readonly Metric[] = [
     {
-      id: 'ciudades',
-      etiqueta: 'Total de ciudades',
-      valor: signal<number | null>(null),
-      icono: 'ciudad',
-      tono: 'azul',
-      cargar: () => this.stats.totalCiudades(),
+      id: 'cities',
+      label: 'Total de ciudades',
+      value: signal<number | null>(null),
+      icon: 'city',
+      tone: 'blue',
+      load: () => this.stats.totalCities(),
     },
     {
-      id: 'plataformas',
-      etiqueta: 'Total de plataformas',
-      valor: signal<number | null>(null),
-      icono: 'plataforma',
-      tono: 'indigo',
-      cargar: () => this.stats.totalPlataformas(),
+      id: 'platforms',
+      label: 'Total de plataformas',
+      value: signal<number | null>(null),
+      icon: 'platform',
+      tone: 'indigo',
+      load: () => this.stats.totalPlatforms(),
     },
     {
-      id: 'terminales',
-      etiqueta: 'Total de terminales',
-      valor: signal<number | null>(null),
-      icono: 'terminal',
-      tono: 'carmin',
-      cargar: () => this.stats.totalTerminales(),
+      id: 'terminals',
+      label: 'Total de terminales',
+      value: signal<number | null>(null),
+      icon: 'terminal',
+      tone: 'crimson',
+      load: () => this.stats.totalTerminals(),
     },
   ];
 
   /**
-   * Cada acceso resume un grupo de endpoints de administracion. El id
-   * es el de la seccion en pages/gestion/gestiones.ts: la card linkea
-   * a /dashboard/<id>.
-   * "Gestionar notificaciones" no esta en el mockup: cubre los
-   * endpoints de avisos y retrasos, que no tenian card.
+   * Each shortcut summarizes a group of administration endpoints. The id
+   * is the route segment: the card links to /dashboard/<id>.
+   * "Manage notifications" is not in the mockup: it covers the
+   * notice and delay endpoints, which had no card.
    */
-  protected readonly accesos: readonly Acceso[] = [
-    { id: 'ciudades', titulo: 'Gestionar Ciudades', bajada: 'Mapa y sedes', icono: 'sede', marca: 'ciudad', tono: 'azul', soloSuper: true },
-    { id: 'plataformas', titulo: 'Gestionar Plataformas', bajada: 'Sistemas base', icono: 'plataforma', marca: 'plataforma', tono: 'indigo' },
-    { id: 'terminales', titulo: 'Gestionar terminales', bajada: 'Sistema base', icono: 'terminal', marca: 'terminal', tono: 'carmin', soloSuper: true },
-    { id: 'permisos', titulo: 'Control de Permisos', bajada: 'Roles', icono: 'permisos', marca: 'roles', tono: 'tinta' },
-    { id: 'notificaciones', titulo: 'Gestionar notificaciones', bajada: 'Avisos y retrasos', icono: 'avisos', marca: 'avisos', tono: 'naranja' },
+  protected readonly shortcuts: readonly Shortcut[] = [
+    { id: 'cities', title: 'Gestionar Ciudades', lead: 'Mapa y sedes', icon: 'site', mark: 'city', tone: 'blue', superOnly: true },
+    { id: 'platforms', title: 'Gestionar Plataformas', lead: 'Sistemas base', icon: 'platform', mark: 'platform', tone: 'indigo' },
+    { id: 'terminals', title: 'Gestionar terminales', lead: 'Sistema base', icon: 'terminal', mark: 'terminal', tone: 'crimson', superOnly: true },
+    { id: 'permissions', title: 'Control de Permisos', lead: 'Roles', icon: 'permissions', mark: 'roles', tone: 'ink' },
+    { id: 'notifications', title: 'Gestionar notificaciones', lead: 'Avisos y retrasos', icon: 'notices', mark: 'notices', tone: 'orange' },
   ];
 
-  /** Se recalcula solo cuando /users/me trae un rol distinto. */
-  protected readonly accesosVisibles = computed(() =>
-    this.accesos.filter((a) => !a.soloSuper || this.auth.esSuper()),
+  /** Recomputed only when /users/me brings a different role. */
+  protected readonly visibleShortcuts = computed(() =>
+    this.shortcuts.filter((s) => !s.superOnly || this.auth.isSuper()),
   );
 
   ngOnInit(): void {
-    this.sincronizarPermisos();
+    this.syncPermissions();
 
-    for (const m of this.metricas) {
-      m.cargar().subscribe({
-        next: (total) => m.valor.set(total),
-        error: () => m.valor.set(null),
+    for (const m of this.metrics) {
+      m.load().subscribe({
+        next: (total) => m.value.set(total),
+        error: () => m.value.set(null),
       });
     }
   }
 
   /**
-   * El rol guardado puede estar viejo (lo cambio otro admin mientras la
-   * sesion seguia abierta): se pide el perfil cada vez que se entra. Si ya
-   * no es administrador, sale del dashboard.
+   * The stored role may be stale (another admin changed it while the
+   * session was still open): the profile is requested every time the page is entered.
+   * If they are no longer an administrator, they leave the dashboard.
    */
-  private sincronizarPermisos(): void {
-    this.userService.obtenerPerfil().subscribe({
+  private syncPermissions(): void {
+    this.userService.getProfile().subscribe({
       next: () => {
-        if (!this.auth.tieneRol('admin', 'super_admin')) {
-          this.router.navigateByUrl(this.auth.rutaInicio());
+        if (!this.auth.hasRole('admin', 'super_admin')) {
+          this.router.navigateByUrl(this.auth.homeRoute());
         }
       },
       error: () => {},

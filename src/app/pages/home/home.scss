@@ -1,13 +1,13 @@
-@use '../../../styles/pantalla' as *;
+@use '../../../styles/screen' as *;
 
 /* ---------------- Hero ---------------- */
 .home__body {
   min-height: calc(100dvh - var(--ab-topbar-h));
   padding-bottom: 56px;
-  @include pantalla-card;
+  @include screen-card;
 }
 
-/* Dentro de la card el titulo no necesita tanto aire arriba */
+/* Inside the card the title does not need as much room above */
 @media (min-width: 768px) {
   .home__body {
     padding-top: 8px;
@@ -40,7 +40,7 @@
   color: var(--ab-body);
 }
 
-/* ---------------- Card: buscar terminal ---------------- */
+/* ---------------- Card: find terminal ---------------- */
 .terminal {
   position: relative;
   margin-top: 26px;
@@ -66,7 +66,7 @@
   color: var(--ab-body);
 }
 
-/* La marca de agua vive detras de los campos, recortada por la card */
+/* The watermark lives behind the fields, clipped by the card */
 .terminal__deco {
   position: absolute;
   right: -18px;
@@ -106,7 +106,7 @@
 .row__control::placeholder { color: var(--ab-muted); }
 .row__control:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 2px; }
 
-/* La flecha nativa del select se reemplaza por un chevron dibujado */
+/* The select's native arrow is replaced by a drawn chevron */
 .row__control--select {
   appearance: none;
   padding-right: 40px;
@@ -116,11 +116,11 @@
   cursor: pointer;
 }
 
-/* Al abrirlo, la terminal elegida queda de placeholder mientras se busca */
+/* When it opens, the chosen terminal stays as the placeholder while searching */
 .row__control--select::placeholder { color: var(--ab-ink); }
 .row__control--select:focus::placeholder { color: var(--ab-muted); }
 
-/* Lista del combobox: va en el flujo de la card porque esta recorta (overflow) */
+/* Combobox list: it goes in the card's flow because the card clips (overflow) */
 .combo {
   position: relative;
   z-index: 1;
@@ -136,7 +136,7 @@
 
 .combo + .row { margin-top: 9px; }
 
-.combo__opcion {
+.combo__option {
   display: flex;
   justify-content: space-between;
   gap: 12px;
@@ -148,21 +148,21 @@
   cursor: pointer;
 }
 
-.combo__opcion--activa { background: var(--ab-card); }
-.combo__opcion[aria-selected='true'] { color: var(--ab-primary); }
+.combo__option--active { background: var(--ab-card); }
+.combo__option[aria-selected='true'] { color: var(--ab-primary); }
 
-.combo__cp {
+.combo__zip {
   font-weight: 500;
   color: var(--ab-muted);
 }
 
-.combo__vacio {
+.combo__empty {
   padding: 10px 16px;
   font-size: var(--ab-fs-body);
   color: var(--ab-muted);
 }
 
-/* ---------------- Card: verificacion de ticket ---------------- */
+/* ---------------- Card: ticket verification ---------------- */
 .ticket {
   display: flex;
   flex-direction: column;
@@ -230,7 +230,7 @@
   letter-spacing: 2px;
 }
 
-/* En el mockup el boton del ticket es 4px mas alto que el CTA final */
+/* In the mockup the ticket button is 4px taller than the final CTA */
 .ticket .ab-button--lg { min-height: 72px; }
 
 .ticket__input::placeholder { color: rgba(116, 118, 133, 0.5); }
@@ -243,12 +243,12 @@
   line-height: var(--ab-lh-body);
 }
 
-/* ---------------- CTA final ---------------- */
+/* ---------------- Final CTA ---------------- */
 .home__cta {
   margin-top: 73px;
 }
 
-/* Si hay error, el mensaje ocupa parte del aire que separa el CTA */
+/* If there is an error, the message takes part of the room that separates the CTA */
 .home__error {
   margin: 40px 0 0;
   color: var(--ab-danger);
@@ -259,7 +259,7 @@
 
 .home__error + .home__cta { margin-top: 16px; }
 
-/* ---------------- Popup de pasaje no valido ---------------- */
+/* ---------------- Invalid bus ticket popup ---------------- */
 .popup {
   width: min(480px, calc(100vw - 32px));
   padding: 0;
@@ -272,14 +272,14 @@
 
 .popup::backdrop { background: rgba(25, 27, 34, 0.45); }
 
-.popup__contenido {
+.popup__content {
   display: flex;
   flex-direction: column;
   gap: 20px;
   padding: 28px;
 }
 
-.popup__titulo {
+.popup__title {
   margin: 0;
   font-family: Manrope, Inter, sans-serif;
   font-size: 22px;
@@ -287,37 +287,37 @@
   font-weight: 700;
 }
 
-.popup__texto {
+.popup__text {
   margin: 0;
   font-size: var(--ab-fs-body);
   line-height: var(--ab-lh-body);
   color: var(--ab-body);
 }
 
-.popup__acciones { display: flex; justify-content: flex-end; }
+.popup__actions { display: flex; justify-content: flex-end; }
 
-.popup__boton {
+.popup__button {
   width: auto;
   min-height: 48px;
   padding: 12px 24px;
 }
 
 /* ============================================================
-   Movimiento
+   Motion
    ============================================================ */
-/* La terminal de la marca de agua flota despacio */
+/* The watermark terminal floats slowly */
 .terminal__deco {
-  animation: deco-flota 6s ease-in-out infinite;
+  animation: deco-float 6s ease-in-out infinite;
 }
 
-@keyframes deco-flota {
+@keyframes deco-float {
   0%, 100% { transform: translateY(0) rotate(0); }
   50%      { transform: translateY(-6px) rotate(-2deg); }
 }
 
-/* El pin salta cuando se elige la terminal o se escribe el CP */
+/* The pin jumps when the terminal is chosen or the postal code is typed */
 .row:focus-within .row__pin {
-  animation: ab-rebote 520ms var(--ab-ease-out);
+  animation: ab-bounce 520ms var(--ab-ease-out);
 }
 
 .ticket__barcode {
@@ -326,13 +326,13 @@
 
 .ticket__box:focus-within .ticket__barcode { color: var(--ab-primary); }
 
-/* Errores: bajan y se sacuden, como los del formulario */
+/* Errors: they drop down and shake, like the form ones */
 .ticket__error {
-  animation: ab-baja var(--ab-dur-media) var(--ab-ease-out) backwards;
+  animation: ab-drop var(--ab-dur-media) var(--ab-ease-out) backwards;
 }
 
 .ab-screen > .home__error {
   animation:
-    ab-baja var(--ab-dur-media) var(--ab-ease-out) backwards,
-    ab-sacude 420ms 180ms ease-in-out;
+    ab-drop var(--ab-dur-media) var(--ab-ease-out) backwards,
+    ab-shake 420ms 180ms ease-in-out;
 }

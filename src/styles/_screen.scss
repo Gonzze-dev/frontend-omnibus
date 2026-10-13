@@ -1,15 +1,15 @@
 /* ============================================================
-   Pantalla como card flotante.
+   Screen as a floating card.
 
-   Desde tablet el contenedor .ab-screen se ve como una card
-   blanca con sombra sobre el fondo; en celular sigue ocupando
-   toda la pantalla. Se incluye dentro de la clase raiz de cada
-   pantalla para que gane sobre su propio min-height:
-   @use '../../../styles/pantalla' as *;
-   .perfil { @include pantalla-card; }
+   From tablet up the .ab-screen container looks like a white
+   card with a shadow over the background; on phones it still takes
+   the whole screen. It is included inside the root class of each
+   screen so it wins over its own min-height:
+   @use '../../../styles/screen' as *;
+   .profile { @include screen-card; }
    ============================================================ */
 
-@mixin pantalla-card {
+@mixin screen-card {
   @media (min-width: 768px) {
     min-height: 0;
     margin: 40px auto;

@@ -3,56 +3,56 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { APP_CONFIG } from '../config';
 import {
-  EnviarAvisoRequest,
-  EnviarAvisoResponse,
-  ListNotificacionesParams,
-  ListNotificacionesResponse,
-  NotificacionAdmin,
-  NotificarArriboRequest,
-  NotificarArriboResponse,
-  NotificarRetrasoRequest,
-  NotificarRetrasoResponse,
-  TiposAvisoResponse,
-} from '../models/aviso.model';
+  AdminNotification,
+  ListNotificationsParams,
+  ListNotificationsResponse,
+  NoticeTypesResponse,
+  NotifyArrivalRequest,
+  NotifyArrivalResponse,
+  NotifyDelayRequest,
+  NotifyDelayResponse,
+  SendNoticeRequest,
+  SendNoticeResponse,
+} from '../models/notice.model';
 
 /**
- * Envio, listado y baja de avisos contra /api/admin (admin y super admin).
- * El backend filtra por rol: el admin solo ve las de sus terminales.
+ * Sending, listing and deleting notices against /api/admin (admin and super admin).
+ * The backend filters by role: the admin only sees those of their terminals.
  */
 @Injectable({ providedIn: 'root' })
-export class AvisoService {
+export class NoticeService {
   private readonly http = inject(HttpClient);
   private readonly adminUrl = `${APP_CONFIG.apiUrl}/admin`;
 
-  /** Tipos que el rol del usuario puede enviar. */
-  tipos(): Observable<TiposAvisoResponse> {
-    return this.http.get<TiposAvisoResponse>(`${this.adminUrl}/notification-types`);
+  /** Types the user's role can send. */
+  types(): Observable<NoticeTypesResponse> {
+    return this.http.get<NoticeTypesResponse>(`${this.adminUrl}/notification-types`);
   }
 
   /**
-   * Envia un aviso LOCAL o GLOBAL. `terminalUuid` va como query: lo exige el
-   * super admin y el admin con varias terminales; GLOBAL no lo usa.
+   * Sends a LOCAL or GLOBAL notice. `terminalUuid` goes as a query param: the
+   * super admin and an admin with several terminals require it; GLOBAL does not use it.
    */
-  enviar(datos: EnviarAvisoRequest, terminalUuid?: string): Observable<EnviarAvisoResponse> {
+  send(data: SendNoticeRequest, terminalUuid?: string): Observable<SendNoticeResponse> {
     let query = new HttpParams();
     if (terminalUuid) query = query.set('terminaluuid', terminalUuid);
 
-    return this.http.post<EnviarAvisoResponse>(`${this.adminUrl}/notifications`, datos, {
+    return this.http.post<SendNoticeResponse>(`${this.adminUrl}/notifications`, data, {
       params: query,
     });
   }
 
-  /** Avisa la demora de un colectivo puntual (BUS_DELAY). */
-  notificarRetraso(datos: NotificarRetrasoRequest): Observable<NotificarRetrasoResponse> {
-    return this.http.post<NotificarRetrasoResponse>(`${this.adminUrl}/notify-bus-delay`, datos);
+  /** Announces the delay of a specific bus (BUS_DELAY). */
+  notifyDelay(data: NotifyDelayRequest): Observable<NotifyDelayResponse> {
+    return this.http.post<NotifyDelayResponse>(`${this.adminUrl}/notify-bus-delay`, data);
   }
 
-  /** Avisa a mano la llegada de un colectivo a un anden (BUS_ARRIVAL), por si falla la camara. */
-  notificarArribo(datos: NotificarArriboRequest): Observable<NotificarArriboResponse> {
-    return this.http.post<NotificarArriboResponse>(APP_CONFIG.notifyPassengersUrl, datos);
+  /** Manually announces a bus arrival at a bay (BUS_ARRIVAL), in case the camera fails. */
+  notifyArrival(data: NotifyArrivalRequest): Observable<NotifyArrivalResponse> {
+    return this.http.post<NotifyArrivalResponse>(APP_CONFIG.notifyPassengersUrl, data);
   }
 
-  listar(params: ListNotificacionesParams = {}): Observable<ListNotificacionesResponse> {
+  list(params: ListNotificationsParams = {}): Observable<ListNotificationsResponse> {
     let query = new HttpParams();
     if (params.page) query = query.set('page', params.page);
     if (params.limit) query = query.set('limit', params.limit);
@@ -61,16 +61,16 @@ export class AvisoService {
     if (params.status) query = query.set('status', params.status);
     if (params.terminal_uuid) query = query.set('terminal_uuid', params.terminal_uuid);
 
-    return this.http.get<ListNotificacionesResponse>(`${this.adminUrl}/notifications`, {
+    return this.http.get<ListNotificationsResponse>(`${this.adminUrl}/notifications`, {
       params: query,
     });
   }
 
-  obtener(id: string): Observable<NotificacionAdmin> {
-    return this.http.get<NotificacionAdmin>(`${this.adminUrl}/notifications/${id}`);
+  get(id: string): Observable<AdminNotification> {
+    return this.http.get<AdminNotification>(`${this.adminUrl}/notifications/${id}`);
   }
 
-  eliminar(id: string): Observable<void> {
+  delete(id: string): Observable<void> {
     return this.http.delete<void>(`${this.adminUrl}/notifications`, {
       params: new HttpParams().set('notification_id', id),
     });

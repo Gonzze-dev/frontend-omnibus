@@ -1,35 +1,35 @@
-<div class="buscador">
-  <input #campo class="buscador__input" type="text" role="combobox" autocomplete="off"
-         [id]="inputId()" [placeholder]="placeholder()" [value]="texto()" [disabled]="deshabilitado()"
-         [attr.aria-expanded]="abierto()" [attr.aria-controls]="listaId"
-         [attr.aria-activedescendant]="abierto() && activa() >= 0 ? listaId + '-' + activa() : null"
-         [attr.aria-invalid]="invalido()"
-         (focus)="abrir()" (click)="abrir()"
-         (input)="escribir($any($event.target).value)"
-         (keydown)="teclear($event)" />
+<div class="search">
+  <input #field class="search__input" type="text" role="combobox" autocomplete="off"
+         [id]="inputId()" [placeholder]="placeholder()" [value]="text()" [disabled]="disabled()"
+         [attr.aria-expanded]="open()" [attr.aria-controls]="listId"
+         [attr.aria-activedescendant]="open() && active() >= 0 ? listId + '-' + active() : null"
+         [attr.aria-invalid]="invalid()"
+         (focus)="openList()" (click)="openList()"
+         (input)="type($any($event.target).value)"
+         (keydown)="onKeydown($event)" />
 
-  <svg class="buscador__flecha" width="12" height="8" viewBox="0 0 12 8" fill="none" aria-hidden="true">
+  <svg class="search__arrow" width="12" height="8" viewBox="0 0 12 8" fill="none" aria-hidden="true">
     <path d="M1 1.5 6 6.5l5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
   </svg>
 
-  @if (abierto()) {
-    <ul #lista class="buscador__lista" role="listbox" popover="manual" [id]="listaId">
-      @for (o of filtradas(); track o.valor; let i = $index) {
-        <li class="buscador__opcion" role="option" [id]="listaId + '-' + i"
-            [class.buscador__opcion--activa]="i === activa()"
-            [class.buscador__opcion--elegida]="o.valor === valor()"
-            [attr.aria-selected]="o.valor === valor()"
-            [attr.aria-disabled]="o.deshabilitada || null"
+  @if (open()) {
+    <ul #list class="search__list" role="listbox" popover="manual" [id]="listId">
+      @for (o of filtered(); track o.value; let i = $index) {
+        <li class="search__option" role="option" [id]="listId + '-' + i"
+            [class.search__option--active]="i === active()"
+            [class.search__option--selected]="o.value === value()"
+            [attr.aria-selected]="o.value === value()"
+            [attr.aria-disabled]="o.disabled || null"
             (mousedown)="$event.preventDefault()"
-            (mouseenter)="!o.deshabilitada && activa.set(i)"
-            (click)="elegir(o)">
-          <span class="buscador__etiqueta">{{ o.etiqueta }}</span>
-          @if (o.detalle) {
-            <span class="buscador__detalle">{{ o.detalle }}</span>
+            (mouseenter)="!o.disabled && active.set(i)"
+            (click)="choose(o)">
+          <span class="search__label">{{ o.label }}</span>
+          @if (o.detail) {
+            <span class="search__detail">{{ o.detail }}</span>
           }
         </li>
       } @empty {
-        <li class="buscador__vacio">Sin coincidencias.</li>
+        <li class="search__empty">Sin coincidencias.</li>
       }
     </ul>
   }

@@ -4,434 +4,434 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, ResolveFn, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Topbar } from '../../shared/topbar/topbar';
-import { PlataformaService } from '../../services/plataforma.service';
+import { PlatformService } from '../../services/platform.service';
 import { TerminalService } from '../../services/terminal.service';
-import { TerminalConPlataformas } from '../../models/plataforma.model';
+import { TerminalWithPlatforms } from '../../models/platform.model';
 import { Terminal } from '../../models/terminal.model';
 
-export type AccionPlataforma = 'listar' | 'crear' | 'editar';
+export type PlatformAction = 'list' | 'create' | 'edit';
 
-interface VistaPlataforma {
-  titulo: string;
-  bajada: string;
+interface PlatformView {
+  title: string;
+  lead: string;
 }
 
-const VISTAS: Record<AccionPlataforma, VistaPlataforma> = {
-  listar: {
-    titulo: 'Gestionar plataformas',
-    bajada: 'Gestionar plataformas te permite ver, crear, editar y eliminar las plataformas de cada terminal.',
+const VIEWS: Record<PlatformAction, PlatformView> = {
+  list: {
+    title: 'Gestionar plataformas',
+    lead: 'Gestionar plataformas te permite ver, crear, editar y eliminar las plataformas de cada terminal.',
   },
-  crear: {
-    titulo: 'Cargar plataforma',
-    bajada: 'Alta de un anden nuevo en una terminal.',
+  create: {
+    title: 'Cargar plataforma',
+    lead: 'Alta de un anden nuevo en una terminal.',
   },
-  editar: {
-    titulo: 'Editar plataforma',
-    bajada: 'Cambia el anden o su ubicacion.',
+  edit: {
+    title: 'Editar plataforma',
+    lead: 'Cambia el anden o su ubicacion.',
   },
 };
 
-/** Terminales que entran en una pagina del listado. */
-const POR_PAGINA = 10;
+/** Terminals that fit in one page of the list. */
+const PAGE_SIZE = 10;
 
-/** Cantidad de filas que se piden al backend para filtrar/paginar en el cliente. */
-const LIMITE_BACKEND = 500;
+/** Number of rows requested from the backend to filter/paginate on the client. */
+const BACKEND_LIMIT = 500;
 
 /**
- * Pantallas de ABM de plataformas. Las cinco opciones de la
- * gestion comparten este componente y cambian segun :accion.
+ * Platforms CRUD screens. The five management options
+ * share this component and change according to :action.
  */
 @Component({
-  selector: 'app-plataformas',
+  selector: 'app-platforms',
   imports: [Topbar, RouterLink, ReactiveFormsModule],
-  templateUrl: './plataformas.html',
-  styleUrl: './plataformas.scss',
+  templateUrl: './platforms.html',
+  styleUrl: './platforms.scss',
 })
-export class Plataformas {
-  private readonly ruta = inject(ActivatedRoute);
+export class Platforms {
+  private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
-  private readonly plataformaService = inject(PlataformaService);
+  private readonly platformService = inject(PlatformService);
   private readonly terminalService = inject(TerminalService);
   private readonly fb = inject(FormBuilder);
 
-  private readonly parametros = toSignal(this.ruta.paramMap, {
-    initialValue: this.ruta.snapshot.paramMap,
+  private readonly params = toSignal(this.route.paramMap, {
+    initialValue: this.route.snapshot.paramMap,
   });
 
-  protected readonly accion = computed(() => {
-    const accion = this.parametros().get('accion') as AccionPlataforma | null;
-    return accion && accion in VISTAS ? accion : 'listar';
+  protected readonly action = computed(() => {
+    const action = this.params().get('action') as PlatformAction | null;
+    return action && action in VIEWS ? action : 'list';
   });
 
-  /** Codigo del anden a editar, si la ruta lo trae. */
-  private readonly codigo = computed(() => {
-    const raw = this.parametros().get('codigo');
+  /** Code of the bay to edit, if the route carries it. */
+  private readonly code = computed(() => {
+    const raw = this.params().get('code');
     const code = raw ? Number(raw) : NaN;
     return Number.isInteger(code) ? code : null;
   });
 
-  protected readonly vista = computed(() => VISTAS[this.accion()]);
+  protected readonly view = computed(() => VIEWS[this.action()]);
 
-  protected readonly terminales = signal<Terminal[]>([]);
+  protected readonly terminals = signal<Terminal[]>([]);
 
-  /** Texto del filtro: nombre de la terminal, anden o codigo de anden. */
-  protected readonly filtro = signal('');
+  /** Filter text: terminal name, bay or bay code. */
+  protected readonly filter = signal('');
 
-  protected readonly pagina = signal(1);
+  protected readonly page = signal(1);
 
-  /** Terminal desplegada, o null si estan todas cerradas. */
-  protected readonly abierta = signal<string | null>(null);
+  /** Expanded terminal, or null if all of them are collapsed. */
+  protected readonly expanded = signal<string | null>(null);
 
-  // --- Listado ---
-  protected readonly cargandoListado = signal(false);
-  protected readonly errorListado = signal<string | null>(null);
-  private readonly todosLosGrupos = signal<TerminalConPlataformas[]>([]);
+  // --- List ---
+  protected readonly loadingList = signal(false);
+  protected readonly listError = signal<string | null>(null);
+  private readonly allGroups = signal<TerminalWithPlatforms[]>([]);
 
-  private readonly filtradas = computed(() => {
-    const texto = this.filtro().trim().toLowerCase();
-    const grupos = this.todosLosGrupos();
-    if (!texto) return grupos;
+  private readonly filtered = computed(() => {
+    const text = this.filter().trim().toLowerCase();
+    const groups = this.allGroups();
+    if (!text) return groups;
 
-    return grupos.filter(
+    return groups.filter(
       (g) =>
-        g.name.toLowerCase().includes(texto) ||
+        g.name.toLowerCase().includes(text) ||
         g.platforms.some(
-          (a) => a.anden.toLowerCase().includes(texto) || String(a.code).includes(texto),
+          (p) => p.bay.toLowerCase().includes(text) || String(p.code).includes(text),
         ),
     );
   });
 
-  protected readonly totalPaginas = computed(() =>
-    Math.max(1, Math.ceil(this.filtradas().length / POR_PAGINA)),
+  protected readonly totalPages = computed(() =>
+    Math.max(1, Math.ceil(this.filtered().length / PAGE_SIZE)),
   );
 
   /**
-   * Pagina efectiva: si el filtro dejo menos paginas de las que habia,
-   * la ultima valida, para no mostrar un listado vacio.
+   * Effective page: if the filter left fewer pages than there were,
+   * the last valid one, so an empty list is not shown.
    */
-  protected readonly paginaActual = computed(() => Math.min(this.pagina(), this.totalPaginas()));
+  protected readonly currentPage = computed(() => Math.min(this.page(), this.totalPages()));
 
-  protected readonly paginas = computed(() =>
-    Array.from({ length: this.totalPaginas() }, (_, i) => i + 1),
+  protected readonly pages = computed(() =>
+    Array.from({ length: this.totalPages() }, (_, i) => i + 1),
   );
 
-  /** Las 10 terminales de la pagina actual, cada una con sus andenes. */
-  protected readonly grupos = computed(() => {
-    const desde = (this.paginaActual() - 1) * POR_PAGINA;
-    return this.filtradas().slice(desde, desde + POR_PAGINA);
+  /** The 10 terminals of the current page, each with its bays. */
+  protected readonly groups = computed(() => {
+    const from = (this.currentPage() - 1) * PAGE_SIZE;
+    return this.filtered().slice(from, from + PAGE_SIZE);
   });
 
   /**
-   * Filas en blanco que completan la pagina. Con todas las terminales
-   * cerradas la tabla mide siempre lo mismo, asi el paginado y el boton
-   * de cargar no se mueven de una pagina a otra.
+   * Blank rows that complete the page. With every terminal
+   * collapsed the table always has the same height, so the pagination and the
+   * add button do not move from one page to another.
    */
-  protected readonly relleno = computed(() =>
-    Array.from({ length: Math.max(0, POR_PAGINA - (this.grupos().length || 1)) }),
+  protected readonly filler = computed(() =>
+    Array.from({ length: Math.max(0, PAGE_SIZE - (this.groups().length || 1)) }),
   );
 
-  // --- Alta (popup sobre el listado) ---
-  private readonly dialogoAlta = viewChild<ElementRef<HTMLDialogElement>>('dialogoAlta');
-  protected readonly altaAbierta = signal(false);
-  protected readonly formCrear = this.fb.nonNullable.group({
+  // --- Create (popup over the list) ---
+  private readonly createDialog = viewChild<ElementRef<HTMLDialogElement>>('createDialog');
+  protected readonly createOpen = signal(false);
+  protected readonly createForm = this.fb.nonNullable.group({
     bus_terminal_id: ['', Validators.required],
-    anden: ['', Validators.required],
+    bay: ['', Validators.required],
     lat: [0, Validators.required],
     lng: [0, Validators.required],
   });
-  protected readonly guardandoCrear = signal(false);
-  protected readonly errorCrear = signal<string | null>(null);
+  protected readonly savingCreate = signal(false);
+  protected readonly createError = signal<string | null>(null);
 
-  // --- Edicion ---
-  protected readonly formEditar = this.fb.nonNullable.group({
-    anden: ['', Validators.required],
+  // --- Edit ---
+  protected readonly editForm = this.fb.nonNullable.group({
+    bay: ['', Validators.required],
     lat: [0, Validators.required],
     lng: [0, Validators.required],
   });
-  protected readonly cargandoSeleccionada = signal(false);
-  protected readonly errorSeleccionada = signal<string | null>(null);
-  protected readonly guardandoEditar = signal(false);
-  protected readonly errorEditar = signal<string | null>(null);
+  protected readonly loadingSelected = signal(false);
+  protected readonly selectedError = signal<string | null>(null);
+  protected readonly savingEdit = signal(false);
+  protected readonly editError = signal<string | null>(null);
 
-  // --- Edicion: anden elegido (popup sobre el listado) ---
-  private readonly dialogoEdicion = viewChild<ElementRef<HTMLDialogElement>>('dialogoEdicion');
-  protected readonly edicionAbierta = signal(false);
-  protected readonly plataformaSeleccionada = signal<{
+  // --- Edit: chosen bay (popup over the list) ---
+  private readonly editDialog = viewChild<ElementRef<HTMLDialogElement>>('editDialog');
+  protected readonly editOpen = signal(false);
+  protected readonly selectedPlatform = signal<{
     code: number;
-    anden: string;
+    bay: string;
     lat: number;
     lng: number;
     terminal: string;
   } | null>(null);
 
-  // --- Baja (popup sobre el listado) ---
-  private readonly dialogoBaja = viewChild<ElementRef<HTMLDialogElement>>('dialogoBaja');
-  protected readonly aEliminar = signal<{ code: number; anden: string; terminal: string } | null>(null);
-  protected readonly eliminando = signal(false);
-  protected readonly errorEliminar = signal<string | null>(null);
+  // --- Delete (popup over the list) ---
+  private readonly deleteDialog = viewChild<ElementRef<HTMLDialogElement>>('deleteDialog');
+  protected readonly toDelete = signal<{ code: number; bay: string; terminal: string } | null>(null);
+  protected readonly deleting = signal(false);
+  protected readonly deleteError = signal<string | null>(null);
 
   constructor() {
-    this.cargarTerminales();
+    this.loadTerminals();
 
     effect(() => {
-      const accion = this.accion();
+      const action = this.action();
 
-      if (accion === 'listar') {
-        this.cargarPlataformas();
-      } else if (accion === 'editar') {
-        // La URL vieja de edicion sigue andando: muestra el listado con el popup abierto
-        const codigo = this.codigo();
-        this.router.navigateByUrl('/dashboard/plataformas', { replaceUrl: true });
-        untracked(() => this.abrirEdicion(codigo));
-      } else if (accion === 'crear') {
-        // La URL vieja de alta sigue andando: muestra el listado con el popup abierto
-        this.router.navigateByUrl('/dashboard/plataformas', { replaceUrl: true });
-        untracked(() => this.abrirAlta());
+      if (action === 'list') {
+        this.loadPlatforms();
+      } else if (action === 'edit') {
+        // The old edit URL still works: it shows the list with the popup open
+        const code = this.code();
+        this.router.navigateByUrl('/dashboard/platforms', { replaceUrl: true });
+        untracked(() => this.openEdit(code));
+      } else if (action === 'create') {
+        // The old create URL still works: it shows the list with the popup open
+        this.router.navigateByUrl('/dashboard/platforms', { replaceUrl: true });
+        untracked(() => this.openCreate());
       }
     });
 
-    // El <dialog> nativo se abre con showModal() para tener fondo, foco
-    // atrapado y cierre con Escape sin escribirlos a mano.
+    // The native <dialog> is opened with showModal() to get a backdrop, trapped
+    // focus and closing with Escape without writing them by hand.
     effect(() => {
-      const dialogo = this.dialogoBaja()?.nativeElement;
-      if (!dialogo) return;
-      if (this.aEliminar() && !dialogo.open) dialogo.showModal();
-      if (!this.aEliminar() && dialogo.open) dialogo.close();
+      const dialog = this.deleteDialog()?.nativeElement;
+      if (!dialog) return;
+      if (this.toDelete() && !dialog.open) dialog.showModal();
+      if (!this.toDelete() && dialog.open) dialog.close();
     });
 
     effect(() => {
-      const dialogo = this.dialogoAlta()?.nativeElement;
-      if (!dialogo) return;
-      if (this.altaAbierta() && !dialogo.open) dialogo.showModal();
-      if (!this.altaAbierta() && dialogo.open) dialogo.close();
+      const dialog = this.createDialog()?.nativeElement;
+      if (!dialog) return;
+      if (this.createOpen() && !dialog.open) dialog.showModal();
+      if (!this.createOpen() && dialog.open) dialog.close();
     });
 
     effect(() => {
-      const dialogo = this.dialogoEdicion()?.nativeElement;
-      if (!dialogo) return;
-      if (this.edicionAbierta() && !dialogo.open) dialogo.showModal();
-      if (!this.edicionAbierta() && dialogo.open) dialogo.close();
+      const dialog = this.editDialog()?.nativeElement;
+      if (!dialog) return;
+      if (this.editOpen() && !dialog.open) dialog.showModal();
+      if (!this.editOpen() && dialog.open) dialog.close();
     });
   }
 
-  private cargarTerminales(): void {
-    this.terminalService.listarPublicas().subscribe({
-      next: (terminales) => this.terminales.set(terminales),
+  private loadTerminals(): void {
+    this.terminalService.listPublic().subscribe({
+      next: (terminals) => this.terminals.set(terminals),
     });
   }
 
-  private cargarPlataformas(): void {
-    this.cargandoListado.set(true);
-    this.errorListado.set(null);
+  private loadPlatforms(): void {
+    this.loadingList.set(true);
+    this.listError.set(null);
 
-    this.plataformaService.listar({ limit: LIMITE_BACKEND, order: 'ASC' }).subscribe({
+    this.platformService.list({ limit: BACKEND_LIMIT, order: 'ASC' }).subscribe({
       next: (res) => {
-        this.todosLosGrupos.set(res.platforms);
-        this.cargandoListado.set(false);
+        this.allGroups.set(res.platforms);
+        this.loadingList.set(false);
       },
       error: (err: HttpErrorResponse) => {
-        this.cargandoListado.set(false);
-        this.errorListado.set(mensajeError(err));
+        this.loadingList.set(false);
+        this.listError.set(errorMessage(err));
       },
     });
   }
 
-  private cargarSeleccionada(code: number | null): void {
-    this.plataformaSeleccionada.set(null);
-    this.errorSeleccionada.set(null);
+  private loadSelected(code: number | null): void {
+    this.selectedPlatform.set(null);
+    this.selectedError.set(null);
 
     if (code === null) {
-      this.errorSeleccionada.set('No se indico que plataforma usar.');
+      this.selectedError.set('No se indico que plataforma usar.');
       return;
     }
 
-    this.cargandoSeleccionada.set(true);
-    this.plataformaService.obtener(code).subscribe({
-      next: (grupo) => {
-        this.cargandoSeleccionada.set(false);
-        const anden = grupo.platforms[0];
-        if (!anden) {
-          this.errorSeleccionada.set('No se encontro la plataforma.');
+    this.loadingSelected.set(true);
+    this.platformService.get(code).subscribe({
+      next: (group) => {
+        this.loadingSelected.set(false);
+        const platform = group.platforms[0];
+        if (!platform) {
+          this.selectedError.set('No se encontro la plataforma.');
           return;
         }
 
-        this.plataformaSeleccionada.set({
-          code: anden.code,
-          anden: anden.anden,
-          lat: anden.coordinates.lat,
-          lng: anden.coordinates.lng,
-          terminal: grupo.name,
+        this.selectedPlatform.set({
+          code: platform.code,
+          bay: platform.bay,
+          lat: platform.coordinates.lat,
+          lng: platform.coordinates.lng,
+          terminal: group.name,
         });
-        this.formEditar.setValue({
-          anden: anden.anden,
-          lat: anden.coordinates.lat,
-          lng: anden.coordinates.lng,
+        this.editForm.setValue({
+          bay: platform.bay,
+          lat: platform.coordinates.lat,
+          lng: platform.coordinates.lng,
         });
       },
       error: (err: HttpErrorResponse) => {
-        this.cargandoSeleccionada.set(false);
-        this.errorSeleccionada.set(mensajeError(err));
+        this.loadingSelected.set(false);
+        this.selectedError.set(errorMessage(err));
       },
     });
   }
 
-  protected filtrar(texto: string): void {
-    this.filtro.set(texto);
-    this.pagina.set(1);
-    this.abierta.set(null);
+  protected applyFilter(text: string): void {
+    this.filter.set(text);
+    this.page.set(1);
+    this.expanded.set(null);
   }
 
-  protected irA(pagina: number): void {
-    this.pagina.set(Math.min(Math.max(pagina, 1), this.totalPaginas()));
-    this.abierta.set(null);
+  protected goTo(page: number): void {
+    this.page.set(Math.min(Math.max(page, 1), this.totalPages()));
+    this.expanded.set(null);
   }
 
-  protected abrirAlta(): void {
-    this.formCrear.reset({ lat: 0, lng: 0 });
-    this.errorCrear.set(null);
-    this.altaAbierta.set(true);
+  protected openCreate(): void {
+    this.createForm.reset({ lat: 0, lng: 0 });
+    this.createError.set(null);
+    this.createOpen.set(true);
   }
 
-  protected cerrarAlta(): void {
-    if (this.guardandoCrear()) return;
-    this.altaAbierta.set(false);
-    this.errorCrear.set(null);
+  protected closeCreate(): void {
+    if (this.savingCreate()) return;
+    this.createOpen.set(false);
+    this.createError.set(null);
   }
 
-  /** Un click en el fondo (fuera del contenido) cierra el popup de alta. */
-  protected clickEnPopupAlta(event: MouseEvent): void {
-    if (event.target === event.currentTarget) this.cerrarAlta();
+  /** A click on the backdrop (outside the content) closes the create popup. */
+  protected onCreatePopupClick(event: MouseEvent): void {
+    if (event.target === event.currentTarget) this.closeCreate();
   }
 
-  protected abrirEdicion(code: number | null): void {
-    this.errorEditar.set(null);
-    this.edicionAbierta.set(true);
-    this.cargarSeleccionada(code);
+  protected openEdit(code: number | null): void {
+    this.editError.set(null);
+    this.editOpen.set(true);
+    this.loadSelected(code);
   }
 
-  protected cerrarEdicion(): void {
-    if (this.guardandoEditar()) return;
-    this.edicionAbierta.set(false);
-    this.errorEditar.set(null);
+  protected closeEdit(): void {
+    if (this.savingEdit()) return;
+    this.editOpen.set(false);
+    this.editError.set(null);
   }
 
-  /** Un click en el fondo (fuera del contenido) cierra el popup de edicion. */
-  protected clickEnPopupEdicion(event: MouseEvent): void {
-    if (event.target === event.currentTarget) this.cerrarEdicion();
+  /** A click on the backdrop (outside the content) closes the edit popup. */
+  protected onEditPopupClick(event: MouseEvent): void {
+    if (event.target === event.currentTarget) this.closeEdit();
   }
 
-  /** Una terminal abierta a la vez: volver a tocarla la cierra. */
-  protected desplegar(uuid: string): void {
-    this.abierta.update((actual) => (actual === uuid ? null : uuid));
+  /** One terminal expanded at a time: tapping it again collapses it. */
+  protected toggle(uuid: string): void {
+    this.expanded.update((current) => (current === uuid ? null : uuid));
   }
 
-  protected crear(): void {
-    if (this.formCrear.invalid) {
-      this.formCrear.markAllAsTouched();
+  protected create(): void {
+    if (this.createForm.invalid) {
+      this.createForm.markAllAsTouched();
       return;
     }
 
-    this.guardandoCrear.set(true);
-    this.errorCrear.set(null);
+    this.savingCreate.set(true);
+    this.createError.set(null);
 
-    const { bus_terminal_id, anden, lat, lng } = this.formCrear.getRawValue();
-    this.plataformaService
-      .crear({ bus_terminal_id, anden: anden.trim(), coordinates: { lat, lng } })
+    const { bus_terminal_id, bay, lat, lng } = this.createForm.getRawValue();
+    this.platformService
+      .create({ bus_terminal_id, bay: bay.trim(), coordinates: { lat, lng } })
       .subscribe({
         next: () => {
-          this.guardandoCrear.set(false);
-          this.altaAbierta.set(false);
-          this.cargarPlataformas();
+          this.savingCreate.set(false);
+          this.createOpen.set(false);
+          this.loadPlatforms();
         },
         error: (err: HttpErrorResponse) => {
-          this.guardandoCrear.set(false);
-          this.errorCrear.set(mensajeError(err));
+          this.savingCreate.set(false);
+          this.createError.set(errorMessage(err));
         },
       });
   }
 
-  protected guardarEdicion(): void {
-    if (this.formEditar.invalid) {
-      this.formEditar.markAllAsTouched();
+  protected saveEdit(): void {
+    if (this.editForm.invalid) {
+      this.editForm.markAllAsTouched();
       return;
     }
 
-    const seleccionada = this.plataformaSeleccionada();
-    if (!seleccionada) return;
+    const selected = this.selectedPlatform();
+    if (!selected) return;
 
-    this.guardandoEditar.set(true);
-    this.errorEditar.set(null);
+    this.savingEdit.set(true);
+    this.editError.set(null);
 
-    const { anden, lat, lng } = this.formEditar.getRawValue();
-    this.plataformaService
-      .actualizar(seleccionada.code, { anden: anden.trim(), coordinates: { lat, lng } })
+    const { bay, lat, lng } = this.editForm.getRawValue();
+    this.platformService
+      .update(selected.code, { bay: bay.trim(), coordinates: { lat, lng } })
       .subscribe({
         next: () => {
-          this.guardandoEditar.set(false);
-          this.edicionAbierta.set(false);
-          this.cargarPlataformas();
+          this.savingEdit.set(false);
+          this.editOpen.set(false);
+          this.loadPlatforms();
         },
         error: (err: HttpErrorResponse) => {
-          this.guardandoEditar.set(false);
-          this.errorEditar.set(mensajeError(err));
+          this.savingEdit.set(false);
+          this.editError.set(errorMessage(err));
         },
       });
   }
 
-  protected confirmarBaja(code: number, anden: string, terminal: string): void {
-    this.errorEliminar.set(null);
-    this.aEliminar.set({ code, anden, terminal });
+  protected confirmDelete(code: number, bay: string, terminal: string): void {
+    this.deleteError.set(null);
+    this.toDelete.set({ code, bay, terminal });
   }
 
-  protected cancelarBaja(): void {
-    if (this.eliminando()) return;
-    this.aEliminar.set(null);
-    this.errorEliminar.set(null);
+  protected cancelDelete(): void {
+    if (this.deleting()) return;
+    this.toDelete.set(null);
+    this.deleteError.set(null);
   }
 
-  /** Un click en el fondo (fuera del contenido) cierra el popup. */
-  protected clickEnPopup(event: MouseEvent): void {
-    if (event.target === event.currentTarget) this.cancelarBaja();
+  /** A click on the backdrop (outside the content) closes the popup. */
+  protected onDeletePopupClick(event: MouseEvent): void {
+    if (event.target === event.currentTarget) this.cancelDelete();
   }
 
-  protected eliminar(): void {
-    const seleccionada = this.aEliminar();
-    if (!seleccionada) return;
+  protected delete(): void {
+    const selected = this.toDelete();
+    if (!selected) return;
 
-    this.eliminando.set(true);
-    this.errorEliminar.set(null);
+    this.deleting.set(true);
+    this.deleteError.set(null);
 
-    this.plataformaService.eliminar(seleccionada.code).subscribe({
+    this.platformService.delete(selected.code).subscribe({
       next: () => {
-        this.eliminando.set(false);
-        this.aEliminar.set(null);
-        // Se saca el anden del listado sin volver a pedirlo al backend
-        this.todosLosGrupos.update((grupos) =>
-          grupos.map((g) => ({
+        this.deleting.set(false);
+        this.toDelete.set(null);
+        // The bay is removed from the list without requesting it from the backend again
+        this.allGroups.update((groups) =>
+          groups.map((g) => ({
             ...g,
-            platforms: g.platforms.filter((p) => p.code !== seleccionada.code),
+            platforms: g.platforms.filter((p) => p.code !== selected.code),
           })),
         );
       },
       error: (err: HttpErrorResponse) => {
-        this.eliminando.set(false);
-        this.errorEliminar.set(mensajeError(err));
+        this.deleting.set(false);
+        this.deleteError.set(errorMessage(err));
       },
     });
   }
 
-  protected invalidoCrear(campo: 'bus_terminal_id' | 'anden' | 'lat' | 'lng'): boolean {
-    const control = this.formCrear.controls[campo];
+  protected createInvalid(field: 'bus_terminal_id' | 'bay' | 'lat' | 'lng'): boolean {
+    const control = this.createForm.controls[field];
     return control.invalid && control.touched;
   }
 
-  protected invalidoEditar(campo: 'anden' | 'lat' | 'lng'): boolean {
-    const control = this.formEditar.controls[campo];
+  protected editInvalid(field: 'bay' | 'lat' | 'lng'): boolean {
+    const control = this.editForm.controls[field];
     return control.invalid && control.touched;
   }
 }
 
-function mensajeError(err: HttpErrorResponse): string {
+function errorMessage(err: HttpErrorResponse): string {
   switch (err.status) {
     case 0:
       return 'No se pudo conectar con el servidor. Intenta mas tarde.';
@@ -446,7 +446,7 @@ function mensajeError(err: HttpErrorResponse): string {
   }
 }
 
-export const tituloPlataformas: ResolveFn<string> = (ruta) => {
-  const accion = (ruta.paramMap.get('accion') as AccionPlataforma | null) ?? 'listar';
-  return VISTAS[accion]?.titulo ?? VISTAS['listar'].titulo;
+export const platformsTitle: ResolveFn<string> = (route) => {
+  const action = (route.paramMap.get('action') as PlatformAction | null) ?? 'list';
+  return VIEWS[action]?.title ?? VIEWS['list'].title;
 };

@@ -1,41 +1,41 @@
 /* ============================================================
-   Pantallas de ABM del dashboard (ciudades, plataformas,
-   terminales, permisos y avisos).
+   Dashboard CRUD screens (cities, platforms,
+   terminals, permissions and notices).
 
-   Cada seccion tiene su propio componente, asi que los estilos
-   se comparten desde aca: el componente hace
+   Each section has its own component, so the styles
+   are shared from here: the component does
    @use '../../../styles/crud' as *;
-   y Angular los deja scopeados a su propia pantalla.
+   and Angular keeps them scoped to its own screen.
 
-   El tono lo pone el contenedor con .tono--*, igual que en el
-   dashboard y en el menu de gestion.
+   The tone is set by the container with .tone--*, same as in the
+   dashboard and in the management menu.
    ============================================================ */
 
-@use 'pantalla' as *;
+@use 'screen' as *;
 
 .crud {
   min-height: calc(100dvh - var(--ab-topbar-h));
   padding-top: 20px;
   padding-bottom: 64px;
-  @include pantalla-card;
+  @include screen-card;
 }
 
-/* Tonos heredados del dashboard para no romper la continuidad */
-.tono--azul    { --tono: #0050CB; }
-.tono--indigo  { --tono: #4648D4; }
-.tono--carmin  { --tono: #B40036; }
-.tono--tinta   { --tono: #131B2E; }
-.tono--naranja { --tono: var(--ab-accent); }
+/* Tones inherited from the dashboard to keep continuity */
+.tone--blue    { --tone: #0050CB; }
+.tone--indigo  { --tone: #4648D4; }
+.tone--crimson  { --tone: #B40036; }
+.tone--ink   { --tone: #131B2E; }
+.tone--orange { --tone: var(--ab-accent); }
 
-$carmin: #B40036;
+$crimson: #B40036;
 
-/* Alto de los iconos de accion: es lo que marca el alto de una fila */
-$icono: 32px;
-/* Fila completa: los iconos + 14px de padding arriba y abajo + el borde */
-$fila: $icono + 29px;
+/* Height of the action icons: it is what sets the height of a row */
+$icon: 32px;
+/* Full row: the icons + 14px of padding above and below + the border */
+$row: $icon + 29px;
 
-/* ---------------- Volver ---------------- */
-.crud__volver {
+/* ---------------- Back ---------------- */
+.crud__back {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -45,13 +45,13 @@ $fila: $icono + 29px;
   text-decoration: none;
 }
 
-.crud__volver:hover { text-decoration: underline; }
-.crud__volver:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 4px; }
+.crud__back:hover { text-decoration: underline; }
+.crud__back:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 4px; }
 
-/* ---------------- Encabezado ---------------- */
+/* ---------------- Header ---------------- */
 .crud__head { margin-top: 20px; }
 
-.crud__titulo {
+.crud__title {
   margin: 0;
   font-family: Manrope, Inter, sans-serif;
   font-weight: 800;
@@ -61,23 +61,23 @@ $fila: $icono + 29px;
   color: var(--ab-primary);
 }
 
-.crud__bajada {
+.crud__lead {
   margin: 8px 0 0;
   font-size: calc(var(--ab-fs-body) + 1px);
   line-height: var(--ab-lh-lead);
   color: var(--ab-body);
 }
 
-/* Titulo y bajada a la izquierda, boton de alta a la derecha:
-   lo usan los listados que tienen alta (ciudades, plataformas, terminales). */
-.crud__head--acciones {
+/* Title and lead on the left, add button on the right:
+   used by the lists that can add items (cities, platforms, terminals). */
+.crud__head--actions {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
 }
 
-.crud__agregar {
+.crud__add {
   display: flex;
   flex: none;
   align-items: center;
@@ -86,17 +86,17 @@ $fila: $icono + 29px;
   height: 40px;
   margin-top: 2px;
   border-radius: 50%;
-  background: var(--tono);
+  background: var(--tone);
   color: var(--ab-white);
 }
 
-.crud__agregar--primario { background: var(--ab-primary); }
+.crud__add--primary { background: var(--ab-primary); }
 
-.crud__agregar:hover { opacity: 0.9; }
-.crud__agregar:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 2px; }
+.crud__add:hover { opacity: 0.9; }
+.crud__add:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 2px; }
 
-/* ---------------- Tablas ---------------- */
-.tabla {
+/* ---------------- Tables ---------------- */
+.table {
   display: flex;
   flex-direction: column;
   margin: 28px 0 0;
@@ -108,9 +108,9 @@ $fila: $icono + 29px;
   background: var(--ab-white);
 }
 
-.tabla__fila {
+.table__row {
   display: grid;
-  /* Cada pantalla decide el ancho de sus columnas con --cols */
+  /* Each screen decides the width of its columns with --cols */
   grid-template-columns: var(--cols, 1fr 1.4fr auto);
   align-items: center;
   gap: 12px;
@@ -118,9 +118,9 @@ $fila: $icono + 29px;
   border-bottom: 1px solid var(--ab-line);
 }
 
-.tabla__fila:last-child { border-bottom: none; }
+.table__row:last-child { border-bottom: none; }
 
-.tabla__fila--cabecera {
+.table__row--header {
   font-weight: 600;
   font-size: var(--ab-fs-label);
   letter-spacing: 0.05em;
@@ -129,18 +129,18 @@ $fila: $icono + 29px;
   background: var(--ab-card);
 }
 
-/* Separador con el nombre de la terminal en los listados agrupados */
-.tabla__grupo {
+/* Separator with the terminal name in the grouped lists */
+.table__group {
   display: block;
   padding: 12px 16px;
   border-bottom: 1px solid var(--ab-line);
-  background: color-mix(in srgb, var(--tono) 7%, transparent);
+  background: color-mix(in srgb, var(--tone) 7%, transparent);
   font-weight: 600;
   font-size: var(--ab-fs-body);
-  color: var(--tono);
+  color: var(--tone);
 }
 
-.tabla__dato {
+.table__cell {
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -149,87 +149,87 @@ $fila: $icono + 29px;
   color: var(--ab-ink);
 }
 
-/* Primera linea de la celda */
-.tabla__linea { min-width: 0; }
+/* First line of the cell */
+.table__line { min-width: 0; }
 
-/* Segunda linea de la celda: uuid, id externo, coordenadas */
-.tabla__sub {
+/* Second line of the cell: uuid, external id, coordinates */
+.table__sub {
   font-size: var(--ab-fs-label);
   color: var(--ab-placeholder);
   overflow-wrap: anywhere;
 }
 
-.tabla__acciones {
+.table__actions {
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 8px;
 }
 
-.tabla__icono {
+.table__icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: $icono;
-  height: $icono;
+  width: $icon;
+  height: $icon;
   border-radius: var(--ab-r-input);
-  color: var(--tono);
+  color: var(--tone);
   text-decoration: none;
 }
 
-.tabla__icono:hover { background: color-mix(in srgb, var(--tono) 10%, transparent); }
-.tabla__icono--carmin { color: $carmin; }
-.tabla__icono--carmin:hover { background: rgba(180, 0, 54, 0.1); }
+.table__icon:hover { background: color-mix(in srgb, var(--tone) 10%, transparent); }
+.table__icon--crimson { color: $crimson; }
+.table__icon--crimson:hover { background: rgba(180, 0, 54, 0.1); }
 
-/* Fila en blanco que completa la pagina para que la tabla no cambie de alto */
-.tabla__fila--relleno { visibility: hidden; }
+/* Blank row that completes the page so the table does not change height */
+.table__row--filler { visibility: hidden; }
 
-/* La ultima fila con datos cierra sin linea, como si la tabla terminara ahi.
-   Se apaga el color y no el borde para no perder el pixel de alto. */
-.tabla__fila:has(+ .tabla__fila--relleno) { border-bottom-color: transparent; }
+/* The last row with data closes without a line, as if the table ended there.
+   The color is turned off, not the border, so the pixel of height is not lost. */
+.table__row:has(+ .table__row--filler) { border-bottom-color: transparent; }
 
-/* ---------------- Tabla de alto fijo ----------------
-   Para los listados paginados: todas las filas miden lo mismo, asi el
-   paginado y el boton de abajo no se mueven entre una pagina y otra.
-   Un texto que no entra se recorta en vez de pasar a dos lineas.
+/* ---------------- Fixed-height table ----------------
+   For the paginated lists: every row has the same height, so the
+   pagination and the button below do not move between one page and another.
+   A text that does not fit is clipped instead of wrapping to two lines.
 
-   El alto por defecto es el de una celda de una sola linea, donde
-   manda el alto de los iconos. Una tabla con celdas de dos lineas
-   pisa --fila en su propio scss, igual que hace con --cols. */
-.tabla--fija { --fila: #{$fila}; }
+   The default height is that of a single-line cell, where
+   the height of the icons rules. A table with two-line cells
+   overrides --row-height in its own scss, same as it does with --cols. */
+.table--fixed { --row-height: #{$row}; }
 
-.tabla--fija .tabla__fila { height: var(--fila); }
+.table--fixed .table__row { height: var(--row-height); }
 
-.tabla--fija .tabla__vacio {
+.table--fixed .table__empty {
   display: flex;
   align-items: center;
-  height: var(--fila);
+  height: var(--row-height);
   padding-block: 0;
 }
 
-/* La ultima terminal antes del relleno tambien cierra sin linea */
-.tabla__item:has(+ .tabla__fila--relleno) .tabla__desplegable { border-bottom-color: transparent; }
+/* The last terminal before the filler also closes without a line */
+.table__item:has(+ .table__row--filler) .table__dropdown { border-bottom-color: transparent; }
 
-/* Cada linea de una celda se recorta sola, asi la celda no crece */
-.tabla--fija .tabla__linea,
-.tabla--fija .tabla__sub {
+/* Each line of a cell is clipped on its own, so the cell does not grow */
+.table--fixed .table__line,
+.table--fixed .table__sub {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 
-.tabla__vacio {
+.table__empty {
   padding: 20px 16px;
   font-size: calc(var(--ab-fs-body) + 1px);
   color: var(--ab-body);
 }
 
-/* ---------------- Fila que se despliega ----------------
-   El listado de plataformas pagina por terminal: cada fila es una
-   terminal y abre sus andenes abajo. Una sola abierta a la vez. */
-.tabla__item { display: block; }
+/* ---------------- Expandable row ----------------
+   The platforms list paginates by terminal: each row is a
+   terminal and opens its bays below. Only one open at a time. */
+.table__item { display: block; }
 
-.tabla__desplegable {
+.table__dropdown {
   width: 100%;
   border: 0;
   border-bottom: 1px solid var(--ab-line);
@@ -240,37 +240,37 @@ $fila: $icono + 29px;
   cursor: pointer;
 }
 
-.tabla__desplegable:hover { background: color-mix(in srgb, var(--tono) 5%, transparent); }
-.tabla__desplegable:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: -2px; }
-.tabla__desplegable[aria-expanded='true'] { background: color-mix(in srgb, var(--tono) 7%, transparent); }
+.table__dropdown:hover { background: color-mix(in srgb, var(--tone) 5%, transparent); }
+.table__dropdown:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: -2px; }
+.table__dropdown[aria-expanded='true'] { background: color-mix(in srgb, var(--tone) 7%, transparent); }
 
-.tabla__flecha {
+.table__arrow {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: $icono;
-  height: $icono;
-  color: var(--tono);
+  width: $icon;
+  height: $icon;
+  color: var(--tone);
   transition: transform 0.15s ease;
 }
 
-.tabla__flecha--abierta { transform: rotate(180deg); }
+.table__arrow--open { transform: rotate(180deg); }
 
-/* Andenes de la terminal abierta */
-.tabla__panel {
+/* Bays of the expanded terminal */
+.table__panel {
   margin: 0;
   padding: 0;
   list-style: none;
   background: var(--ab-card);
 }
 
-.tabla__panel .tabla__fila { padding-left: 32px; }
+.table__panel .table__row { padding-left: 32px; }
 
-/* ---------------- Paginado del listado ---------------- */
-/* Sigue ocupando su lugar con una sola pagina, para no correr lo de abajo */
-.paginado--oculto { visibility: hidden; }
+/* ---------------- List pagination ---------------- */
+/* It keeps taking its place with a single page, so what is below does not move */
+.pagination--hidden { visibility: hidden; }
 
-.paginado {
+.pagination {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -278,8 +278,8 @@ $fila: $icono + 29px;
   margin-top: 20px;
 }
 
-.paginado__flecha,
-.paginado__numero {
+.pagination__arrow,
+.pagination__number {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -295,29 +295,29 @@ $fila: $icono + 29px;
   cursor: pointer;
 }
 
-.paginado__flecha:hover:not(:disabled),
-.paginado__numero:hover:not(.paginado__numero--activa) {
-  border-color: var(--tono);
-  color: var(--tono);
+.pagination__arrow:hover:not(:disabled),
+.pagination__number:hover:not(.pagination__number--active) {
+  border-color: var(--tone);
+  color: var(--tone);
 }
 
-.paginado__flecha:focus-visible,
-.paginado__numero:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 2px; }
+.pagination__arrow:focus-visible,
+.pagination__number:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 2px; }
 
-.paginado__flecha:disabled {
+.pagination__arrow:disabled {
   color: var(--ab-placeholder);
   cursor: default;
   opacity: 0.5;
 }
 
-.paginado__numero--activa {
-  border-color: var(--tono);
-  background: var(--tono);
+.pagination__number--active {
+  border-color: var(--tone);
+  background: var(--tone);
   color: var(--ab-white);
   font-weight: 600;
 }
 
-/* ---------------- Formularios ---------------- */
+/* ---------------- Forms ---------------- */
 .crud__form {
   display: flex;
   flex-direction: column;
@@ -325,14 +325,14 @@ $fila: $icono + 29px;
   margin-top: 28px;
 }
 
-/* Dos campos cortos en la misma linea (lat / lng, demora / vida) */
-.crud__fila {
+/* Two short fields on the same line (lat / lng, delay / lifetime) */
+.crud__row {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
 
-/* Mismo aspecto que .ab-input, que es un input y no sirve para el select */
+/* Same look as .ab-input, which is an input and does not work for the select */
 .crud__select {
   width: 100%;
   height: var(--ab-input-h);
@@ -364,30 +364,30 @@ $fila: $icono + 29px;
 .crud__textarea::placeholder { color: rgba(116, 118, 133, 0.5); }
 .crud__textarea:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 2px; }
 
-/* Aclaracion al pie de un campo */
-.crud__nota {
+/* Note at the bottom of a field */
+.crud__note {
   margin: 0;
   font-size: var(--ab-fs-label);
   line-height: 1.45;
   color: var(--ab-placeholder);
 }
 
-/* Datos de solo lectura dentro de un formulario: etiqueta arriba y valor como texto */
-.crud__datos {
+/* Read-only data inside a form: label above and value as text */
+.crud__details {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   gap: 24px;
   margin: 0;
 }
 
-.crud__dato {
+.crud__cell {
   display: flex;
   flex-direction: column;
   gap: 6px;
   min-width: 0;
 }
 
-.crud__valor {
+.crud__value {
   margin: 0;
   font-size: var(--ab-fs-input);
   line-height: 1.3;
@@ -395,33 +395,33 @@ $fila: $icono + 29px;
   overflow-wrap: anywhere;
 }
 
-.crud__cargar { margin-top: 20px; }
+.crud__load { margin-top: 20px; }
 
-/* Accion destructiva: el mismo boton pero en carmin */
-.crud__peligro {
-  background: $carmin;
+/* Destructive action: the same button but in crimson */
+.crud__danger {
+  background: $crimson;
   box-shadow: none;
 }
 
-/* Filtro sobre un listado */
-.crud__filtro {
+/* Filter over a list */
+.crud__filter {
   display: flex;
   align-items: flex-end;
   gap: 12px;
   margin-top: 24px;
 }
 
-.crud__filtro .ab-field { flex: 1; }
+.crud__filter .ab-field { flex: 1; }
 
-.crud__filtro-boton {
+.crud__filter-button {
   width: auto;
   min-height: var(--ab-input-h);
   padding: 0 20px;
   font-size: var(--ab-fs-body);
 }
 
-/* ---------------- Resultado / detalle ---------------- */
-.resultado {
+/* ---------------- Result / detail ---------------- */
+.result {
   margin-top: 24px;
   padding: 20px;
   border: 1px solid var(--ab-line);
@@ -429,7 +429,7 @@ $fila: $icono + 29px;
   background: var(--ab-white);
 }
 
-.resultado__titulo {
+.result__title {
   margin: 0 0 12px;
   font-size: var(--ab-fs-label);
   font-weight: 600;
@@ -438,9 +438,9 @@ $fila: $icono + 29px;
   color: var(--ab-placeholder);
 }
 
-.resultado__lista { margin: 0; }
+.result__list { margin: 0; }
 
-.resultado__fila {
+.result__row {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
@@ -449,15 +449,15 @@ $fila: $icono + 29px;
   border-bottom: 1px solid var(--ab-line);
 }
 
-.resultado__fila:last-child { border-bottom: none; }
+.result__row:last-child { border-bottom: none; }
 
-.resultado__fila dt {
+.result__row dt {
   flex: none;
   font-size: var(--ab-fs-body);
   color: var(--ab-body);
 }
 
-.resultado__fila dd {
+.result__row dd {
   margin: 0;
   min-width: 0;
   font-weight: 600;
@@ -466,40 +466,40 @@ $fila: $icono + 29px;
   overflow-wrap: anywhere;
 }
 
-/* Rol del usuario en la pantalla de permisos */
-.resultado__rol {
+/* User role in the permissions screen */
+.result__role {
   display: inline-block;
   padding: 2px 10px;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--tono) 12%, transparent);
+  background: color-mix(in srgb, var(--tone) 12%, transparent);
   font-size: var(--ab-fs-label);
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: var(--tono);
+  color: var(--tone);
 }
 
-/* ---------------- Tipos de aviso ----------------
-   Tarjetas que hacen de radio: el tipo se elige sobre la misma
-   tarjeta que explica para que sirve. */
-.tipos {
+/* ---------------- Notice types ----------------
+   Cards that act as radios: the type is chosen on the same
+   card that explains what it is for. */
+.types {
   margin: 0;
   padding: 0;
   border: 0;
 }
 
-.tipos__titulo {
+.types__title {
   padding: 0;
   margin-bottom: 10px;
 }
 
-.tipos__opciones {
+.types__options {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
 }
 
 
-.tipo {
+.type {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -514,56 +514,56 @@ $fila: $icono + 29px;
   transition: border-color 0.1s, background-color 0.1s, transform 0.1s;
 }
 
-.tipo:has(.tipo__radio:checked) {
-  border-color: var(--tono);
-  background: color-mix(in srgb, var(--tono) 8%, transparent);
+.type:has(.type__radio:checked) {
+  border-color: var(--tone);
+  background: color-mix(in srgb, var(--tone) 8%, transparent);
 }
 
-/* Mismo realce que las filas seleccionables de las tablas */
-.tipo:hover {
-  background: color-mix(in srgb, var(--tono) 15%, white);
+/* Same highlight as the selectable table rows */
+.type:hover {
+  background: color-mix(in srgb, var(--tone) 15%, white);
   transform: scale(1.04);
   z-index: 1;
 }
 
-.tipo:has(.tipo__radio:focus-visible) {
-  outline: 2px solid var(--tono);
+.type:has(.type__radio:focus-visible) {
+  outline: 2px solid var(--tone);
   outline-offset: 2px;
 }
 
-/* El radio sigue existiendo para el teclado y el lector de pantalla */
-.tipo__radio {
+/* The radio still exists for the keyboard and the screen reader */
+.type__radio {
   position: absolute;
   width: 1px;
   height: 1px;
   opacity: 0;
 }
 
-.tipo__nombre {
+.type__name {
   font-family: "Hanken Grotesk", Inter, sans-serif;
   font-size: var(--ab-fs-body);
   font-weight: 600;
   letter-spacing: 0.05em;
-  color: var(--tono);
+  color: var(--tone);
 }
 
-.tipo__detalle {
+.type__detail {
   font-size: var(--ab-fs-label);
   line-height: 1.45;
   color: var(--ab-body);
 }
 
-/* ---------------- Confirmar una baja ---------------- */
-.confirmar { margin-top: 24px; }
+/* ---------------- Confirm a deletion ---------------- */
+.confirm { margin-top: 24px; }
 
-.confirmar__texto {
+.confirm__text {
   margin: 0 0 16px;
   font-size: calc(var(--ab-fs-body) + 1px);
   line-height: 1.5;
   color: var(--ab-body);
 }
 
-.confirmar__acciones {
+.confirm__actions {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -571,41 +571,41 @@ $fila: $icono + 29px;
   margin-top: 24px;
 }
 
-.confirmar__boton {
+.confirm__button {
   width: auto;
   min-height: 48px;
   padding: 12px 24px;
-  background: $carmin;
+  background: $crimson;
   box-shadow: none;
 }
 
-/* ---------------- Movimiento ----------------
-   Las filas entran en cascada; al cambiar de pagina se vuelven a
-   crear y la cascada se repite, asi se nota el cambio. */
-.tabla > .tabla__fila:not(.tabla__fila--cabecera),
-.tabla > .tabla__item {
-  animation: ab-sube 360ms var(--ab-ease-out) backwards;
+/* ---------------- Motion ----------------
+   The rows come in staggered; when the page changes they are
+   created again and the stagger repeats, so the change is noticeable. */
+.table > .table__row:not(.table__row--header),
+.table > .table__item {
+  animation: ab-rise 360ms var(--ab-ease-out) backwards;
 }
 
 @for $i from 1 through 12 {
-  .tabla > :nth-child(#{$i}) { animation-delay: #{$i * 35}ms; }
+  .table > :nth-child(#{$i}) { animation-delay: #{$i * 35}ms; }
 }
 
-/* Andenes de la terminal que se despliega */
-.tabla__panel > * {
-  animation: ab-baja 280ms var(--ab-ease-out) backwards;
+/* Bays of the terminal that expands */
+.table__panel > * {
+  animation: ab-drop 280ms var(--ab-ease-out) backwards;
 }
 
 @for $i from 1 through 8 {
-  .tabla__panel > :nth-child(#{$i}) { animation-delay: #{($i - 1) * 40}ms; }
+  .table__panel > :nth-child(#{$i}) { animation-delay: #{($i - 1) * 40}ms; }
 }
 
-.tabla__flecha { transition: transform var(--ab-dur-media) var(--ab-ease-spring); }
+.table__arrow { transition: transform var(--ab-dur-media) var(--ab-ease-spring); }
 
-.tabla__icono,
-.tabla__desplegable,
-.paginado__flecha,
-.paginado__numero {
+.table__icon,
+.table__dropdown,
+.pagination__arrow,
+.pagination__number {
   transition:
     background-color var(--ab-dur-rapida) ease,
     border-color var(--ab-dur-rapida) ease,
@@ -613,48 +613,48 @@ $fila: $icono + 29px;
     transform var(--ab-dur-rapida) var(--ab-ease-out);
 }
 
-.tabla__icono:active,
-.paginado__flecha:active:not(:disabled),
-.paginado__numero:active { transform: scale(0.9); }
+.table__icon:active,
+.pagination__arrow:active:not(:disabled),
+.pagination__number:active { transform: scale(0.9); }
 
-.paginado__numero--activa {
+.pagination__number--active {
   animation: ab-pop 320ms var(--ab-ease-spring);
 }
 
-/* El + del alta gira al pasar el mouse */
-.crud__agregar {
+/* The add + rotates on mouse hover */
+.crud__add {
   transition: opacity var(--ab-dur-rapida) ease, transform var(--ab-dur-media) var(--ab-ease-spring);
   animation: ab-pop var(--ab-dur-lenta) var(--ab-ease-spring) 200ms backwards;
 }
 
-.crud__agregar:hover { transform: rotate(90deg); }
-.crud__agregar:active { transform: rotate(90deg) scale(0.9); }
+.crud__add:hover { transform: rotate(90deg); }
+.crud__add:active { transform: rotate(90deg) scale(0.9); }
 
-.crud__volver svg { transition: transform var(--ab-dur-media) var(--ab-ease-out); }
-.crud__volver:hover svg { transform: translateX(-4px); }
+.crud__back svg { transition: transform var(--ab-dur-media) var(--ab-ease-out); }
+.crud__back:hover svg { transform: translateX(-4px); }
 
-.resultado__fila {
-  animation: ab-sube 360ms var(--ab-ease-out) backwards;
+.result__row {
+  animation: ab-rise 360ms var(--ab-ease-out) backwards;
 }
 
 @for $i from 1 through 8 {
-  .resultado__fila:nth-child(#{$i}) { animation-delay: #{80 + $i * 40}ms; }
+  .result__row:nth-child(#{$i}) { animation-delay: #{80 + $i * 40}ms; }
 }
 
-/* ---------------- Popup para confirmar una baja ----------------
-   Mixin (no se emite solo) para no chocar con el .popup propio de
-   otras pantallas. Se usa con un <dialog class="popup"> y el icono
-   de eliminar de la tabla como <button class="tabla__icono">. */
-@mixin popup-baja {
-  /* El icono de eliminar es un boton (abre el popup), sin estilos del navegador */
-  button.tabla__icono {
+/* ---------------- Popup to confirm a deletion ----------------
+   Mixin (it is not emitted alone) so it does not clash with other
+   screens' own .popup. It is used with a <dialog class="popup"> and the
+   table's delete icon as <button class="table__icon">. */
+@mixin delete-popup {
+  /* The delete icon is a button (it opens the popup), without browser styles */
+  button.table__icon {
     padding: 0;
     border: 0;
     background: transparent;
     cursor: pointer;
   }
 
-  /* ---------------- Popup para confirmar la baja ---------------- */
+  /* ---------------- Popup to confirm the deletion ---------------- */
   .popup {
     width: min(630px, calc(100vw - 32px));
     max-height: calc(100vh - 32px);
@@ -668,7 +668,7 @@ $fila: $icono + 29px;
 
   .popup::backdrop { background: rgba(25, 27, 34, 0.45); }
 
-  .popup__contenido {
+  .popup__content {
     display: flex;
     flex-direction: column;
     gap: 24px;
@@ -682,7 +682,7 @@ $fila: $icono + 29px;
     gap: 12px;
   }
 
-  .popup__titulo {
+  .popup__title {
     margin: 0;
     font-family: Manrope, Inter, sans-serif;
     font-size: 24px;
@@ -690,7 +690,7 @@ $fila: $icono + 29px;
     font-weight: 700;
   }
 
-  .popup__cerrar {
+  .popup__close {
     display: inline-flex;
     padding: 4px;
     border: 0;
@@ -699,21 +699,21 @@ $fila: $icono + 29px;
     cursor: pointer;
   }
 
-  .popup__texto {
+  .popup__text {
     margin: 0;
     font-size: var(--ab-fs-body);
     line-height: var(--ab-lh-body);
     color: var(--ab-body);
   }
 
-  .popup__acciones {
+  .popup__actions {
     display: flex;
     align-items: center;
     justify-content: flex-end;
     gap: 16px;
   }
 
-  .popup__cancelar {
+  .popup__cancel {
     padding: 0;
     border: 0;
     background: transparent;
@@ -724,13 +724,13 @@ $fila: $icono + 29px;
     cursor: pointer;
   }
 
-  .popup__cancelar:hover:not(:disabled) { text-decoration: underline; }
+  .popup__cancel:hover:not(:disabled) { text-decoration: underline; }
 
-  /* Popups de alta y edicion: el formulario va dentro del contenido */
+  /* Create and edit popups: the form goes inside the content */
   .popup .crud__form { margin-top: 0; }
 
-  /* Boton de guardar del popup: mismo tamaño que el de confirmar la baja */
-  .popup__boton {
+  /* Popup save button: same size as the delete confirmation one */
+  .popup__button {
     width: auto;
     min-height: 48px;
     padding: 12px 24px;

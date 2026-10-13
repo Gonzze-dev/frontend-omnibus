@@ -5,15 +5,15 @@ export interface Terminal {
   name: string;
 }
 
-export interface CiudadViaje {
+export interface TripCity {
   city_name: string;
   start_date: string;
   end_date: string;
   order: number;
 }
 
-/** Pasaje tal como lo devuelve el backend de terminales (models.BusTicket). */
-export interface Pasaje {
+/** Bus ticket as returned by the terminals backend (models.BusTicket). */
+export interface BusTicket {
   postal_code: string;
   bus_terminal_name: string;
   ticket: string;
@@ -23,58 +23,58 @@ export interface Pasaje {
   enterprise: string;
   start_date: string;
   end_date: string;
-  trip_city: CiudadViaje[];
+  trip_city: TripCity[];
   uuid: string;
 }
 
 /**
- * POST /api/buses/join y GET /api/buses/awaited (models.AwaitedTripResponse).
- * `group_key` es el canal de realtime donde llegan los avisos del colectivo.
+ * POST /api/buses/join and GET /api/buses/awaited (models.AwaitedTripResponse).
+ * `group_key` is the realtime channel where the bus notices arrive.
  */
-export interface ViajeEsperado {
+export interface AwaitedTrip {
   group_key: string;
   terminal: { uuid: string; name: string };
-  trip: Pasaje;
+  trip: BusTicket;
   created_at: string;
   notified_at: string | null;
 }
 
-export interface Coordenadas {
+export interface Coordinates {
   lat: number;
   lng: number;
 }
 
-/** Payload de BUS_ARRIVAL (models.PlatformInfo). */
-export interface LlegadaColectivo {
+/** BUS_ARRIVAL payload (models.PlatformInfo). */
+export interface BusArrival {
   id: string;
-  anden: string;
-  coordinates: Coordenadas | null;
+  bay: string;
+  coordinates: Coordinates | null;
   time_life: number;
 }
 
-/** Payload de BUS_DELAY (models.NotifyBusDelayPayload). */
-export interface DemoraColectivo {
+/** BUS_DELAY payload (models.NotifyBusDelayPayload). */
+export interface BusDelay {
   id: string;
-  license_patent: string;
+  license_plate: string;
   time_delay: number;
   time_life: number;
 }
 
 /**
- * Payload de LOCAL (models.AdminLocalNotificationPayload) y GLOBAL. GLOBAL
- * acepta cualquier JSON con `time_life`; se muestra `message` (y `title` si viene).
+ * LOCAL (models.AdminLocalNotificationPayload) and GLOBAL payload. GLOBAL
+ * accepts any JSON with `time_life`; `message` is shown (and `title` if present).
  */
-export interface AvisoAdmin {
+export interface AdminNotice {
   id: string;
   message?: string;
   title?: string;
   time_life: number;
 }
 
-export type TipoNotificacionPasajero = 'BUS_ARRIVAL' | 'BUS_DELAY' | 'LOCAL' | 'GLOBAL' | 'CAMERA';
+export type PassengerNotificationType = 'BUS_ARRIVAL' | 'BUS_DELAY' | 'LOCAL' | 'GLOBAL' | 'CAMERA';
 
-/** Mensaje que emite el hub en `receiveNotification`. */
-export interface NotificacionPasajero {
-  type: TipoNotificacionPasajero;
+/** Message the hub emits on `receiveNotification`. */
+export interface PassengerNotification {
+  type: PassengerNotificationType;
   payload: unknown;
 }

@@ -14,16 +14,16 @@ import { AuthService } from '../../services/auth.service';
 export class Sidebar {
   private readonly auth = inject(AuthService);
 
-  /** Two-way: el padre abre el menu y el drawer se cierra solo. */
+  /** Two-way: the parent opens the menu and the drawer closes by itself. */
   readonly open = model(false);
 
-  protected readonly esAdmin = computed(() => this.auth.tieneRol('admin', 'super_admin'));
+  protected readonly isAdmin = computed(() => this.auth.hasRole('admin', 'super_admin'));
 
   close(): void {
     this.open.set(false);
   }
 
-  cerrarSesion(): void {
+  logout(): void {
     this.close();
     this.auth.logout();
   }

@@ -10,129 +10,129 @@ import {
 } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Subscription } from 'rxjs';
-import { PatenteService } from '../../services/patente.service';
+import { LicensePlateService } from '../../services/license-plate.service';
 
-type Paso = 'camara' | 'leyendo' | 'error';
+type Step = 'camera' | 'reading' | 'error';
 
-/** Lado mayor de la foto que se manda al OCR: alcanza para leer la patente y pesa poco. */
-const LADO_MAXIMO = 1600;
+/** Longest side of the photo sent to the OCR: enough to read the plate and it weighs little. */
+const MAX_SIDE = 1600;
 
 /**
- * Boton con forma de camara que abre un modal para sacarle una foto a una
- * patente y leerla con el OCR. Usa la camara trasera en celulares y la webcam
- * en PC; si el navegador no deja usar la camara en vivo (por ejemplo un
- * celular entrando por http), cae a la camara nativa con un input de archivo.
+ * Camera-shaped button that opens a modal to take a photo of a license plate
+ * and read it with the OCR. It uses the rear camera on phones and the webcam
+ * on PCs; if the browser does not allow using the live camera (for example a
+ * phone browsing over http), it falls back to the native camera with a file input.
  *
- * Avisa la patente leida por (patenteLeida).
+ * It emits the license plate read through (plateRead).
  */
 @Component({
-  selector: 'app-patente-camara',
-  templateUrl: './patente-camara.html',
-  styleUrl: './patente-camara.scss',
+  selector: 'app-plate-camera',
+  templateUrl: './plate-camera.html',
+  styleUrl: './plate-camera.scss',
 })
-export class PatenteCamara implements OnDestroy {
-  private readonly patenteService = inject(PatenteService);
+export class PlateCamera implements OnDestroy {
+  private readonly licensePlateService = inject(LicensePlateService);
 
-  /** El video aparece recien cuando se dibuja el modal: ahi se le conecta la camara. */
+  /** The video appears only when the modal is drawn: that is when the camera is connected to it. */
   @ViewChild('video') private set videoRef(ref: ElementRef<HTMLVideoElement> | undefined) {
     this.video = ref?.nativeElement;
-    void this.conectarVideo();
+    void this.connectVideo();
   }
-  @ViewChild('archivo') private readonly archivoRef?: ElementRef<HTMLInputElement>;
-  @ViewChild('camaraNativa') private readonly camaraNativaRef?: ElementRef<HTMLInputElement>;
+  @ViewChild('file') private readonly fileRef?: ElementRef<HTMLInputElement>;
+  @ViewChild('nativeCamera') private readonly nativeCameraRef?: ElementRef<HTMLInputElement>;
 
-  @Output() readonly patenteLeida = new EventEmitter<string>();
+  @Output() readonly plateRead = new EventEmitter<string>();
 
-  protected readonly abierto = signal(false);
-  protected readonly paso = signal<Paso>('camara');
-  protected readonly iniciando = signal(false);
-  /** No hay camara en vivo: se ofrece la camara nativa del dispositivo. */
-  protected readonly sinCamaraEnVivo = signal(false);
-  /** Foto sacada, se muestra congelada mientras se lee. */
-  protected readonly vistaPrevia = signal<string | null>(null);
+  protected readonly open = signal(false);
+  protected readonly step = signal<Step>('camera');
+  protected readonly starting = signal(false);
+  /** There is no live camera: the device's native camera is offered. */
+  protected readonly noLiveCamera = signal(false);
+  /** Photo taken, shown frozen while it is read. */
+  protected readonly preview = signal<string | null>(null);
   protected readonly error = signal<string | null>(null);
-  /** Las webcams y camaras frontales se muestran espejadas, como un espejo; la trasera no. */
-  protected readonly espejado = signal(false);
+  /** Webcams and front cameras are shown mirrored, like a mirror; the rear one is not. */
+  protected readonly mirrored = signal(false);
 
   private video?: HTMLVideoElement;
   private stream: MediaStream | null = null;
-  private lectura?: Subscription;
+  private reading?: Subscription;
 
   ngOnDestroy(): void {
-    this.cerrar();
+    this.close();
   }
 
-  protected async abrir(): Promise<void> {
-    this.abierto.set(true);
-    this.reiniciar();
-    await this.iniciarCamara();
+  protected async openModal(): Promise<void> {
+    this.open.set(true);
+    this.reset();
+    await this.startCamera();
   }
 
-  protected cerrar(): void {
-    this.lectura?.unsubscribe();
-    this.detenerCamara();
-    this.limpiarVistaPrevia();
-    this.abierto.set(false);
+  protected close(): void {
+    this.reading?.unsubscribe();
+    this.stopCamera();
+    this.clearPreview();
+    this.open.set(false);
   }
 
-  /** Vuelve a la camara en vivo para sacar otra foto. */
-  protected reintentar(): void {
-    this.reiniciar();
-    if (!this.stream && !this.sinCamaraEnVivo()) void this.iniciarCamara();
+  /** Goes back to the live camera to take another photo. */
+  protected retry(): void {
+    this.reset();
+    if (!this.stream && !this.noLiveCamera()) void this.startCamera();
   }
 
-  /** Boton blanco: saca la foto, vuelve a la camara tras un error o abre la camara nativa. */
-  protected disparar(): void {
-    if (this.paso() === 'error') {
-      this.reintentar();
-    } else if (this.sinCamaraEnVivo()) {
-      this.camaraNativaRef?.nativeElement.click();
+  /** White button: takes the photo, goes back to the camera after an error or opens the native camera. */
+  protected shoot(): void {
+    if (this.step() === 'error') {
+      this.retry();
+    } else if (this.noLiveCamera()) {
+      this.nativeCameraRef?.nativeElement.click();
     } else {
-      this.sacarFoto();
+      this.takePhoto();
     }
   }
 
-  protected sacarFoto(): void {
+  protected takePhoto(): void {
     const video = this.video;
     if (!video || !video.videoWidth) return;
-    void this.procesar(video, video.videoWidth, video.videoHeight);
+    void this.process(video, video.videoWidth, video.videoHeight);
   }
 
-  protected elegirArchivo(): void {
-    this.archivoRef?.nativeElement.click();
+  protected chooseFile(): void {
+    this.fileRef?.nativeElement.click();
   }
 
-  protected async onArchivo(evento: Event): Promise<void> {
-    const input = evento.target as HTMLInputElement;
-    const archivo = input.files?.[0];
+  protected async onFile(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
     input.value = '';
-    if (!archivo) return;
+    if (!file) return;
 
     try {
-      const bitmap = await createImageBitmap(archivo);
-      await this.procesar(bitmap, bitmap.width, bitmap.height);
+      const bitmap = await createImageBitmap(file);
+      await this.process(bitmap, bitmap.width, bitmap.height);
       bitmap.close();
     } catch {
-      this.mostrarError('No se pudo abrir la foto. Proba con otra.');
+      this.showError('No se pudo abrir la foto. Proba con otra.');
     }
   }
 
-  private reiniciar(): void {
-    this.limpiarVistaPrevia();
+  private reset(): void {
+    this.clearPreview();
     this.error.set(null);
-    this.paso.set('camara');
+    this.step.set('camera');
   }
 
-  private async iniciarCamara(): Promise<void> {
+  private async startCamera(): Promise<void> {
     if (!navigator.mediaDevices?.getUserMedia) {
-      this.sinCamaraEnVivo.set(true);
+      this.noLiveCamera.set(true);
       return;
     }
 
-    this.iniciando.set(true);
+    this.starting.set(true);
     try {
-      // "environment" prioriza la camara trasera en celulares; en una PC
-      // el navegador usa la unica camara que haya.
+      // "environment" prefers the rear camera on phones; on a PC
+      // the browser uses whatever single camera there is.
       this.stream = await navigator.mediaDevices.getUserMedia({
         video: {
           facingMode: { ideal: 'environment' },
@@ -145,88 +145,88 @@ export class PatenteCamara implements OnDestroy {
       try {
         this.stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
       } catch {
-        this.iniciando.set(false);
-        this.sinCamaraEnVivo.set(true);
+        this.starting.set(false);
+        this.noLiveCamera.set(true);
         return;
       }
     }
 
-    // Se cerro el modal mientras el navegador pedia el permiso.
-    if (!this.abierto()) {
-      this.detenerCamara();
+    // The modal was closed while the browser was asking for permission.
+    if (!this.open()) {
+      this.stopCamera();
       return;
     }
 
-    await this.conectarVideo();
+    await this.connectVideo();
   }
 
-  private async conectarVideo(): Promise<void> {
+  private async connectVideo(): Promise<void> {
     const video = this.video;
     if (!video || !this.stream || video.srcObject === this.stream) return;
 
     const { facingMode } = this.stream.getVideoTracks()[0]?.getSettings() ?? {};
-    this.espejado.set(facingMode !== 'environment');
+    this.mirrored.set(facingMode !== 'environment');
     video.srcObject = this.stream;
     try {
       await video.play();
     } catch {
-      // play() se corta si el modal se cierra en el medio; no hay nada que hacer.
+      // play() is interrupted if the modal closes halfway; there is nothing to do.
     }
-    this.iniciando.set(false);
+    this.starting.set(false);
   }
 
-  /** Achica la imagen, la muestra congelada y la manda a leer. */
-  private async procesar(fuente: CanvasImageSource, ancho: number, alto: number): Promise<void> {
-    const escala = Math.min(1, LADO_MAXIMO / Math.max(ancho, alto));
+  /** Shrinks the image, shows it frozen and sends it to be read. */
+  private async process(source: CanvasImageSource, width: number, height: number): Promise<void> {
+    const scale = Math.min(1, MAX_SIDE / Math.max(width, height));
     const canvas = document.createElement('canvas');
-    canvas.width = Math.round(ancho * escala);
-    canvas.height = Math.round(alto * escala);
+    canvas.width = Math.round(width * scale);
+    canvas.height = Math.round(height * scale);
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    // La foto va al OCR sin espejar, aunque la vista previa en vivo lo este.
-    ctx.drawImage(fuente, 0, 0, canvas.width, canvas.height);
+    // The photo goes to the OCR unmirrored, even if the live preview is mirrored.
+    ctx.drawImage(source, 0, 0, canvas.width, canvas.height);
 
-    const imagen = await new Promise<Blob | null>((resolve) =>
+    const image = await new Promise<Blob | null>((resolve) =>
       canvas.toBlob(resolve, 'image/jpeg', 0.9),
     );
-    if (!imagen) {
-      this.mostrarError('No se pudo sacar la foto. Proba de nuevo.');
+    if (!image) {
+      this.showError('No se pudo sacar la foto. Proba de nuevo.');
       return;
     }
 
-    this.limpiarVistaPrevia();
+    this.clearPreview();
     this.error.set(null);
-    this.vistaPrevia.set(URL.createObjectURL(imagen));
-    this.paso.set('leyendo');
+    this.preview.set(URL.createObjectURL(image));
+    this.step.set('reading');
 
-    this.lectura = this.patenteService.leer(imagen).subscribe({
+    this.reading = this.licensePlateService.read(image).subscribe({
       next: ({ license_plate }) => {
-        this.patenteLeida.emit(license_plate);
-        this.cerrar();
+        this.plateRead.emit(license_plate);
+        this.close();
       },
-      error: (err: HttpErrorResponse) => this.mostrarError(mensajeError(err)),
+      error: (err: HttpErrorResponse) => this.showError(errorMessage(err)),
     });
   }
 
-  private mostrarError(mensaje: string): void {
-    this.error.set(mensaje);
-    this.paso.set('error');
+  private showError(message: string): void {
+    this.error.set(message);
+    this.step.set('error');
   }
 
-  private detenerCamara(): void {
+  private stopCamera(): void {
     this.stream?.getTracks().forEach((track) => track.stop());
     this.stream = null;
-    this.iniciando.set(false);
+    this.starting.set(false);
   }
 
-  private limpiarVistaPrevia(): void {
-    const url = this.vistaPrevia();
+  private clearPreview(): void {
+    const url = this.preview();
     if (url) URL.revokeObjectURL(url);
-    this.vistaPrevia.set(null);
+    this.preview.set(null);
   }
 }
 
-function mensajeError(err: HttpErrorResponse): string {
+function errorMessage(err: HttpErrorResponse): string {
   switch (err.status) {
     case 422:
       return 'No se encontro una patente en la foto. Acercate y sacala de frente.';

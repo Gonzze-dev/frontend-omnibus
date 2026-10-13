@@ -4,70 +4,70 @@ import { AbstractControl, FormBuilder, ReactiveFormsModule, Validators } from '@
 import { ActivatedRoute, ResolveFn, Router, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Topbar } from '../../shared/topbar/topbar';
-import { PatenteCamara } from '../../shared/patente-camara/patente-camara';
-import { OpcionBuscador, SelectBuscador } from '../../shared/select-buscador/select-buscador';
+import { PlateCamera } from '../../shared/plate-camera/plate-camera';
+import { SearchOption, SearchSelect } from '../../shared/search-select/search-select';
 import { AuthService } from '../../services/auth.service';
-import { AvisoService } from '../../services/aviso.service';
+import { NoticeService } from '../../services/notice.service';
 import { TerminalService } from '../../services/terminal.service';
-import { PlataformaService } from '../../services/plataforma.service';
+import { PlatformService } from '../../services/platform.service';
 import { UserService } from '../../services/user.service';
-import { PlataformaEnGrupo } from '../../models/plataforma.model';
+import { GroupedPlatform } from '../../models/platform.model';
 import {
-  EstadoNotificacion,
-  NotificacionAdmin,
-  TipoNotificacion,
-} from '../../models/aviso.model';
+  AdminNotification,
+  NotificationStatus,
+  NotificationType,
+} from '../../models/notice.model';
 
-export type AccionAviso = 'listar' | 'aviso';
+export type NoticeAction = 'list' | 'send';
 
-interface VistaAviso {
-  titulo: string;
-  bajada: string;
+interface NoticeView {
+  title: string;
+  lead: string;
 }
 
-const VISTAS: Record<AccionAviso, VistaAviso> = {
-  listar: {
-    titulo: 'Gestionar notificaciones',
-    bajada: 'Revisa los avisos enviados a los pasajeros, de que terminal son y da de baja los que ya no hacen falta.',
+const VIEWS: Record<NoticeAction, NoticeView> = {
+  list: {
+    title: 'Gestionar notificaciones',
+    lead: 'Revisa los avisos enviados a los pasajeros, de que terminal son y da de baja los que ya no hacen falta.',
   },
-  aviso: {
-    titulo: 'Enviar aviso',
-    bajada: 'Notificacion para los pasajeros de una terminal, o el arribo de un colectivo si fallo la camara.',
+  send: {
+    title: 'Enviar aviso',
+    lead: 'Notificacion para los pasajeros de una terminal, o el arribo de un colectivo si fallo la camara.',
   },
 };
 
-type TipoAviso = 'LOCAL' | 'GLOBAL' | 'BUS_DELAY' | 'BUS_ARRIVAL';
+type NoticeType = 'LOCAL' | 'GLOBAL' | 'BUS_DELAY' | 'BUS_ARRIVAL';
 
 /**
- * Tipos que acepta el envio de avisos, en el orden en que se muestran. Se
- * ofrecen solo los que devuelve GET /api/admin/notification-types para el rol.
+ * Types accepted when sending notices, in the order they are shown. Only
+ * the ones returned by GET /api/admin/notification-types for the role are offered.
  */
-const OPCIONES_TIPOS: Record<TipoAviso, { etiqueta: string; detalle: string }> = {
-  LOCAL: { etiqueta: 'LOCAL', detalle: 'Aviso para los pasajeros de una sola terminal.' },
-  GLOBAL: { etiqueta: 'GLOBAL', detalle: 'Aviso para todas las terminales. Solo super admin.' },
+const TYPE_OPTIONS: Record<NoticeType, { label: string; detail: string }> = {
+  LOCAL: { label: 'LOCAL', detail: 'Aviso para los pasajeros de una sola terminal.' },
+  GLOBAL: { label: 'GLOBAL', detail: 'Aviso para todas las terminales. Solo super admin.' },
   BUS_DELAY: {
-    etiqueta: 'RETRASO',
-    detalle: 'Avisar un retraso de un colectivo puntual a sus pasajeros.',
+    label: 'RETRASO',
+    detail: 'Avisar un retraso de un colectivo puntual a sus pasajeros.',
   },
   BUS_ARRIVAL: {
-    etiqueta: 'ARRIBO',
-    detalle: 'Avisar que un colectivo llego a un anden, por si la camara no lo detecto.',
+    label: 'ARRIBO',
+    detail: 'Avisar que un colectivo llego a un anden, por si la camara no lo detecto.',
   },
 };
 
-/** Maximo de andenes que acepta GET /api/admin/platforms por pagina. */
-const MAX_ANDENES = 100;
+/** Maximum number of bays GET /api/admin/platforms accepts per page. */
+const MAX_BAYS = 100;
 
-interface OpcionTerminal {
+interface TerminalOption {
   uuid: string;
   name: string;
 }
 
-/** Filas que entran en una pagina del listado. */
-const POR_PAGINA = 10;
+/** Rows that fit in one page of the list. */
+const PAGE_SIZE = 10;
 
-/** Nombre corto de cada tipo en el listado y en el filtro, en ese orden. */
-const ETIQUETAS_TIPO: Record<TipoNotificacion, string> = {
+/** Short name of each type in the list and in the filter, in that order. */
+const TYPE_LABELS: Record<NotificationType, string> = {
   LOCAL: 'Local',
   GLOBAL: 'Global',
   BUS_DELAY: 'Retraso',
@@ -75,443 +75,441 @@ const ETIQUETAS_TIPO: Record<TipoNotificacion, string> = {
   CAMERA: 'Camara',
 };
 
-const FECHA = new Intl.DateTimeFormat('es-AR', { dateStyle: 'short', timeStyle: 'short' });
+const DATE_FORMAT = new Intl.DateTimeFormat('es-AR', { dateStyle: 'short', timeStyle: 'short' });
 
 /**
- * Pantallas de gestion de avisos. Las opciones de la
- * gestion comparten este componente y cambian segun :accion.
+ * Notice management screens. The management options
+ * share this component and change according to :action.
  */
 @Component({
-  selector: 'app-avisos',
-  imports: [Topbar, RouterLink, ReactiveFormsModule, PatenteCamara, SelectBuscador],
-  templateUrl: './avisos.html',
-  styleUrl: './avisos.scss',
+  selector: 'app-notices',
+  imports: [Topbar, RouterLink, ReactiveFormsModule, PlateCamera, SearchSelect],
+  templateUrl: './notices.html',
+  styleUrl: './notices.scss',
 })
-export class Avisos {
-  private readonly ruta = inject(ActivatedRoute);
+export class Notices {
+  private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly auth = inject(AuthService);
-  private readonly avisoService = inject(AvisoService);
+  private readonly noticeService = inject(NoticeService);
   private readonly terminalService = inject(TerminalService);
-  private readonly plataformaService = inject(PlataformaService);
+  private readonly platformService = inject(PlatformService);
   private readonly userService = inject(UserService);
   private readonly fb = inject(FormBuilder);
 
-  private readonly parametros = toSignal(this.ruta.paramMap, {
-    initialValue: this.ruta.snapshot.paramMap,
+  private readonly params = toSignal(this.route.paramMap, {
+    initialValue: this.route.snapshot.paramMap,
   });
 
-  protected readonly accion = computed(() => {
-    const accion = this.parametros().get('accion') as AccionAviso | null;
-    return accion && accion in VISTAS ? accion : 'listar';
+  protected readonly action = computed(() => {
+    const action = this.params().get('action') as NoticeAction | null;
+    return action && action in VIEWS ? action : 'list';
   });
 
-  protected readonly vista = computed(() => VISTAS[this.accion()]);
+  protected readonly view = computed(() => VIEWS[this.action()]);
 
-  // --- Listado ---
-  protected readonly etiquetasTipo = ETIQUETAS_TIPO;
-  protected readonly tiposFiltro = Object.keys(ETIQUETAS_TIPO) as TipoNotificacion[];
-  protected readonly filtroTipo = signal<TipoNotificacion | ''>('');
-  protected readonly filtroEstado = signal<EstadoNotificacion>('all');
-  protected readonly pagina = signal(1);
-  protected readonly cargandoListado = signal(false);
-  protected readonly errorListado = signal<string | null>(null);
-  protected readonly notificaciones = signal<NotificacionAdmin[]>([]);
-  private readonly totalElementos = signal(0);
+  // --- List ---
+  protected readonly typeLabels = TYPE_LABELS;
+  protected readonly filterTypes = Object.keys(TYPE_LABELS) as NotificationType[];
+  protected readonly typeFilter = signal<NotificationType | ''>('');
+  protected readonly statusFilter = signal<NotificationStatus>('all');
+  protected readonly page = signal(1);
+  protected readonly loadingList = signal(false);
+  protected readonly listError = signal<string | null>(null);
+  protected readonly notifications = signal<AdminNotification[]>([]);
+  private readonly totalElements = signal(0);
 
-  protected readonly totalPaginas = computed(() =>
-    Math.max(1, Math.ceil(this.totalElementos() / POR_PAGINA)),
+  protected readonly totalPages = computed(() =>
+    Math.max(1, Math.ceil(this.totalElements() / PAGE_SIZE)),
   );
 
-  protected readonly paginas = computed(() =>
-    Array.from({ length: this.totalPaginas() }, (_, i) => i + 1),
+  protected readonly pages = computed(() =>
+    Array.from({ length: this.totalPages() }, (_, i) => i + 1),
   );
 
-  /** Filas en blanco que completan la pagina, igual que en ciudades. */
-  protected readonly relleno = computed(() =>
-    Array.from({ length: Math.max(0, POR_PAGINA - (this.notificaciones().length || 1)) }),
+  /** Blank rows that complete the page, just like in cities. */
+  protected readonly filler = computed(() =>
+    Array.from({ length: Math.max(0, PAGE_SIZE - (this.notifications().length || 1)) }),
   );
 
-  // --- Baja (popup sobre el listado) ---
-  private readonly dialogoBaja = viewChild<ElementRef<HTMLDialogElement>>('dialogoBaja');
-  protected readonly aEliminar = signal<NotificacionAdmin | null>(null);
-  protected readonly eliminando = signal(false);
-  protected readonly errorEliminar = signal<string | null>(null);
+  // --- Delete (popup over the list) ---
+  private readonly deleteDialog = viewChild<ElementRef<HTMLDialogElement>>('deleteDialog');
+  protected readonly toDelete = signal<AdminNotification | null>(null);
+  protected readonly deleting = signal(false);
+  protected readonly deleteError = signal<string | null>(null);
 
   /**
-   * Terminales de los selects: el super admin elige entre todas; el admin,
-   * entre las que tiene asignadas.
+   * Terminals of the selects: the super admin chooses among all of them; the admin,
+   * among the ones assigned to them.
    */
-  protected readonly terminales = signal<OpcionTerminal[]>([]);
+  protected readonly terminals = signal<TerminalOption[]>([]);
 
-  protected readonly opcionesTerminales = computed<OpcionBuscador[]>(() =>
-    this.terminales().map((t) => ({ valor: t.uuid, etiqueta: t.name })),
+  protected readonly terminalOptions = computed<SearchOption[]>(() =>
+    this.terminals().map((t) => ({ value: t.uuid, label: t.name })),
   );
 
-  // --- Envio de aviso ---
-  protected readonly tipos = signal<{ nombre: TipoAviso; etiqueta: string; detalle: string }[]>(
-    [],
-  );
-  protected readonly errorTipos = signal<string | null>(null);
+  // --- Sending a notice ---
+  protected readonly types = signal<{ name: NoticeType; label: string; detail: string }[]>([]);
+  protected readonly typesError = signal<string | null>(null);
 
-  protected readonly formAviso = this.fb.nonNullable.group({
-    tipo: ['LOCAL' as TipoAviso, Validators.required],
+  protected readonly noticeForm = this.fb.nonNullable.group({
+    type: ['LOCAL' as NoticeType, Validators.required],
     terminal: ['', Validators.required],
-    mensaje: ['', [Validators.required, Validators.pattern(/\S/)]],
-    patente: ['', [Validators.required, Validators.pattern(/\S/)]],
-    anden: ['', Validators.required],
-    fecha: ['', Validators.required],
-    demora: [15, [Validators.required, Validators.min(1)]],
-    vida: [12, [Validators.required, Validators.min(1)]],
+    message: ['', [Validators.required, Validators.pattern(/\S/)]],
+    plate: ['', [Validators.required, Validators.pattern(/\S/)]],
+    bay: ['', Validators.required],
+    date: ['', Validators.required],
+    delay: [15, [Validators.required, Validators.min(1)]],
+    lifetime: [12, [Validators.required, Validators.min(1)]],
   });
-  protected readonly enviando = signal(false);
-  protected readonly errorAviso = signal<string | null>(null);
-  protected readonly avisoEnviado = signal<string | null>(null);
+  protected readonly sending = signal(false);
+  protected readonly noticeError = signal<string | null>(null);
+  protected readonly noticeSent = signal<string | null>(null);
 
-  private readonly tipoElegido = toSignal(this.formAviso.controls.tipo.valueChanges, {
-    initialValue: this.formAviso.controls.tipo.value,
-  });
-
-  /** GLOBAL va a todas las terminales: no se elige terminal. */
-  protected readonly esGlobal = computed(() => this.tipoElegido() === 'GLOBAL');
-
-  /** BUS_DELAY pide patente, fecha y demora en lugar de mensaje. */
-  protected readonly esRetraso = computed(() => this.tipoElegido() === 'BUS_DELAY');
-
-  /** BUS_ARRIVAL pide patente y anden en lugar de mensaje. */
-  protected readonly esArribo = computed(() => this.tipoElegido() === 'BUS_ARRIVAL');
-
-  private readonly terminalElegida = toSignal(this.formAviso.controls.terminal.valueChanges, {
-    initialValue: this.formAviso.controls.terminal.value,
+  private readonly chosenType = toSignal(this.noticeForm.controls.type.valueChanges, {
+    initialValue: this.noticeForm.controls.type.value,
   });
 
-  /** Andenes de la terminal elegida, para el aviso de arribo. */
-  protected readonly andenes = signal<PlataformaEnGrupo[]>([]);
-  protected readonly cargandoAndenes = signal(false);
-  protected readonly errorAndenes = signal<string | null>(null);
+  /** GLOBAL goes to every terminal: no terminal is chosen. */
+  protected readonly isGlobal = computed(() => this.chosenType() === 'GLOBAL');
 
-  protected readonly opcionesAndenes = computed<OpcionBuscador[]>(() =>
-    this.andenes().map((a) => ({ valor: String(a.code), etiqueta: a.anden, detalle: String(a.code) })),
+  /** BUS_DELAY asks for plate, date and delay instead of a message. */
+  protected readonly isDelay = computed(() => this.chosenType() === 'BUS_DELAY');
+
+  /** BUS_ARRIVAL asks for plate and bay instead of a message. */
+  protected readonly isArrival = computed(() => this.chosenType() === 'BUS_ARRIVAL');
+
+  private readonly chosenTerminal = toSignal(this.noticeForm.controls.terminal.valueChanges, {
+    initialValue: this.noticeForm.controls.terminal.value,
+  });
+
+  /** Bays of the chosen terminal, for the arrival notice. */
+  protected readonly bays = signal<GroupedPlatform[]>([]);
+  protected readonly loadingBays = signal(false);
+  protected readonly baysError = signal<string | null>(null);
+
+  protected readonly bayOptions = computed<SearchOption[]>(() =>
+    this.bays().map((b) => ({ value: String(b.code), label: b.bay, detail: String(b.code) })),
   );
 
   constructor() {
-    this.cargarTerminales();
+    this.loadTerminals();
 
     effect(() => {
-      const { terminal, mensaje, patente, anden, fecha, demora } = this.formAviso.controls;
-      habilitar(terminal, !this.esGlobal());
-      habilitar(mensaje, !this.esRetraso() && !this.esArribo());
-      habilitar(patente, this.esRetraso() || this.esArribo());
-      habilitar(anden, this.esArribo());
-      for (const control of [fecha, demora]) habilitar(control, this.esRetraso());
+      const { terminal, message, plate, bay, date, delay } = this.noticeForm.controls;
+      setEnabled(terminal, !this.isGlobal());
+      setEnabled(message, !this.isDelay() && !this.isArrival());
+      setEnabled(plate, this.isDelay() || this.isArrival());
+      setEnabled(bay, this.isArrival());
+      for (const control of [date, delay]) setEnabled(control, this.isDelay());
     });
 
     effect(() => {
-      const terminal = this.terminalElegida();
-      if (this.esArribo()) untracked(() => this.cargarAndenes(terminal));
+      const terminal = this.chosenTerminal();
+      if (this.isArrival()) untracked(() => this.loadBays(terminal));
     });
 
     effect(() => {
-      const accion = this.accion();
-      if (accion === 'listar') untracked(() => this.cargarNotificaciones());
-      else if (accion === 'aviso') this.prepararAviso();
+      const action = this.action();
+      if (action === 'list') untracked(() => this.loadNotifications());
+      else if (action === 'send') this.prepareNotice();
     });
 
-    // El <dialog> nativo se abre con showModal() para tener fondo, foco
-    // atrapado y cierre con Escape sin escribirlos a mano.
+    // The native <dialog> is opened with showModal() to get a backdrop, trapped
+    // focus and closing with Escape without writing them by hand.
     effect(() => {
-      const dialogo = this.dialogoBaja()?.nativeElement;
-      if (!dialogo) return;
-      if (this.aEliminar() && !dialogo.open) dialogo.showModal();
-      if (!this.aEliminar() && dialogo.open) dialogo.close();
+      const dialog = this.deleteDialog()?.nativeElement;
+      if (!dialog) return;
+      if (this.toDelete() && !dialog.open) dialog.showModal();
+      if (!this.toDelete() && dialog.open) dialog.close();
     });
   }
 
-  private cargarNotificaciones(): void {
-    this.cargandoListado.set(true);
-    this.errorListado.set(null);
+  private loadNotifications(): void {
+    this.loadingList.set(true);
+    this.listError.set(null);
 
-    const tipo = this.filtroTipo();
-    this.avisoService
-      .listar({
-        page: this.pagina(),
-        limit: POR_PAGINA,
-        type: tipo || undefined,
-        status: this.filtroEstado(),
+    const type = this.typeFilter();
+    this.noticeService
+      .list({
+        page: this.page(),
+        limit: PAGE_SIZE,
+        type: type || undefined,
+        status: this.statusFilter(),
       })
       .subscribe({
         next: (res) => {
-          this.notificaciones.set(res.notifications);
-          this.totalElementos.set(res.total_elements);
-          this.cargandoListado.set(false);
+          this.notifications.set(res.notifications);
+          this.totalElements.set(res.total_elements);
+          this.loadingList.set(false);
         },
         error: (err: HttpErrorResponse) => {
-          this.cargandoListado.set(false);
-          this.errorListado.set(mensajeErrorListado(err));
+          this.loadingList.set(false);
+          this.listError.set(listErrorMessage(err));
         },
       });
   }
 
-  protected filtrarTipo(tipo: string): void {
-    this.filtroTipo.set(tipo as TipoNotificacion | '');
-    this.pagina.set(1);
-    this.cargarNotificaciones();
+  protected filterByType(type: string): void {
+    this.typeFilter.set(type as NotificationType | '');
+    this.page.set(1);
+    this.loadNotifications();
   }
 
-  protected filtrarEstado(estado: string): void {
-    this.filtroEstado.set(estado as EstadoNotificacion);
-    this.pagina.set(1);
-    this.cargarNotificaciones();
+  protected filterByStatus(status: string): void {
+    this.statusFilter.set(status as NotificationStatus);
+    this.page.set(1);
+    this.loadNotifications();
   }
 
-  protected irA(pagina: number): void {
-    const destino = Math.min(Math.max(pagina, 1), this.totalPaginas());
-    if (destino === this.pagina()) return;
-    this.pagina.set(destino);
-    this.cargarNotificaciones();
+  protected goTo(page: number): void {
+    const target = Math.min(Math.max(page, 1), this.totalPages());
+    if (target === this.page()) return;
+    this.page.set(target);
+    this.loadNotifications();
   }
 
-  protected confirmarBaja(notificacion: NotificacionAdmin): void {
-    this.errorEliminar.set(null);
-    this.aEliminar.set(notificacion);
+  protected confirmDelete(notification: AdminNotification): void {
+    this.deleteError.set(null);
+    this.toDelete.set(notification);
   }
 
-  protected cancelarBaja(): void {
-    if (this.eliminando()) return;
-    this.aEliminar.set(null);
-    this.errorEliminar.set(null);
+  protected cancelDelete(): void {
+    if (this.deleting()) return;
+    this.toDelete.set(null);
+    this.deleteError.set(null);
   }
 
-  /** Un click en el fondo (fuera del contenido) cierra el popup. */
-  protected clickEnPopup(event: MouseEvent): void {
-    if (event.target === event.currentTarget) this.cancelarBaja();
+  /** A click on the backdrop (outside the content) closes the popup. */
+  protected onDeletePopupClick(event: MouseEvent): void {
+    if (event.target === event.currentTarget) this.cancelDelete();
   }
 
-  protected eliminar(): void {
-    const seleccionada = this.aEliminar();
-    if (!seleccionada) return;
+  protected delete(): void {
+    const selected = this.toDelete();
+    if (!selected) return;
 
-    this.eliminando.set(true);
-    this.errorEliminar.set(null);
+    this.deleting.set(true);
+    this.deleteError.set(null);
 
-    this.avisoService.eliminar(seleccionada.id).subscribe({
+    this.noticeService.delete(selected.id).subscribe({
       next: () => {
-        this.eliminando.set(false);
-        this.aEliminar.set(null);
-        // El listado se pagina en el backend: se vuelve a pedir la pagina,
-        // o la anterior si el aviso borrado era el unico de esta.
-        if (this.notificaciones().length === 1 && this.pagina() > 1) {
-          this.pagina.update((p) => p - 1);
+        this.deleting.set(false);
+        this.toDelete.set(null);
+        // The list is paginated in the backend: the page is requested again,
+        // or the previous one if the deleted notice was the only one on this page.
+        if (this.notifications().length === 1 && this.page() > 1) {
+          this.page.update((p) => p - 1);
         }
-        this.cargarNotificaciones();
+        this.loadNotifications();
       },
       error: (err: HttpErrorResponse) => {
-        this.eliminando.set(false);
-        this.errorEliminar.set(mensajeErrorEliminar(err));
+        this.deleting.set(false);
+        this.deleteError.set(deleteErrorMessage(err));
       },
     });
   }
 
-  /** Texto principal de la notificacion; cambia segun el tipo. */
-  protected mensaje(n: NotificacionAdmin): string {
+  /** Main text of the notification; it changes according to the type. */
+  protected message(n: AdminNotification): string {
     const p = n.payload;
     switch (n.type) {
       case 'BUS_DELAY':
-        return `Retraso de ${p['time_delay'] ?? '?'} min del colectivo ${p['license_patent'] ?? ''}`.trim();
+        return `Retraso de ${p['time_delay'] ?? '?'} min del colectivo ${p['license_plate'] ?? ''}`.trim();
       case 'BUS_ARRIVAL':
-        return `Arribo al anden ${p['anden'] ?? '?'}`;
+        return `Arribo al anden ${p['bay'] ?? '?'}`;
       default:
         return typeof p['message'] === 'string' ? p['message'] : '-';
     }
   }
 
-  protected terminal(n: NotificacionAdmin): string {
+  protected terminal(n: AdminNotification): string {
     return n.terminal ? n.terminal.name || n.terminal.uuid : 'Todas (global)';
   }
 
-  protected fecha(valor: string): string {
-    return FECHA.format(new Date(valor));
+  protected formatDate(value: string): string {
+    return DATE_FORMAT.format(new Date(value));
   }
 
-  private cargarTerminales(): void {
+  private loadTerminals(): void {
     const user = this.auth.user();
 
-    if (user?.rol === 'admin') {
-      // El login no trae las terminales del admin: se muestran las de la sesion
-      // (si las hay) y se confirman con GET /users/me, que si las devuelve.
-      this.terminales.set(user.terminals ?? []);
-      this.elegirUnicaTerminal();
-      this.userService.obtenerPerfil().subscribe({
-        next: (perfil) => {
-          this.terminales.set(perfil.terminals ?? []);
-          this.elegirUnicaTerminal();
+    if (user?.role === 'admin') {
+      // The login does not bring the admin's terminals: the session's are shown
+      // (if any) and confirmed with GET /users/me, which does return them.
+      this.terminals.set(user.terminals ?? []);
+      this.chooseOnlyTerminal();
+      this.userService.getProfile().subscribe({
+        next: (profile) => {
+          this.terminals.set(profile.terminals ?? []);
+          this.chooseOnlyTerminal();
         },
       });
       return;
     }
 
-    this.terminalService.listarPublicas().subscribe({
-      next: (terminales) => {
-        this.terminales.set(terminales.map(({ uuid, name }) => ({ uuid, name })));
-        this.elegirUnicaTerminal();
+    this.terminalService.listPublic().subscribe({
+      next: (terminals) => {
+        this.terminals.set(terminals.map(({ uuid, name }) => ({ uuid, name })));
+        this.chooseOnlyTerminal();
       },
     });
   }
 
-  /** Con una sola terminal disponible no hace falta elegirla. */
-  private elegirUnicaTerminal(): void {
-    const terminales = this.terminales();
-    const control = this.formAviso.controls.terminal;
-    if (terminales.length === 1 && !control.value) control.setValue(terminales[0].uuid);
+  /** With a single terminal available there is no need to choose it. */
+  private chooseOnlyTerminal(): void {
+    const terminals = this.terminals();
+    const control = this.noticeForm.controls.terminal;
+    if (terminals.length === 1 && !control.value) control.setValue(terminals[0].uuid);
   }
 
-  private cargarAndenes(terminal: string): void {
-    this.andenes.set([]);
-    this.errorAndenes.set(null);
-    this.formAviso.controls.anden.setValue('');
+  private loadBays(terminal: string): void {
+    this.bays.set([]);
+    this.baysError.set(null);
+    this.noticeForm.controls.bay.setValue('');
     if (!terminal) return;
 
-    this.cargandoAndenes.set(true);
-    this.plataformaService.listar({ bus_terminal_id: terminal, limit: MAX_ANDENES }).subscribe({
+    this.loadingBays.set(true);
+    this.platformService.list({ bus_terminal_id: terminal, limit: MAX_BAYS }).subscribe({
       next: (res) => {
-        // Si mientras tanto cambio la terminal, esta respuesta ya no aplica.
-        if (this.formAviso.controls.terminal.value !== terminal) return;
-        this.cargandoAndenes.set(false);
-        const andenes = res.platforms.find((t) => t.uuid === terminal)?.platforms ?? [];
-        this.andenes.set(andenes);
-        if (andenes.length === 1) this.formAviso.controls.anden.setValue(String(andenes[0].code));
+        // If the terminal changed in the meantime, this response no longer applies.
+        if (this.noticeForm.controls.terminal.value !== terminal) return;
+        this.loadingBays.set(false);
+        const bays = res.platforms.find((t) => t.uuid === terminal)?.platforms ?? [];
+        this.bays.set(bays);
+        if (bays.length === 1) this.noticeForm.controls.bay.setValue(String(bays[0].code));
       },
       error: (err: HttpErrorResponse) => {
-        if (this.formAviso.controls.terminal.value !== terminal) return;
-        this.cargandoAndenes.set(false);
-        this.errorAndenes.set(mensajeErrorListado(err));
+        if (this.noticeForm.controls.terminal.value !== terminal) return;
+        this.loadingBays.set(false);
+        this.baysError.set(listErrorMessage(err));
       },
     });
   }
 
-  private prepararAviso(): void {
-    this.errorAviso.set(null);
-    this.avisoEnviado.set(null);
-    this.errorTipos.set(null);
+  private prepareNotice(): void {
+    this.noticeError.set(null);
+    this.noticeSent.set(null);
+    this.typesError.set(null);
 
-    this.avisoService.tipos().subscribe({
+    this.noticeService.types().subscribe({
       next: (res) => {
-        const tipos = (Object.keys(OPCIONES_TIPOS) as TipoAviso[]).filter((t) =>
+        const types = (Object.keys(TYPE_OPTIONS) as NoticeType[]).filter((t) =>
           res.types.includes(t),
         );
-        this.tipos.set(tipos.map((nombre) => ({ nombre, ...OPCIONES_TIPOS[nombre] })));
+        this.types.set(types.map((name) => ({ name, ...TYPE_OPTIONS[name] })));
 
-        const tipo = this.formAviso.controls.tipo;
-        if (tipos.length && !tipos.includes(tipo.value)) tipo.setValue(tipos[0]);
+        const type = this.noticeForm.controls.type;
+        if (types.length && !types.includes(type.value)) type.setValue(types[0]);
       },
-      error: (err: HttpErrorResponse) => this.errorTipos.set(mensajeError(err)),
+      error: (err: HttpErrorResponse) => this.typesError.set(errorMessage(err)),
     });
   }
 
-  protected enviarAviso(): void {
-    if (this.formAviso.invalid) {
-      this.formAviso.markAllAsTouched();
+  protected sendNotice(): void {
+    if (this.noticeForm.invalid) {
+      this.noticeForm.markAllAsTouched();
       return;
     }
 
-    this.enviando.set(true);
-    this.errorAviso.set(null);
-    this.avisoEnviado.set(null);
+    this.sending.set(true);
+    this.noticeError.set(null);
+    this.noticeSent.set(null);
 
-    const { tipo, terminal, mensaje, vida } = this.formAviso.getRawValue();
-    if (tipo === 'BUS_DELAY') {
-      this.enviarRetraso();
+    const { type, terminal, message, lifetime } = this.noticeForm.getRawValue();
+    if (type === 'BUS_DELAY') {
+      this.sendDelay();
       return;
     }
-    if (tipo === 'BUS_ARRIVAL') {
-      this.enviarArribo();
+    if (type === 'BUS_ARRIVAL') {
+      this.sendArrival();
       return;
     }
 
-    this.avisoService
-      .enviar(
-        { type: tipo, payload: { message: mensaje.trim(), time_life: vida } },
-        tipo === 'LOCAL' ? terminal : undefined,
+    this.noticeService
+      .send(
+        { type, payload: { message: message.trim(), time_life: lifetime } },
+        type === 'LOCAL' ? terminal : undefined,
       )
       .subscribe({
         next: () => {
-          this.enviando.set(false);
-          this.avisoEnviado.set(
-            tipo === 'GLOBAL'
+          this.sending.set(false);
+          this.noticeSent.set(
+            type === 'GLOBAL'
               ? 'Aviso enviado a todas las terminales.'
               : 'Aviso enviado a los pasajeros de la terminal.',
           );
-          this.formAviso.controls.mensaje.reset();
+          this.noticeForm.controls.message.reset();
         },
         error: (err: HttpErrorResponse) => {
-          this.enviando.set(false);
-          this.errorAviso.set(mensajeError(err));
+          this.sending.set(false);
+          this.noticeError.set(errorMessage(err));
         },
       });
   }
 
-  private enviarRetraso(): void {
-    const { terminal, patente, fecha, demora, vida } = this.formAviso.getRawValue();
-    this.avisoService
-      .notificarRetraso({
+  private sendDelay(): void {
+    const { terminal, plate, date, delay, lifetime } = this.noticeForm.getRawValue();
+    this.noticeService
+      .notifyDelay({
         type: 'BUS_DELAY',
-        license_patent: patente.trim(),
+        license_plate: plate.trim(),
         uuid_terminal: terminal || undefined,
-        start_date: fecha,
-        payload: { time_delay: demora, time_life: vida },
+        start_date: date,
+        payload: { time_delay: delay, time_life: lifetime },
       })
       .subscribe({
         next: () => {
-          this.enviando.set(false);
-          this.avisoEnviado.set('Retraso avisado a los pasajeros del colectivo.');
-          this.formAviso.controls.patente.reset();
+          this.sending.set(false);
+          this.noticeSent.set('Retraso avisado a los pasajeros del colectivo.');
+          this.noticeForm.controls.plate.reset();
         },
         error: (err: HttpErrorResponse) => {
-          this.enviando.set(false);
-          this.errorAviso.set(mensajeErrorRetraso(err));
+          this.sending.set(false);
+          this.noticeError.set(delayErrorMessage(err));
         },
       });
   }
 
-  private enviarArribo(): void {
-    const { patente, anden, vida } = this.formAviso.getRawValue();
-    this.avisoService
-      .notificarArribo({ license_patent: patente.trim(), code: anden, time_life: vida })
+  private sendArrival(): void {
+    const { plate, bay, lifetime } = this.noticeForm.getRawValue();
+    this.noticeService
+      .notifyArrival({ license_plate: plate.trim(), code: bay, time_life: lifetime })
       .subscribe({
         next: () => {
-          this.enviando.set(false);
-          this.avisoEnviado.set('Arribo avisado a los pasajeros del colectivo.');
-          this.formAviso.controls.patente.reset();
+          this.sending.set(false);
+          this.noticeSent.set('Arribo avisado a los pasajeros del colectivo.');
+          this.noticeForm.controls.plate.reset();
         },
         error: (err: HttpErrorResponse) => {
-          this.enviando.set(false);
-          this.errorAviso.set(mensajeErrorArribo(err));
+          this.sending.set(false);
+          this.noticeError.set(arrivalErrorMessage(err));
         },
       });
   }
 
-  /** Carga la patente que leyo el OCR desde la foto. */
-  protected onPatenteLeida(patente: string): void {
-    const control = this.formAviso.controls.patente;
-    control.setValue(patente);
+  /** Fills in the license plate the OCR read from the photo. */
+  protected onPlateRead(plate: string): void {
+    const control = this.noticeForm.controls.plate;
+    control.setValue(plate);
     control.markAsDirty();
     control.markAsTouched();
   }
 
-  protected invalidoAviso(
-    campo: 'terminal' | 'mensaje' | 'patente' | 'anden' | 'fecha' | 'demora' | 'vida',
+  protected noticeInvalid(
+    field: 'terminal' | 'message' | 'plate' | 'bay' | 'date' | 'delay' | 'lifetime',
   ): boolean {
-    const control = this.formAviso.controls[campo];
+    const control = this.noticeForm.controls[field];
     return control.invalid && control.touched;
   }
 }
 
-function habilitar(control: AbstractControl, activo: boolean): void {
-  if (activo) control.enable();
+function setEnabled(control: AbstractControl, enabled: boolean): void {
+  if (enabled) control.enable();
   else control.disable();
 }
 
-function mensajeErrorListado(err: HttpErrorResponse): string {
+function listErrorMessage(err: HttpErrorResponse): string {
   switch (err.status) {
     case 0:
       return 'No se pudo conectar con el servidor. Intenta mas tarde.';
@@ -528,18 +526,18 @@ function mensajeErrorListado(err: HttpErrorResponse): string {
   }
 }
 
-function mensajeErrorEliminar(err: HttpErrorResponse): string {
+function deleteErrorMessage(err: HttpErrorResponse): string {
   switch (err.status) {
     case 403:
       return 'No tenes permisos para eliminar este aviso.';
     case 404:
       return 'El aviso ya no existe.';
     default:
-      return mensajeErrorListado(err);
+      return listErrorMessage(err);
   }
 }
 
-function mensajeErrorRetraso(err: HttpErrorResponse): string {
+function delayErrorMessage(err: HttpErrorResponse): string {
   switch (err.status) {
     case 400:
       return 'Revisa los datos: la patente, la fecha, la demora, la duracion y la terminal son obligatorias.';
@@ -548,11 +546,11 @@ function mensajeErrorRetraso(err: HttpErrorResponse): string {
     case 502:
       return 'No se pudo verificar el viaje o entregar el aviso. Intenta de nuevo.';
     default:
-      return mensajeError(err);
+      return errorMessage(err);
   }
 }
 
-function mensajeErrorArribo(err: HttpErrorResponse): string {
+function arrivalErrorMessage(err: HttpErrorResponse): string {
   switch (err.status) {
     case 400:
       return 'Revisa los datos: la patente, el anden y la duracion son obligatorios.';
@@ -563,11 +561,11 @@ function mensajeErrorArribo(err: HttpErrorResponse): string {
     case 502:
       return 'El arribo no se pudo entregar en tiempo real. Intenta de nuevo.';
     default:
-      return mensajeError(err);
+      return errorMessage(err);
   }
 }
 
-function mensajeError(err: HttpErrorResponse): string {
+function errorMessage(err: HttpErrorResponse): string {
   switch (err.status) {
     case 0:
       return 'No se pudo conectar con el servidor. Intenta mas tarde.';
@@ -584,7 +582,7 @@ function mensajeError(err: HttpErrorResponse): string {
   }
 }
 
-export const tituloAvisos: ResolveFn<string> = (ruta) => {
-  const accion = (ruta.paramMap.get('accion') as AccionAviso | null) ?? 'listar';
-  return VISTAS[accion]?.titulo ?? VISTAS['listar'].titulo;
+export const noticesTitle: ResolveFn<string> = (route) => {
+  const action = (route.paramMap.get('action') as NoticeAction | null) ?? 'list';
+  return VIEWS[action]?.title ?? VIEWS['list'].title;
 };

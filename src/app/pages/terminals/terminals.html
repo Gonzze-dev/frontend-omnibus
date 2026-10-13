@@ -1,7 +1,7 @@
 <app-topbar />
 
-<div class="ab-screen crud tono--carmin">
-  <a class="crud__volver" routerLink="/dashboard">
+<div class="ab-screen crud tone--crimson">
+  <a class="crud__back" routerLink="/dashboard">
     <svg class="ab-icon" width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
       <path d="M15 7H1M1 7l5.5-5.5M1 7l5.5 5.5" stroke="currentColor" stroke-width="1.8"
             stroke-linecap="round" stroke-linejoin="round" />
@@ -9,15 +9,15 @@
     Dashboard
   </a>
 
-  <header class="crud__head crud__head--acciones">
+  <header class="crud__head crud__head--actions">
     <div>
-      <h1 class="crud__titulo">{{ vista().titulo }}</h1>
-      <p class="crud__bajada">{{ vista().bajada }}</p>
+      <h1 class="crud__title">{{ view().title }}</h1>
+      <p class="crud__lead">{{ view().lead }}</p>
     </div>
 
-    @if (accion() === 'listar') {
-      <button class="crud__agregar crud__agregar--primario" type="button" aria-label="Cargar terminal"
-              (click)="abrirAlta()">
+    @if (action() === 'list') {
+      <button class="crud__add crud__add--primary" type="button" aria-label="Cargar terminal"
+              (click)="openCreate()">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
           <path d="M10 3v14M3 10h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
         </svg>
@@ -25,47 +25,47 @@
     }
   </header>
 
-  @switch (accion()) {
-    @case ('listar') {
-      <div class="crud__filtro">
+  @switch (action()) {
+    @case ('list') {
+      <div class="crud__filter">
         <div class="ab-field">
-          <label class="ab-label" for="terminal-filtro">Buscar terminal</label>
-          <input class="ab-input" id="terminal-filtro" type="search" autocomplete="off"
+          <label class="ab-label" for="terminal-filter">Buscar terminal</label>
+          <input class="ab-input" id="terminal-filter" type="search" autocomplete="off"
                  placeholder="Nombre, codigo postal o identificador"
-                 [value]="filtro()" (input)="filtrar($any($event.target).value)" />
+                 [value]="filter()" (input)="applyFilter($any($event.target).value)" />
         </div>
       </div>
 
-      @if (errorListado()) {
-        <p class="ab-form-error" role="alert">{{ errorListado() }}</p>
+      @if (listError()) {
+        <p class="ab-form-error" role="alert">{{ listError() }}</p>
       }
 
-      @if (cargandoListado()) {
-        <p class="tabla__vacio">Cargando terminales...</p>
+      @if (loadingList()) {
+        <p class="table__empty">Cargando terminales...</p>
       } @else {
-        <ul class="tabla tabla--fija">
-          <li class="tabla__fila tabla__fila--cabecera">
+        <ul class="table table--fixed">
+          <li class="table__row table__row--header">
             <span>Terminal</span>
             <span>Ciudad</span>
             <span></span>
           </li>
 
-          @for (t of terminales(); track t.uuid) {
-            <li class="tabla__fila tabla__fila--seleccionable"
-                (click)="abrirEdicion(t.uuid)"
-                (keydown.enter)="abrirEdicion(t.uuid)"
+          @for (t of terminals(); track t.uuid) {
+            <li class="table__row table__row--selectable"
+                (click)="openEdit(t.uuid)"
+                (keydown.enter)="openEdit(t.uuid)"
                 tabindex="0" role="button" aria-label="Editar terminal">
-              <span class="tabla__dato">
-                <span class="tabla__linea">{{ t.name }}</span>
-                <span class="tabla__sub">{{ t.uuid }}</span>
+              <span class="table__cell">
+                <span class="table__line">{{ t.name }}</span>
+                <span class="table__sub">{{ t.uuid }}</span>
               </span>
-              <span class="tabla__dato">
-                <span class="tabla__linea">CP {{ t.postal_code }}</span>
-                <span class="tabla__sub">Ext. {{ t.external_terminal_id }}</span>
+              <span class="table__cell">
+                <span class="table__line">CP {{ t.postal_code }}</span>
+                <span class="table__sub">Ext. {{ t.external_terminal_id }}</span>
               </span>
-              <span class="tabla__acciones">
-                <button class="tabla__icono tabla__icono--carmin" type="button"
-                        (click)="$event.stopPropagation(); confirmarBaja(t)"
+              <span class="table__actions">
+                <button class="table__icon table__icon--crimson" type="button"
+                        (click)="$event.stopPropagation(); confirmDelete(t)"
                         (keydown.enter)="$event.stopPropagation()" aria-label="Eliminar terminal">
                   <svg width="18" height="18" viewBox="0 0 22 22" fill="none" aria-hidden="true">
                     <path d="M3 5.5h16M8.5 5.5V3h5v2.5M5.5 5.5 6.5 19h9l1-13.5" stroke="currentColor"
@@ -75,37 +75,37 @@
               </span>
             </li>
           } @empty {
-            <li class="tabla__vacio">No hay terminales que coincidan con el filtro.</li>
+            <li class="table__empty">No hay terminales que coincidan con el filtro.</li>
           }
 
-          @for (_ of relleno(); track $index) {
-            <li class="tabla__fila tabla__fila--relleno" aria-hidden="true">
-              <span class="tabla__dato">
-                <span class="tabla__linea">&nbsp;</span>
+          @for (_ of filler(); track $index) {
+            <li class="table__row table__row--filler" aria-hidden="true">
+              <span class="table__cell">
+                <span class="table__line">&nbsp;</span>
               </span>
             </li>
           }
         </ul>
 
-        <nav class="paginado" aria-label="Paginas del listado"
-             [class.paginado--oculto]="totalPaginas() === 1">
-          <button class="paginado__flecha" type="button" aria-label="Pagina anterior"
-                  [disabled]="paginaActual() === 1" (click)="irA(paginaActual() - 1)">
+        <nav class="pagination" aria-label="Paginas del listado"
+             [class.pagination--hidden]="totalPages() === 1">
+          <button class="pagination__arrow" type="button" aria-label="Pagina anterior"
+                  [disabled]="currentPage() === 1" (click)="goTo(currentPage() - 1)">
             <svg width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
               <path d="M10.5 1.5 4 7l6.5 5.5" stroke="currentColor" stroke-width="1.8"
                     stroke-linecap="round" stroke-linejoin="round" />
             </svg>
           </button>
 
-          @for (p of paginas(); track p) {
-            <button class="paginado__numero" type="button"
-                    [class.paginado__numero--activa]="p === paginaActual()"
-                    [attr.aria-current]="p === paginaActual() ? 'page' : null"
-                    (click)="irA(p)">{{ p }}</button>
+          @for (p of pages(); track p) {
+            <button class="pagination__number" type="button"
+                    [class.pagination__number--active]="p === currentPage()"
+                    [attr.aria-current]="p === currentPage() ? 'page' : null"
+                    (click)="goTo(p)">{{ p }}</button>
           }
 
-          <button class="paginado__flecha" type="button" aria-label="Pagina siguiente"
-                  [disabled]="paginaActual() === totalPaginas()" (click)="irA(paginaActual() + 1)">
+          <button class="pagination__arrow" type="button" aria-label="Pagina siguiente"
+                  [disabled]="currentPage() === totalPages()" (click)="goTo(currentPage() + 1)">
             <svg width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
               <path d="M5.5 1.5 12 7l-6.5 5.5" stroke="currentColor" stroke-width="1.8"
                     stroke-linecap="round" stroke-linejoin="round" />
@@ -117,117 +117,117 @@
   }
 </div>
 
-<!-- Popup para confirmar la baja. Escape o un click afuera lo cierran. -->
-<dialog #dialogoBaja class="popup" role="alertdialog" aria-labelledby="baja-titulo" aria-describedby="baja-texto"
-        (cancel)="$event.preventDefault(); cancelarBaja()"
-        (click)="clickEnPopup($event)">
-  @if (aEliminar(); as terminal) {
-    <div class="popup__contenido">
+<!-- Popup to confirm the deletion. Escape or a click outside closes it. -->
+<dialog #deleteDialog class="popup" role="alertdialog" aria-labelledby="delete-title" aria-describedby="delete-text"
+        (cancel)="$event.preventDefault(); cancelDelete()"
+        (click)="onDeletePopupClick($event)">
+  @if (toDelete(); as terminal) {
+    <div class="popup__content">
       <header class="popup__head">
-        <h2 class="popup__titulo" id="baja-titulo">Eliminar terminal</h2>
-        <button class="popup__cerrar" type="button" aria-label="Cerrar" [disabled]="eliminando()" (click)="cancelarBaja()">
+        <h2 class="popup__title" id="delete-title">Eliminar terminal</h2>
+        <button class="popup__close" type="button" aria-label="Cerrar" [disabled]="deleting()" (click)="cancelDelete()">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
             <path d="M1.5 1.5l11 11M12.5 1.5l-11 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
           </svg>
         </button>
       </header>
 
-      <p class="popup__texto" id="baja-texto">
+      <p class="popup__text" id="delete-text">
         Vas a eliminar esta terminal del sistema. La accion no se puede deshacer.
       </p>
 
-      <dl class="resultado__lista">
-        <div class="resultado__fila">
+      <dl class="result__list">
+        <div class="result__row">
           <dt>Nombre</dt>
           <dd>{{ terminal.name }}</dd>
         </div>
-        <div class="resultado__fila">
+        <div class="result__row">
           <dt>Identificador</dt>
           <dd>{{ terminal.uuid }}</dd>
         </div>
-        <div class="resultado__fila">
+        <div class="result__row">
           <dt>Codigo postal</dt>
           <dd>{{ terminal.postal_code }}</dd>
         </div>
       </dl>
 
-      @if (errorEliminar()) {
-        <p class="ab-form-error" role="alert">{{ errorEliminar() }}</p>
+      @if (deleteError()) {
+        <p class="ab-form-error" role="alert">{{ deleteError() }}</p>
       }
 
-      <div class="popup__acciones">
-        <button class="popup__cancelar" type="button" [disabled]="eliminando()" (click)="cancelarBaja()">
+      <div class="popup__actions">
+        <button class="popup__cancel" type="button" [disabled]="deleting()" (click)="cancelDelete()">
           Cancelar
         </button>
-        <button class="ab-button confirmar__boton" type="button" [disabled]="eliminando()" (click)="eliminar()">
-          {{ eliminando() ? 'Eliminando...' : 'Eliminar terminal' }}
+        <button class="ab-button confirm__button" type="button" [disabled]="deleting()" (click)="delete()">
+          {{ deleting() ? 'Eliminando...' : 'Eliminar terminal' }}
         </button>
       </div>
     </div>
   }
 </dialog>
 
-<!-- Popup con el formulario de alta. Escape o un click afuera lo cierran. -->
-<dialog #dialogoAlta class="popup" aria-labelledby="alta-titulo"
-        (cancel)="$event.preventDefault(); cerrarAlta()"
-        (click)="clickEnPopupAlta($event)">
-  @if (altaAbierta()) {
-    <div class="popup__contenido">
+<!-- Popup with the create form. Escape or a click outside closes it. -->
+<dialog #createDialog class="popup" aria-labelledby="create-title"
+        (cancel)="$event.preventDefault(); closeCreate()"
+        (click)="onCreatePopupClick($event)">
+  @if (createOpen()) {
+    <div class="popup__content">
       <header class="popup__head">
-        <h2 class="popup__titulo" id="alta-titulo">Cargar terminal</h2>
-        <button class="popup__cerrar" type="button" aria-label="Cerrar" [disabled]="guardandoCrear()" (click)="cerrarAlta()">
+        <h2 class="popup__title" id="create-title">Cargar terminal</h2>
+        <button class="popup__close" type="button" aria-label="Cerrar" [disabled]="savingCreate()" (click)="closeCreate()">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
             <path d="M1.5 1.5l11 11M12.5 1.5l-11 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
           </svg>
         </button>
       </header>
 
-      <p class="popup__texto">Alta de una terminal nueva en una ciudad.</p>
+      <p class="popup__text">Alta de una terminal nueva en una ciudad.</p>
 
-      <form class="crud__form" [formGroup]="formCrear" (ngSubmit)="crear()" novalidate>
+      <form class="crud__form" [formGroup]="createForm" (ngSubmit)="create()" novalidate>
         <div class="ab-field">
-          <label class="ab-label" for="nombre-crear">Nombre</label>
-          <input class="ab-input" id="nombre-crear" type="text" placeholder="Ej: Terminal Retiro BS AS" autocomplete="off"
-                 formControlName="name" [attr.aria-invalid]="invalidoCrear('name')" />
-          @if (invalidoCrear('name')) {
+          <label class="ab-label" for="name-create">Nombre</label>
+          <input class="ab-input" id="name-create" type="text" placeholder="Ej: Terminal Retiro BS AS" autocomplete="off"
+                 formControlName="name" [attr.aria-invalid]="createInvalid('name')" />
+          @if (createInvalid('name')) {
             <p class="ab-field-error">Ingresa el nombre.</p>
           }
         </div>
 
         <div class="ab-field">
-          <label class="ab-label" for="ciudad-crear">Ciudad</label>
-          <app-select-buscador inputId="ciudad-crear" formControlName="postal_code"
-                               placeholder="Busca una ciudad por nombre o codigo postal"
-                               [opciones]="opcionesCiudades()" [invalido]="invalidoCrear('postal_code')" />
-          @if (invalidoCrear('postal_code')) {
+          <label class="ab-label" for="city-create">Ciudad</label>
+          <app-search-select inputId="city-create" formControlName="postal_code"
+                             placeholder="Busca una ciudad por nombre o codigo postal"
+                             [options]="cityOptions()" [invalid]="createInvalid('postal_code')" />
+          @if (createInvalid('postal_code')) {
             <p class="ab-field-error">Elegi una ciudad.</p>
           }
         </div>
 
         <div class="ab-field">
-          <label class="ab-label" for="externo-crear">Terminal externa</label>
-          <app-select-buscador inputId="externo-crear" formControlName="external_terminal_id"
-                               placeholder="Busca una terminal externa"
-                               [opciones]="opcionesExternas()" [invalido]="invalidoCrear('external_terminal_id')" />
-          <p class="crud__nota">Es la terminal en el sistema de pasajes. No puede estar asignada a otra terminal.</p>
-          @if (errorExternas()) {
-            <p class="ab-field-error">{{ errorExternas() }}</p>
+          <label class="ab-label" for="external-create">Terminal externa</label>
+          <app-search-select inputId="external-create" formControlName="external_terminal_id"
+                             placeholder="Busca una terminal externa"
+                             [options]="externalOptions()" [invalid]="createInvalid('external_terminal_id')" />
+          <p class="crud__note">Es la terminal en el sistema de pasajes. No puede estar asignada a otra terminal.</p>
+          @if (externalsError()) {
+            <p class="ab-field-error">{{ externalsError() }}</p>
           }
-          @if (invalidoCrear('external_terminal_id')) {
+          @if (createInvalid('external_terminal_id')) {
             <p class="ab-field-error">Elegi una terminal externa.</p>
           }
         </div>
 
-        @if (errorCrear()) {
-          <p class="ab-form-error" role="alert">{{ errorCrear() }}</p>
+        @if (createError()) {
+          <p class="ab-form-error" role="alert">{{ createError() }}</p>
         }
 
-        <div class="popup__acciones">
-          <button class="popup__cancelar" type="button" [disabled]="guardandoCrear()" (click)="cerrarAlta()">
+        <div class="popup__actions">
+          <button class="popup__cancel" type="button" [disabled]="savingCreate()" (click)="closeCreate()">
             Cancelar
           </button>
-          <button class="ab-button popup__boton" type="submit" [disabled]="guardandoCrear()">
-            {{ guardandoCrear() ? 'Cargando...' : 'Cargar terminal' }}
+          <button class="ab-button popup__button" type="submit" [disabled]="savingCreate()">
+            {{ savingCreate() ? 'Cargando...' : 'Cargar terminal' }}
           </button>
         </div>
       </form>
@@ -235,71 +235,71 @@
   }
 </dialog>
 
-<!-- Popup con el formulario de edicion. Escape o un click afuera lo cierran. -->
-<dialog #dialogoEdicion class="popup" aria-labelledby="edicion-titulo"
-        (cancel)="$event.preventDefault(); cerrarEdicion()"
-        (click)="clickEnPopupEdicion($event)">
-  @if (edicionAbierta()) {
-    <div class="popup__contenido">
+<!-- Popup with the edit form. Escape or a click outside closes it. -->
+<dialog #editDialog class="popup" aria-labelledby="edit-title"
+        (cancel)="$event.preventDefault(); closeEdit()"
+        (click)="onEditPopupClick($event)">
+  @if (editOpen()) {
+    <div class="popup__content">
       <header class="popup__head">
-        <h2 class="popup__titulo" id="edicion-titulo">Editar terminal</h2>
-        <button class="popup__cerrar" type="button" aria-label="Cerrar" [disabled]="guardandoEditar()" (click)="cerrarEdicion()">
+        <h2 class="popup__title" id="edit-title">Editar terminal</h2>
+        <button class="popup__close" type="button" aria-label="Cerrar" [disabled]="savingEdit()" (click)="closeEdit()">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
             <path d="M1.5 1.5l11 11M12.5 1.5l-11 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
           </svg>
         </button>
       </header>
 
-      <p class="popup__texto">Cambia el nombre, la ciudad o la terminal externa.</p>
+      <p class="popup__text">Cambia el nombre, la ciudad o la terminal externa.</p>
 
-      @if (cargandoSeleccionada()) {
-        <p class="popup__texto">Cargando terminal...</p>
-      } @else if (errorSeleccionada()) {
-        <p class="ab-form-error" role="alert">{{ errorSeleccionada() }}</p>
+      @if (loadingSelected()) {
+        <p class="popup__text">Cargando terminal...</p>
+      } @else if (selectedError()) {
+        <p class="ab-form-error" role="alert">{{ selectedError() }}</p>
       } @else {
-        <form class="crud__form" [formGroup]="formEditar" (ngSubmit)="guardarEdicion()" novalidate>
+        <form class="crud__form" [formGroup]="editForm" (ngSubmit)="saveEdit()" novalidate>
           <div class="ab-field">
-            <label class="ab-label" for="nombre-editar">Nombre</label>
-            <input class="ab-input" id="nombre-editar" type="text" autocomplete="off"
-                   formControlName="name" [attr.aria-invalid]="invalidoEditar('name')" />
-            @if (invalidoEditar('name')) {
+            <label class="ab-label" for="name-edit">Nombre</label>
+            <input class="ab-input" id="name-edit" type="text" autocomplete="off"
+                   formControlName="name" [attr.aria-invalid]="editInvalid('name')" />
+            @if (editInvalid('name')) {
               <p class="ab-field-error">Ingresa el nombre.</p>
             }
           </div>
 
           <div class="ab-field">
-            <label class="ab-label" for="ciudad-editar">Ciudad</label>
-            <app-select-buscador inputId="ciudad-editar" formControlName="postal_code"
+            <label class="ab-label" for="city-edit">Ciudad</label>
+            <app-search-select inputId="city-edit" formControlName="postal_code"
                                placeholder="Busca una ciudad por nombre o codigo postal"
-                               [opciones]="opcionesCiudades()" [invalido]="invalidoEditar('postal_code')" />
-            @if (invalidoEditar('postal_code')) {
+                               [options]="cityOptions()" [invalid]="editInvalid('postal_code')" />
+            @if (editInvalid('postal_code')) {
               <p class="ab-field-error">Elegi una ciudad.</p>
             }
           </div>
 
           <div class="ab-field">
-            <label class="ab-label" for="externo-editar">Terminal externa</label>
-            <app-select-buscador inputId="externo-editar" formControlName="external_terminal_id"
+            <label class="ab-label" for="external-edit">Terminal externa</label>
+            <app-search-select inputId="external-edit" formControlName="external_terminal_id"
                                placeholder="Busca una terminal externa"
-                               [opciones]="opcionesExternas()" [invalido]="invalidoEditar('external_terminal_id')" />
-            @if (errorExternas()) {
-              <p class="ab-field-error">{{ errorExternas() }}</p>
+                               [options]="externalOptions()" [invalid]="editInvalid('external_terminal_id')" />
+            @if (externalsError()) {
+              <p class="ab-field-error">{{ externalsError() }}</p>
             }
-            @if (invalidoEditar('external_terminal_id')) {
+            @if (editInvalid('external_terminal_id')) {
               <p class="ab-field-error">Elegi una terminal externa.</p>
             }
           </div>
 
-          @if (errorEditar()) {
-            <p class="ab-form-error" role="alert">{{ errorEditar() }}</p>
+          @if (editError()) {
+            <p class="ab-form-error" role="alert">{{ editError() }}</p>
           }
 
-          <div class="popup__acciones">
-            <button class="popup__cancelar" type="button" [disabled]="guardandoEditar()" (click)="cerrarEdicion()">
+          <div class="popup__actions">
+            <button class="popup__cancel" type="button" [disabled]="savingEdit()" (click)="closeEdit()">
               Cancelar
             </button>
-            <button class="ab-button popup__boton" type="submit" [disabled]="guardandoEditar()">
-              {{ guardandoEditar() ? 'Guardando...' : 'Guardar cambios' }}
+            <button class="ab-button popup__button" type="submit" [disabled]="savingEdit()">
+              {{ savingEdit() ? 'Guardando...' : 'Guardar cambios' }}
             </button>
           </div>
         </form>

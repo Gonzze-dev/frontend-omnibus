@@ -1,13 +1,13 @@
 /* ============================================================
-   Menu lateral (Figma "Side bar", nodo 23:90)
-   Panel blanco de 269px sobre un velo gris al 54%.
+   Side menu (Figma "Side bar", node 23:90)
+   White 269px panel over a gray veil at 54%.
    ============================================================ */
 
 .drawer {
   position: fixed;
   inset: 0;
-  z-index: 20;          /* por encima de la topbar (z-index 10) */
-  pointer-events: none; /* cerrado no intercepta clicks */
+  z-index: 20;          /* above the topbar (z-index 10) */
+  pointer-events: none; /* closed it does not intercept clicks */
 }
 
 .drawer__scrim {
@@ -32,16 +32,16 @@
   overflow-y: auto;
 }
 
-/* --- Abierto --- */
+/* --- Open --- */
 .drawer--open { pointer-events: auto; }
 .drawer--open .drawer__scrim { opacity: 1; }
 .drawer--open .drawer__panel { transform: translateX(0); }
 
 /* ============================================================
-   Contenido
+   Content
    ============================================================ */
-/* Bloque de 49px con el texto centrado: asi el primer item
-   cae a 126px del tope del panel, como en el mockup. */
+/* 49px block with centered text: that way the first item
+   lands 126px from the top of the panel, as in the mockup. */
 .drawer__brand {
   display: flex;
   align-items: center;
@@ -109,13 +109,13 @@
 .drawer__logout:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 4px; }
 
 /* ============================================================
-   Movimiento: al abrir, el contenido entra en cascada detras
-   del panel
+   Motion: when opening, the content comes in staggered behind
+   the panel
    ============================================================ */
 .drawer--open .drawer__brand,
 .drawer--open .drawer__nav > li,
 .drawer--open .drawer__logout {
-  animation: ab-desde-izquierda 360ms var(--ab-ease-out) backwards;
+  animation: ab-from-left 360ms var(--ab-ease-out) backwards;
 }
 
 .drawer--open .drawer__brand { animation-delay: 60ms; }
@@ -137,7 +137,7 @@
 .drawer__item:hover .drawer__mark,
 .drawer__item--active .drawer__mark { transform: translateX(3px); }
 
-/* Sin animacion para quien la desactivo en el sistema */
+/* No animation for whoever disabled it in the system */
 @media (prefers-reduced-motion: reduce) {
   .drawer__scrim,
   .drawer__panel { transition: none; }

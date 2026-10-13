@@ -1,14 +1,14 @@
 /* ============================================================
-   Movimiento - animaciones y transiciones globales.
+   Motion - global animations and transitions.
 
-   Se carga al final de styles.scss (meta.load-css) para que sus
-   reglas ganen sobre las de base sin subir la especificidad.
+   It is loaded at the end of styles.scss (meta.load-css) so its
+   rules win over the base ones without raising specificity.
 
-   Los @keyframes de aca son globales: Angular solo renombra los
-   que se declaran dentro del scss de un componente, asi que
-   cualquier pantalla puede usar `animation: ab-sube ...`.
+   The @keyframes here are global: Angular only renames the
+   ones declared inside a component's scss, so
+   any screen can use `animation: ab-rise ...`.
 
-   Todo se apaga con prefers-reduced-motion (al final).
+   Everything is turned off with prefers-reduced-motion (at the end).
    ============================================================ */
 
 :root {
@@ -20,26 +20,26 @@
   --ab-dur-media:  260ms;
   --ab-dur-lenta:  480ms;
 
-  /* Separacion entre elementos que entran en cascada */
+  /* Spacing between elements that come in staggered */
   --ab-cascada: 60ms;
 }
 
 /* ============================================================
    Keyframes
    ============================================================ */
-@keyframes ab-funde {
+@keyframes ab-fade {
   from { opacity: 0; }
 }
 
-@keyframes ab-sube {
+@keyframes ab-rise {
   from { opacity: 0; transform: translateY(14px); }
 }
 
-@keyframes ab-baja {
+@keyframes ab-drop {
   from { opacity: 0; transform: translateY(-6px); }
 }
 
-@keyframes ab-desde-izquierda {
+@keyframes ab-from-left {
   from { opacity: 0; transform: translateX(-16px); }
 }
 
@@ -47,11 +47,11 @@
   from { opacity: 0; transform: scale(0.6); }
 }
 
-@keyframes ab-dialogo-entra {
+@keyframes ab-dialog-in {
   from { opacity: 0; transform: translateY(16px) scale(0.96); }
 }
 
-@keyframes ab-sacude {
+@keyframes ab-shake {
   0%, 100% { transform: translateX(0); }
   20%      { transform: translateX(-5px); }
   40%      { transform: translateX(4px); }
@@ -59,15 +59,15 @@
   80%      { transform: translateX(2px); }
 }
 
-@keyframes ab-sale-arriba {
+@keyframes ab-leave-up {
   to { opacity: 0; transform: translateY(-16px) scale(0.97); }
 }
 
-@keyframes ab-sale-izquierda {
+@keyframes ab-leave-left {
   to { opacity: 0; transform: translateX(-24px); }
 }
 
-@keyframes ab-campana {
+@keyframes ab-bell {
   0%, 100% { transform: rotate(0); }
   15%      { transform: rotate(14deg); }
   30%      { transform: rotate(-12deg); }
@@ -76,32 +76,32 @@
   75%      { transform: rotate(2deg); }
 }
 
-@keyframes ab-rebote {
+@keyframes ab-bounce {
   0%, 100% { transform: translateY(0); }
   40%      { transform: translateY(-5px); }
   70%      { transform: translateY(1px); }
 }
 
 /* ============================================================
-   Clases para animate.leave de Angular: se agregan al elemento
-   que sale y Angular espera a que termine la animacion para
-   sacarlo del DOM. La variante con .ab-screen > le gana a la
-   entrada en cascada de mas abajo.
+   Classes for Angular's animate.leave: they are added to the element
+   that leaves and Angular waits for the animation to finish before
+   removing it from the DOM. The .ab-screen > variant wins over the
+   staggered entrance further below.
    ============================================================ */
-.ab-sale-arriba,
-.ab-screen > .ab-sale-arriba {
-  animation: ab-sale-arriba 220ms var(--ab-ease-in) forwards;
+.ab-leave-up,
+.ab-screen > .ab-leave-up {
+  animation: ab-leave-up 220ms var(--ab-ease-in) forwards;
 }
 
-.ab-sale-izquierda,
-.ab-screen > .ab-sale-izquierda {
-  animation: ab-sale-izquierda 260ms var(--ab-ease-in) forwards;
+.ab-leave-left,
+.ab-screen > .ab-leave-left {
+  animation: ab-leave-left 260ms var(--ab-ease-in) forwards;
 }
 
 /* ============================================================
-   Cambio de pantalla (View Transitions del router)
-   Fundido corto de la pagina entera; el contenido de la nueva
-   entra despues en cascada (ver abajo).
+   Screen change (router View Transitions)
+   Short fade of the whole page; the new page's content
+   then comes in staggered (see below).
    ============================================================ */
 ::view-transition-old(root),
 ::view-transition-new(root) {
@@ -109,15 +109,15 @@
 }
 
 /* ============================================================
-   Entrada de pantalla: cada bloque de primer nivel sube y
-   aparece, uno detras de otro. Vale para todas las pantallas
-   porque todas usan .ab-screen como contenedor.
+   Screen entrance: each top-level block rises and
+   appears, one after another. It applies to every screen
+   because all of them use .ab-screen as their container.
 
-   `backwards` (y no `both`) para que al terminar no quede un
-   transform pegado que pise los :hover de cada pantalla.
+   `backwards` (and not `both`) so that when it finishes no
+   transform is left stuck overriding each screen's :hover.
    ============================================================ */
 .ab-screen > :not(dialog, app-qr-scanner, app-toast) {
-  animation: ab-sube var(--ab-dur-lenta) var(--ab-ease-out) backwards;
+  animation: ab-rise var(--ab-dur-lenta) var(--ab-ease-out) backwards;
 }
 
 @for $i from 2 through 8 {
@@ -129,7 +129,7 @@
 .ab-screen > :nth-child(n + 9) { animation-delay: calc(var(--ab-cascada) * 8); }
 
 /* ============================================================
-   Botones
+   Buttons
    ============================================================ */
 .ab-button {
   position: relative;
@@ -141,7 +141,7 @@
     opacity var(--ab-dur-media) ease;
 }
 
-/* Brillo que cruza el boton al pasar el mouse */
+/* Shine that crosses the button on mouse hover */
 .ab-button::after {
   content: '';
   position: absolute;
@@ -170,12 +170,12 @@
 }
 
 /* ============================================================
-   Campos: el anillo de foco se acerca en vez de aparecer de golpe
+   Fields: the focus ring closes in instead of appearing abruptly
    ============================================================ */
 .ab-input,
 .crud__select,
 .crud__textarea,
-.buscador__input {
+.search__input {
   outline: 2px solid transparent;
   outline-offset: 6px;
   transition:
@@ -184,9 +184,9 @@
     box-shadow var(--ab-dur-media) ease;
 }
 
-/* Al marcarse como invalido el campo se sacude una vez */
+/* When marked invalid the field shakes once */
 .ab-input[aria-invalid="true"] {
-  animation: ab-sacude 380ms ease-in-out;
+  animation: ab-shake 380ms ease-in-out;
 }
 
 .ab-password__toggle svg {
@@ -194,7 +194,7 @@
 }
 
 /* ============================================================
-   Enlaces: el subrayado aparece y se acerca al texto
+   Links: the underline appears and closes in on the text
    ============================================================ */
 .ab-link {
   text-decoration: underline;
@@ -211,56 +211,56 @@
 }
 
 /* ============================================================
-   Mensajes del formulario
+   Form messages
    ============================================================ */
 .ab-field-error {
-  animation: ab-baja 220ms var(--ab-ease-out) backwards;
+  animation: ab-drop 220ms var(--ab-ease-out) backwards;
 }
 
 .ab-form-ok {
-  animation: ab-baja var(--ab-dur-media) var(--ab-ease-out) backwards;
+  animation: ab-drop var(--ab-dur-media) var(--ab-ease-out) backwards;
 }
 
-/* El error del servidor baja y despues se sacude para llamar la atencion */
+/* The server error drops down and then shakes to draw attention */
 .ab-form-error {
   animation:
-    ab-baja var(--ab-dur-media) var(--ab-ease-out) backwards,
-    ab-sacude 420ms 180ms ease-in-out;
+    ab-drop var(--ab-dur-media) var(--ab-ease-out) backwards,
+    ab-shake 420ms 180ms ease-in-out;
 }
 
 /* ============================================================
-   Popups (<dialog> nativo abierto con showModal)
-   Solo se anima la apertura: al cerrar, varias pantallas sacan
-   el contenido con @if antes de cerrar y se veria la caja vacia.
+   Popups (native <dialog> opened with showModal)
+   Only the opening is animated: when closing, several screens remove
+   the content with @if before closing and the empty box would be visible.
    ============================================================ */
 dialog[open] {
-  animation: ab-dialogo-entra 320ms var(--ab-ease-spring);
+  animation: ab-dialog-in 320ms var(--ab-ease-spring);
 }
 
 dialog[open]::backdrop {
-  animation: ab-funde var(--ab-dur-media) ease-out;
+  animation: ab-fade var(--ab-dur-media) ease-out;
 }
 
-/* La X de los popups gira al pasar el mouse */
-.popup__cerrar svg,
+/* The popups' X rotates on mouse hover */
+.popup__close svg,
 .scanner__close svg,
-.camara__cerrar svg {
+.camera__close svg {
   transition: transform var(--ab-dur-media) var(--ab-ease-out);
 }
 
-.popup__cerrar:hover:not(:disabled) svg,
+.popup__close:hover:not(:disabled) svg,
 .scanner__close:hover svg,
-.camara__cerrar:hover svg {
+.camera__close:hover svg {
   transform: rotate(90deg);
 }
 
-/* Lista del buscador (popover) */
-.buscador__lista:popover-open {
-  animation: ab-baja 180ms var(--ab-ease-out);
+/* Search select list (popover) */
+.search__list:popover-open {
+  animation: ab-drop 180ms var(--ab-ease-out);
 }
 
 /* ============================================================
-   Sin animaciones para quien las desactivo en el sistema
+   No animations for whoever disabled them in the system
    ============================================================ */
 @media (prefers-reduced-motion: reduce) {
   *,

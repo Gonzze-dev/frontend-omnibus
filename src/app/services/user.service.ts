@@ -6,9 +6,9 @@ import { DeleteAccountResponse, UpdateProfileRequest, User } from '../models/aut
 import { AuthService } from './auth.service';
 
 /**
- * Perfil del usuario autenticado contra /api/users/me.
- * Cada respuesta con el usuario refresca la sesion guardada, asi el resto
- * de la app (topbar, sidebar) ve los datos nuevos sin volver a loguearse.
+ * Profile of the authenticated user against /api/users/me.
+ * Every response with the user refreshes the stored session, so the rest
+ * of the app (topbar, sidebar) sees the new data without logging in again.
  */
 @Injectable({ providedIn: 'root' })
 export class UserService {
@@ -16,19 +16,19 @@ export class UserService {
   private readonly auth = inject(AuthService);
   private readonly meUrl = `${APP_CONFIG.apiUrl}/users/me`;
 
-  obtenerPerfil(): Observable<User> {
-    return this.http.get<User>(this.meUrl).pipe(tap((user) => this.auth.actualizarUsuario(user)));
+  getProfile(): Observable<User> {
+    return this.http.get<User>(this.meUrl).pipe(tap((user) => this.auth.updateUser(user)));
   }
 
-  actualizarPerfil(datos: UpdateProfileRequest): Observable<User> {
-    return this.http.put<User>(this.meUrl, datos).pipe(tap((user) => this.auth.actualizarUsuario(user)));
+  updateProfile(data: UpdateProfileRequest): Observable<User> {
+    return this.http.put<User>(this.meUrl, data).pipe(tap((user) => this.auth.updateUser(user)));
   }
 
   /**
-   * Borra la cuenta. El backend ya invalida todos los refresh tokens, asi que
-   * no se llama a /logout (responderia 401): solo se limpia la sesion local.
+   * Deletes the account. The backend already invalidates every refresh token, so
+   * /logout is not called (it would respond 401): only the local session is cleared.
    */
-  eliminarCuenta(): Observable<DeleteAccountResponse> {
+  deleteAccount(): Observable<DeleteAccountResponse> {
     return this.http.delete<DeleteAccountResponse>(this.meUrl).pipe(tap(() => this.auth.clearSession()));
   }
 }

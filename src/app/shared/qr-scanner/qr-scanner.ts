@@ -11,11 +11,11 @@ import {
 import jsQR from 'jsqr';
 
 /**
- * Modal que abre la camara del dispositivo (webcam en PC, camara trasera
- * en celulares) y decodifica codigos QR en vivo con jsQR.
+ * Modal that opens the device camera (webcam on PC, rear camera
+ * on phones) and decodes QR codes live with jsQR.
  *
- * Se abre con [abierto]="true" y notifica el resultado por (codigoLeido);
- * (cerrar) se dispara al cancelar o al leer un codigo.
+ * It notifies the result through (codeRead);
+ * (close) fires when cancelling or after reading a code.
  */
 @Component({
   selector: 'app-qr-scanner',
@@ -27,52 +27,52 @@ export class QrScanner implements AfterViewInit, OnDestroy {
   @ViewChild('video') private readonly videoRef?: ElementRef<HTMLVideoElement>;
   @ViewChild('canvas') private readonly canvasRef?: ElementRef<HTMLCanvasElement>;
 
-  @Output() readonly codigoLeido = new EventEmitter<string>();
-  @Output() readonly cerrar = new EventEmitter<void>();
+  @Output() readonly codeRead = new EventEmitter<string>();
+  @Output() readonly close = new EventEmitter<void>();
 
   protected readonly error = signal<string | null>(null);
-  protected readonly cargando = signal(true);
-  /** Camara frontal (PC o selfie): se espeja para que se vea como un espejo. */
-  protected readonly espejo = signal(false);
-  /** Se detecto el QR: se muestra el check un instante antes de cerrar, para no cortar la camara de golpe. */
-  protected readonly leido = signal(false);
+  protected readonly loading = signal(true);
+  /** Front camera (PC or selfie): it is mirrored so it looks like a mirror. */
+  protected readonly mirror = signal(false);
+  /** The QR was detected: the check is shown for a moment before closing, so the camera is not cut abruptly. */
+  protected readonly read = signal(false);
 
   private stream: MediaStream | null = null;
   private frameId = 0;
-  private cierreTimer?: ReturnType<typeof setTimeout>;
+  private closeTimer?: ReturnType<typeof setTimeout>;
 
-  /** Tiempo que se muestra la confirmacion antes de cerrar el modal. */
-  private static readonly PAUSA_LECTURA_MS = 600;
+  /** Time the confirmation is shown before closing the modal. */
+  private static readonly READ_PAUSE_MS = 600;
 
   async ngAfterViewInit(): Promise<void> {
-    await this.iniciarCamara();
+    await this.startCamera();
   }
 
   ngOnDestroy(): void {
-    this.detenerCamara();
+    this.stopCamera();
   }
 
-  private async iniciarCamara(): Promise<void> {
+  private async startCamera(): Promise<void> {
     if (!navigator.mediaDevices?.getUserMedia) {
       this.error.set('Este dispositivo o navegador no permite acceder a la camara.');
-      this.cargando.set(false);
+      this.loading.set(false);
       return;
     }
 
     try {
-      // "environment" prioriza la camara trasera en celulares; en una PC
-      // sin camara trasera el navegador simplemente usa la unica disponible.
+      // "environment" prefers the rear camera on phones; on a PC
+      // without a rear camera the browser simply uses the only one available.
       this.stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: { ideal: 'environment' } },
         audio: false,
       });
     } catch {
       try {
-        // Algunos navegadores de escritorio rechazan el facingMode: reintento sin restricciones.
+        // Some desktop browsers reject facingMode: retry without constraints.
         this.stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
       } catch {
         this.error.set('No se pudo acceder a la camara. Revisa los permisos del navegador.');
-        this.cargando.set(false);
+        this.loading.set(false);
         return;
       }
     }
@@ -80,24 +80,24 @@ export class QrScanner implements AfterViewInit, OnDestroy {
     const video = this.videoRef?.nativeElement;
     if (!video) return;
 
-    // La camara trasera de un celular no se espeja: mostraria el mundo al
-    // reves. La frontal (o una webcam de PC, que no informa facingMode) si,
-    // para que el usuario se vea como en un espejo.
+    // A phone's rear camera is not mirrored: it would show the world
+    // backwards. The front one (or a PC webcam, which does not report facingMode) is,
+    // so the user sees themselves as in a mirror.
     const facingMode = this.stream.getVideoTracks()[0]?.getSettings().facingMode;
-    this.espejo.set(facingMode !== 'environment');
+    this.mirror.set(facingMode !== 'environment');
 
     video.srcObject = this.stream;
     await video.play();
-    this.cargando.set(false);
-    this.frameId = requestAnimationFrame(() => this.leerFrame());
+    this.loading.set(false);
+    this.frameId = requestAnimationFrame(() => this.readFrame());
   }
 
-  private leerFrame(): void {
+  private readFrame(): void {
     const video = this.videoRef?.nativeElement;
     const canvas = this.canvasRef?.nativeElement;
 
     if (!video || !canvas || video.readyState !== video.HAVE_ENOUGH_DATA) {
-      this.frameId = requestAnimationFrame(() => this.leerFrame());
+      this.frameId = requestAnimationFrame(() => this.readFrame());
       return;
     }
 
@@ -108,32 +108,32 @@ export class QrScanner implements AfterViewInit, OnDestroy {
     canvas.height = video.videoHeight;
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    const imagen = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const codigo = jsQR(imagen.data, imagen.width, imagen.height);
+    const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const code = jsQR(image.data, image.width, image.height);
 
-    if (codigo?.data) {
-      // Se deja de leer frames pero la camara sigue prendida un instante:
-      // el check confirma la lectura antes de que el modal se cierre.
-      this.leido.set(true);
-      this.cierreTimer = setTimeout(() => {
-        this.codigoLeido.emit(codigo.data);
-        this.cerrarModal();
-      }, QrScanner.PAUSA_LECTURA_MS);
+    if (code?.data) {
+      // Frames stop being read but the camera stays on for a moment:
+      // the check confirms the read before the modal closes.
+      this.read.set(true);
+      this.closeTimer = setTimeout(() => {
+        this.codeRead.emit(code.data);
+        this.closeModal();
+      }, QrScanner.READ_PAUSE_MS);
       return;
     }
 
-    this.frameId = requestAnimationFrame(() => this.leerFrame());
+    this.frameId = requestAnimationFrame(() => this.readFrame());
   }
 
-  private detenerCamara(): void {
+  private stopCamera(): void {
     cancelAnimationFrame(this.frameId);
-    clearTimeout(this.cierreTimer);
+    clearTimeout(this.closeTimer);
     this.stream?.getTracks().forEach((track) => track.stop());
     this.stream = null;
   }
 
-  protected cerrarModal(): void {
-    this.detenerCamara();
-    this.cerrar.emit();
+  protected closeModal(): void {
+    this.stopCamera();
+    this.close.emit();
   }
 }

@@ -1,4 +1,4 @@
-<button class="disparador" type="button" (click)="abrir()"
+<button class="trigger" type="button" (click)="openModal()"
         aria-label="Sacar foto de la patente" title="Sacar foto de la patente">
   <svg width="20" height="18" viewBox="0 0 20 18" fill="none" aria-hidden="true">
     <path d="M7 1h6l1.5 2.5H18a1 1 0 0 1 1 1V16a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1h3.5L7 1Z"
@@ -7,65 +7,65 @@
   </svg>
 </button>
 
-@if (abierto()) {
-  <div class="camara__fondo" (click)="cerrar()">
-    <div class="camara__panel" role="dialog" aria-modal="true" aria-labelledby="camara-titulo"
+@if (open()) {
+  <div class="camera__backdrop" (click)="close()">
+    <div class="camera__panel" role="dialog" aria-modal="true" aria-labelledby="camera-title"
          (click)="$event.stopPropagation()">
-      <div class="camara__barra-superior">
-        <button class="camara__cerrar" type="button" (click)="cerrar()" aria-label="Cerrar camara">
+      <div class="camera__top-bar">
+        <button class="camera__close" type="button" (click)="close()" aria-label="Cerrar camara">
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
             <path d="M1 1l16 16M17 1L1 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
           </svg>
         </button>
-        <h2 class="camara__titulo" id="camara-titulo">Foto de la patente</h2>
-        <span class="camara__hueco" aria-hidden="true"></span>
+        <h2 class="camera__title" id="camera-title">Foto de la patente</h2>
+        <span class="camera__spacer" aria-hidden="true"></span>
       </div>
 
-      <div class="camara__visor">
-        @if (!sinCamaraEnVivo()) {
-          <video #video class="camara__video" [class.camara__video--espejado]="espejado()"
+      <div class="camera__viewfinder">
+        @if (!noLiveCamera()) {
+          <video #video class="camera__video" [class.camera__video--mirrored]="mirrored()"
                  muted playsinline></video>
-        } @else if (!vistaPrevia()) {
-          <p class="camara__aviso">
+        } @else if (!preview()) {
+          <p class="camera__notice">
             No se puede usar la camara en vivo en este navegador. Toca el boton blanco para abrir la camara del dispositivo.
           </p>
         }
 
-        @if (vistaPrevia(); as foto) {
-          <img class="camara__foto" [src]="foto" alt="Foto sacada de la patente" />
+        @if (preview(); as photo) {
+          <img class="camera__photo" [src]="photo" alt="Foto sacada de la patente" />
         }
 
-        @if (iniciando()) {
-          <p class="camara__estado">Iniciando camara...</p>
-        } @else if (paso() === 'leyendo') {
-          <p class="camara__estado camara__estado--velo" role="status">Leyendo patente...</p>
+        @if (starting()) {
+          <p class="camera__status">Iniciando camara...</p>
+        } @else if (step() === 'reading') {
+          <p class="camera__status camera__status--veil" role="status">Leyendo patente...</p>
         }
 
         @if (error()) {
-          <p class="camara__mensaje camara__mensaje--error" role="alert">
+          <p class="camera__message camera__message--error" role="alert">
             {{ error() }} Toca el boton de reintentar para sacar otra.
           </p>
-        } @else if (paso() === 'camara' && !iniciando()) {
-          <p class="camara__mensaje">Encuadra la patente y saca la foto de frente.</p>
+        } @else if (step() === 'camera' && !starting()) {
+          <p class="camera__message">Encuadra la patente y saca la foto de frente.</p>
         }
       </div>
 
-      <div class="camara__controles">
-        <button class="camara__subir" type="button" [disabled]="paso() === 'leyendo'"
-                (click)="elegirArchivo()" aria-label="Subir una foto" title="Subir una foto">
+      <div class="camera__controls">
+        <button class="camera__upload" type="button" [disabled]="step() === 'reading'"
+                (click)="chooseFile()" aria-label="Subir una foto" title="Subir una foto">
           <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
             <path d="M11 17V4M5 10l6-6 6 6" stroke="currentColor" stroke-width="2.2"
                   stroke-linecap="round" stroke-linejoin="round" />
           </svg>
         </button>
 
-        <button class="camara__obturador" type="button"
-                [disabled]="iniciando() || paso() === 'leyendo'"
-                (click)="disparar()"
-                [attr.aria-label]="paso() === 'error' ? 'Sacar otra foto' : 'Sacar foto'">
-          @if (paso() === 'error') {
-            <!-- Tras un error el obturador pasa a ser un boton de reintentar. -->
-            <svg class="camara__reintentar" width="48" height="48" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+        <button class="camera__shutter" type="button"
+                [disabled]="starting() || step() === 'reading'"
+                (click)="shoot()"
+                [attr.aria-label]="step() === 'error' ? 'Sacar otra foto' : 'Sacar foto'">
+          @if (step() === 'error') {
+            <!-- After an error the shutter becomes a retry button. -->
+            <svg class="camera__retry" width="48" height="48" viewBox="0 0 48 48" fill="none" aria-hidden="true">
               <path d="M9.9 18.87A15 15 0 0 1 38.1 18.87M31.35 14.94L38.1 18.87L40.75 11.52"
                     stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
               <path d="M38.1 29.13A15 15 0 0 1 9.9 29.13M16.65 33.06L9.9 29.13L7.25 36.48"
@@ -73,18 +73,18 @@
               <circle cx="24" cy="24" r="4" fill="currentColor" />
             </svg>
           } @else {
-            <span class="camara__obturador-centro" aria-hidden="true"></span>
+            <span class="camera__shutter-center" aria-hidden="true"></span>
           }
         </button>
 
-        <span class="camara__hueco" aria-hidden="true"></span>
+        <span class="camera__spacer" aria-hidden="true"></span>
       </div>
 
-      <!-- La flecha abre la galeria; sin camara en vivo, el obturador abre la camara nativa del celular. -->
-      <input #archivo class="camara__archivo" type="file" accept="image/*"
-             (change)="onArchivo($event)" />
-      <input #camaraNativa class="camara__archivo" type="file" accept="image/*" capture="environment"
-             (change)="onArchivo($event)" />
+      <!-- The arrow opens the gallery; without a live camera, the shutter opens the phone's native camera. -->
+      <input #file class="camera__file" type="file" accept="image/*"
+             (change)="onFile($event)" />
+      <input #nativeCamera class="camera__file" type="file" accept="image/*" capture="environment"
+             (change)="onFile($event)" />
     </div>
   </div>
 }

@@ -1,27 +1,27 @@
-<div class="ab-screen registro">
-  <header class="registro__head">
-    <h1 class="ab-brand">Create una cuenta</h1>
-    <p class="ab-subtitle registro__lead">
+<div class="ab-screen register">
+  <header class="register__head">
+    <h1 class="ab-brand">Creá una cuenta</h1>
+    <p class="ab-subtitle register__lead">
       Disfrute de la comodidad de ser alertado del arribo de su bus
     </p>
   </header>
 
-  <form class="registro__form" [formGroup]="form" (ngSubmit)="crearCuenta()" novalidate>
-    <div class="registro__row">
+  <form class="register__form" [formGroup]="form" (ngSubmit)="createAccount()" novalidate>
+    <div class="register__row">
       <div class="ab-field">
-        <label class="ab-label" for="nombre">Nombre</label>
-        <input class="ab-input" id="nombre" type="text" placeholder="Juan" autocomplete="given-name"
-               formControlName="nombre" [attr.aria-invalid]="invalido('nombre')" />
-        @if (invalido('nombre')) {
+        <label class="ab-label" for="firstName">Nombre</label>
+        <input class="ab-input" id="firstName" type="text" placeholder="Juan" autocomplete="given-name"
+               formControlName="firstName" [attr.aria-invalid]="invalid('firstName')" />
+        @if (invalid('firstName')) {
           <p class="ab-field-error">Ingresa tu nombre.</p>
         }
       </div>
 
       <div class="ab-field">
-        <label class="ab-label" for="apellido">Apellido</label>
-        <input class="ab-input" id="apellido" type="text" placeholder="Perez" autocomplete="family-name"
-               formControlName="apellido" [attr.aria-invalid]="invalido('apellido')" />
-        @if (invalido('apellido')) {
+        <label class="ab-label" for="lastName">Apellido</label>
+        <input class="ab-input" id="lastName" type="text" placeholder="Perez" autocomplete="family-name"
+               formControlName="lastName" [attr.aria-invalid]="invalid('lastName')" />
+        @if (invalid('lastName')) {
           <p class="ab-field-error">Ingresa tu apellido.</p>
         }
       </div>
@@ -30,8 +30,8 @@
     <div class="ab-field">
       <label class="ab-label" for="email">Email</label>
       <input class="ab-input" id="email" type="email" placeholder="name@company.com" autocomplete="email"
-             formControlName="email" [attr.aria-invalid]="invalido('email')" />
-      @if (invalido('email')) {
+             formControlName="email" [attr.aria-invalid]="invalid('email')" />
+      @if (invalid('email')) {
         <p class="ab-field-error">Ingresa un email valido.</p>
       }
     </div>
@@ -39,27 +39,27 @@
     <div class="ab-field">
       <label class="ab-label" for="password">Contraseña</label>
       <div class="ab-password">
-        <input class="ab-input" id="password" [type]="mostrarPassword() ? 'text' : 'password'"
+        <input class="ab-input" id="password" [type]="showPassword() ? 'text' : 'password'"
                placeholder="••••••••" autocomplete="new-password"
-               formControlName="password" [attr.aria-invalid]="invalido('password')" />
-        <app-password-toggle [visible]="mostrarPassword()" (visibleChange)="mostrarPassword.set($event)" />
+               formControlName="password" [attr.aria-invalid]="invalid('password')" />
+        <app-password-toggle [visible]="showPassword()" (visibleChange)="showPassword.set($event)" />
       </div>
-      @if (invalido('password')) {
+      @if (invalid('password')) {
         <p class="ab-field-error">La contraseña debe tener al menos 8 caracteres.</p>
       }
     </div>
 
     <div class="ab-field">
-      <label class="ab-label" for="confirmar">Confirmar contraseña</label>
+      <label class="ab-label" for="confirm">Confirmar contraseña</label>
       <div class="ab-password">
-        <input class="ab-input" id="confirmar" [type]="mostrarConfirmar() ? 'text' : 'password'"
+        <input class="ab-input" id="confirm" [type]="showConfirm() ? 'text' : 'password'"
                placeholder="••••••••" autocomplete="new-password"
-               formControlName="confirmar" [attr.aria-invalid]="invalido('confirmar') || noCoinciden()" />
-        <app-password-toggle [visible]="mostrarConfirmar()" (visibleChange)="mostrarConfirmar.set($event)" />
+               formControlName="confirm" [attr.aria-invalid]="invalid('confirm') || mismatch()" />
+        <app-password-toggle [visible]="showConfirm()" (visibleChange)="showConfirm.set($event)" />
       </div>
-      @if (invalido('confirmar')) {
+      @if (invalid('confirm')) {
         <p class="ab-field-error">Confirma tu contraseña.</p>
-      } @else if (noCoinciden()) {
+      } @else if (mismatch()) {
         <p class="ab-field-error">Las contraseñas no coinciden.</p>
       }
     </div>
@@ -68,12 +68,12 @@
       <p class="ab-form-error" role="alert">{{ error() }}</p>
     }
 
-    <button class="ab-button registro__submit" type="submit" [disabled]="cargando()">
-      {{ cargando() ? 'Creando cuenta...' : 'Crear Cuenta' }}
+    <button class="ab-button register__submit" type="submit" [disabled]="loading()">
+      {{ loading() ? 'Creando cuenta...' : 'Crear Cuenta' }}
     </button>
   </form>
 
-  <p class="ab-footnote registro__foot">
+  <p class="ab-footnote register__foot">
     Ya tienes cuenta?
     <a class="ab-link" routerLink="/login">Inicia Sesión</a>
   </p>

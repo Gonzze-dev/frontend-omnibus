@@ -1,25 +1,25 @@
 /* ============================================================
-   Espera del viaje - frame "Espera del viaje" (mobile, 393px)
-   Es el cuerpo del home cuando ya hay un viaje encontrado.
+   Trip wait - "Espera del viaje" frame (mobile, 393px)
+   It is the home body when a trip has already been found.
    ============================================================ */
-@use '../../../styles/pantalla' as *;
+@use '../../../styles/screen' as *;
 
-.espera {
+.wait {
   min-height: calc(100dvh - var(--ab-topbar-h));
   padding-top: 24px;
   padding-bottom: 40px;
-  @include pantalla-card;
+  @include screen-card;
 }
 
-/* Dentro de la card blanca, igual que en el home */
+/* Inside the white card, same as in the home */
 @media (min-width: 768px) {
-  .espera {
+  .wait {
     padding-top: 32px;
     padding-bottom: 48px;
   }
 }
 
-.espera__title {
+.wait__title {
   margin: 0 0 20px;
   font-family: Manrope, Inter, sans-serif;
   font-weight: 700;
@@ -29,8 +29,8 @@
   color: var(--ab-primary);
 }
 
-/* ---------------- Aviso de estado ---------------- */
-.aviso {
+/* ---------------- Status notice ---------------- */
+.notice {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -44,16 +44,16 @@
   line-height: var(--ab-lh-body);
 }
 
-.aviso b { font-weight: 700; }
+.notice b { font-weight: 700; }
 
-.aviso + .aviso { margin-top: 12px; }
+.notice + .notice { margin-top: 12px; }
 
-/* Todavia no llego: mismo aviso en azul de marca con un pulso "en vivo" */
-.aviso--espera { background: var(--ab-gradient); }
+/* Not arrived yet: same notice in brand blue with a "live" pulse */
+.notice--wait { background: var(--ab-gradient); }
 
-.aviso--demora { background: var(--ab-badge); }
+.notice--delay { background: var(--ab-badge); }
 
-.aviso__pulso {
+.notice__pulse {
   position: relative;
   flex: none;
   width: 12px;
@@ -62,35 +62,35 @@
   background: var(--ab-white);
 }
 
-.aviso__pulso::after {
+.notice__pulse::after {
   content: '';
   position: absolute;
   inset: 0;
   border-radius: 50%;
   background: var(--ab-white);
-  animation: pulso 1.6s ease-out infinite;
+  animation: pulse 1.6s ease-out infinite;
 }
 
-@keyframes pulso {
+@keyframes pulse {
   from { transform: scale(1); opacity: 0.7; }
   to   { transform: scale(2.6); opacity: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .aviso__pulso::after { animation: none; }
+  .notice__pulse::after { animation: none; }
 }
 
-.espera__offline {
+.wait__offline {
   margin: 12px 0 0;
   color: var(--ab-muted);
   font-size: var(--ab-fs-label);
   line-height: 16px;
 }
 
-/* ---------------- Plataforma + mapa ---------------- */
-.plataforma { margin-top: 28px; }
+/* ---------------- Platform + map ---------------- */
+.platform { margin-top: 28px; }
 
-.plataforma__head {
+.platform__head {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
@@ -98,7 +98,7 @@
   margin-bottom: 12px;
 }
 
-.plataforma__title {
+.platform__title {
   margin: 0;
   font-family: Manrope, Inter, sans-serif;
   font-weight: 700;
@@ -107,12 +107,12 @@
   color: var(--ab-ink);
 }
 
-.plataforma__acciones {
+.platform__actions {
   display: flex;
   gap: 16px;
 }
 
-.plataforma__link {
+.platform__link {
   padding: 0;
   border: 0;
   background: none;
@@ -125,25 +125,25 @@
   cursor: pointer;
 }
 
-.mapa {
+.map {
   height: 232px;
   border-radius: var(--ab-r-card);
   background: var(--ab-field);
   overflow: hidden;
-  z-index: 0; /* mantiene los panes de Leaflet debajo del drawer */
+  z-index: 0; /* keeps the Leaflet panes below the drawer */
 }
 
-/* Leaflet monta su DOM en runtime, fuera del scope del componente */
+/* Leaflet mounts its DOM at runtime, outside the component scope */
 :host ::ng-deep {
-  /* La atribucion de OSM es obligatoria, pero no tiene que competir con el diseño */
+  /* The OSM attribution is mandatory, but it does not have to compete with the design */
   .leaflet-control-attribution {
     padding: 0 4px;
     background: rgba(255, 255, 255, 0.7);
     font-size: 9px;
   }
 
-  /* Chapa azul del colectivo sobre la plataforma */
-  .mapa__pin {
+  /* Blue bus badge over the platform */
+  .map__pin {
     display: grid;
     place-items: center;
     width: 40px;
@@ -153,8 +153,8 @@
     box-shadow: var(--ab-shadow-dark);
   }
 
-  /* Etiqueta "Plataforma A27" arriba de la chapa */
-  .mapa__label {
+  /* "Platform A27" label above the badge */
+  .map__label {
     padding: 3px 8px;
     border: 0;
     border-radius: 4px;
@@ -168,7 +168,7 @@
     white-space: nowrap;
   }
 
-  .mapa__label::before { display: none; }
+  .map__label::before { display: none; }
 }
 
 /* ---------------- Cards ---------------- */
@@ -190,8 +190,8 @@
   color: var(--ab-body);
 }
 
-/* ---------------- Colectivo ---------------- */
-.colectivo {
+/* ---------------- Bus ---------------- */
+.bus {
   display: flex;
   align-items: center;
   gap: 16px;
@@ -200,7 +200,7 @@
   background: var(--ab-white);
 }
 
-.colectivo__icon {
+.bus__icon {
   display: grid;
   place-items: center;
   flex: none;
@@ -211,14 +211,14 @@
   color: var(--ab-primary);
 }
 
-.colectivo__datos {
+.bus__details {
   display: flex;
   flex-direction: column;
   gap: 2px;
   min-width: 0;
 }
 
-.colectivo__empresa {
+.bus__company {
   font-family: Manrope, Inter, sans-serif;
   font-weight: 700;
   font-size: var(--ab-fs-body);
@@ -226,15 +226,15 @@
   color: var(--ab-ink);
 }
 
-.colectivo__patente {
+.bus__plate {
   font-size: var(--ab-fs-label);
   line-height: 16px;
   color: var(--ab-muted);
   overflow-wrap: anywhere;
 }
 
-/* ---------------- Pasajero ---------------- */
-.pasajero__head {
+/* ---------------- Passenger ---------------- */
+.passenger__head {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -242,7 +242,7 @@
   margin-bottom: 8px;
 }
 
-.pasajero__title {
+.passenger__title {
   margin: 0;
   font-family: Manrope, Inter, sans-serif;
   font-weight: 700;
@@ -251,22 +251,22 @@
   color: var(--ab-ink);
 }
 
-.pasajero__icono {
+.passenger__icon {
   flex: none;
   color: var(--ab-placeholder);
 }
 
-/* ---------------- Lista de datos ---------------- */
-.datos { margin: 0; }
+/* ---------------- Details list ---------------- */
+.details { margin: 0; }
 
-.datos__fila {
+.details__row {
   padding: 12px 0;
   border-top: 1px solid var(--ab-line);
 }
 
-.datos__fila:first-child { border-top: 0; padding-top: 4px; }
+.details__row:first-child { border-top: 0; padding-top: 4px; }
 
-.datos__label {
+.details__label {
   margin: 0 0 4px;
   font-weight: 600;
   font-size: var(--ab-fs-label);
@@ -276,7 +276,7 @@
   color: var(--ab-body);
 }
 
-.datos__valor {
+.details__value {
   margin: 0;
   font-family: Manrope, Inter, sans-serif;
   font-weight: 700;
@@ -285,66 +285,66 @@
   color: var(--ab-ink);
 }
 
-.datos__valor--codigo {
+.details__value--code {
   color: var(--ab-primary);
   letter-spacing: 0.1em;
 }
 
 /* ---------------- CTA ---------------- */
-.espera__cta { margin-top: 32px; }
+.wait__cta { margin-top: 32px; }
 
 /* ============================================================
-   Movimiento
+   Motion
    ============================================================ */
-/* Llego el colectivo: el aviso verde rebota y deja una onda */
-.aviso:not(.aviso--espera, .aviso--demora) {
+/* The bus arrived: the green notice bounces and leaves a ripple */
+.notice:not(.notice--wait, .notice--delay) {
   animation:
-    llegada-pop 560ms var(--ab-ease-spring) backwards,
-    llegada-onda 1.4s 300ms ease-out 2;
+    arrival-pop 560ms var(--ab-ease-spring) backwards,
+    arrival-wave 1.4s 300ms ease-out 2;
 }
 
-.aviso:not(.aviso--espera, .aviso--demora) svg {
-  animation: llegada-icono 700ms 250ms var(--ab-ease-out) backwards;
+.notice:not(.notice--wait, .notice--delay) svg {
+  animation: arrival-icon 700ms 250ms var(--ab-ease-out) backwards;
 }
 
-@keyframes llegada-pop {
+@keyframes arrival-pop {
   from { opacity: 0; transform: scale(0.9); }
 }
 
-@keyframes llegada-onda {
+@keyframes arrival-wave {
   from { box-shadow: var(--ab-shadow-dark), 0 0 0 0 rgba(22, 163, 74, 0.45); }
   to   { box-shadow: var(--ab-shadow-dark), 0 0 0 14px rgba(22, 163, 74, 0); }
 }
 
-@keyframes llegada-icono {
+@keyframes arrival-icon {
   0%   { opacity: 0; transform: scale(0.4) rotate(-30deg); }
   60%  { opacity: 1; transform: scale(1.2) rotate(8deg); }
   100% { transform: scale(1) rotate(0); }
 }
 
-.aviso--demora {
-  animation: ab-desde-izquierda var(--ab-dur-lenta) var(--ab-ease-out) backwards;
+.notice--delay {
+  animation: ab-from-left var(--ab-dur-lenta) var(--ab-ease-out) backwards;
 }
 
-/* El mapa se descubre de arriba hacia abajo */
-.mapa {
-  animation: mapa-revela 700ms var(--ab-ease-out) 150ms backwards;
+/* The map is revealed from top to bottom */
+.map {
+  animation: map-reveal 700ms var(--ab-ease-out) 150ms backwards;
 }
 
-@keyframes mapa-revela {
+@keyframes map-reveal {
   from { clip-path: inset(0 0 100% 0 round var(--ab-r-card)); }
   to   { clip-path: inset(0 0 0 0 round var(--ab-r-card)); }
 }
 
-/* Los datos del pasajero aparecen fila por fila */
-.datos__fila {
-  animation: ab-sube var(--ab-dur-lenta) var(--ab-ease-out) backwards;
+/* The passenger data appears row by row */
+.details__row {
+  animation: ab-rise var(--ab-dur-lenta) var(--ab-ease-out) backwards;
 }
 
 @for $i from 1 through 5 {
-  .datos__fila:nth-child(#{$i}) { animation-delay: #{240 + $i * 50}ms; }
+  .details__row:nth-child(#{$i}) { animation-delay: #{240 + $i * 50}ms; }
 }
 
-.colectivo__icon {
+.bus__icon {
   animation: ab-pop var(--ab-dur-lenta) var(--ab-ease-spring) 260ms backwards;
 }

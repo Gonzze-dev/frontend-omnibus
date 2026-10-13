@@ -1,26 +1,26 @@
 /* ============================================================
-   Gestion - menu de opciones de una card del dashboard
-   (nodo 37:312). No esta en el Figma: usa los mismos tonos y
-   medidas que las cards de acceso.
+   Management - options menu of a dashboard card
+   (node 37:312). It is not in the Figma: it uses the same tones and
+   measurements as the shortcut cards.
    ============================================================ */
 
-.gestion {
-  --tinta: #131B2E;  /* mismo titulo que las cards del dashboard */
+.management {
+  --ink: #131B2E;  /* same title as the dashboard cards */
 
   min-height: calc(100dvh - var(--ab-topbar-h));
   padding-top: 20px;
   padding-bottom: 64px;
 }
 
-/* Tonos heredados del dashboard para no romper la continuidad */
-.tono--azul    { --tono: #0050CB; }
-.tono--indigo  { --tono: #4648D4; }
-.tono--carmin  { --tono: #B40036; }
-.tono--tinta   { --tono: #131B2E; }
-.tono--naranja { --tono: var(--ab-accent); }
+/* Tones inherited from the dashboard to keep continuity */
+.tone--blue    { --tone: #0050CB; }
+.tone--indigo  { --tone: #4648D4; }
+.tone--crimson  { --tone: #B40036; }
+.tone--ink   { --tone: #131B2E; }
+.tone--orange { --tone: var(--ab-accent); }
 
-/* ---------------- Volver ---------------- */
-.gestion__volver {
+/* ---------------- Back ---------------- */
+.management__back {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -30,13 +30,13 @@
   text-decoration: none;
 }
 
-.gestion__volver:hover { text-decoration: underline; }
-.gestion__volver:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 4px; }
+.management__back:hover { text-decoration: underline; }
+.management__back:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 4px; }
 
-/* ---------------- Encabezado ---------------- */
-.gestion__head { margin-top: 20px; }
+/* ---------------- Header ---------------- */
+.management__head { margin-top: 20px; }
 
-.gestion__titulo {
+.management__title {
   margin: 0;
   font-family: Manrope, Inter, sans-serif;
   font-weight: 800;
@@ -46,15 +46,15 @@
   color: var(--ab-primary);
 }
 
-.gestion__bajada {
+.management__lead {
   margin: 8px 0 0;
   font-size: calc(var(--ab-fs-body) + 1px);
   line-height: var(--ab-lh-lead);
   color: var(--ab-body);
 }
 
-/* Contador chico: adelanta el dato sin abrir el listado */
-.gestion__resumen {
+/* Small counter: shows the figure ahead without opening the list */
+.management__summary {
   display: inline-flex;
   align-items: baseline;
   gap: 8px;
@@ -67,25 +67,25 @@
   color: var(--ab-body);
 }
 
-.gestion__resumen-valor {
+.management__summary-value {
   font-family: "Hanken Grotesk", Inter, sans-serif;
   font-weight: 600;
   font-size: var(--ab-fs-h3);
   line-height: 1;
-  color: var(--tono);
+  color: var(--tone);
 }
 
-/* Ruta con una seccion que no esta en el catalogo */
-.gestion__vacio {
+/* Route with a section that is not in the catalog */
+.management__empty {
   margin: 40px 0 0;
   font-size: calc(var(--ab-fs-body) + 1px);
   color: var(--ab-body);
 }
 
-/* ---------------- Grupos ---------------- */
-.grupo { margin-top: 36px; }
+/* ---------------- Groups ---------------- */
+.group { margin-top: 36px; }
 
-.grupo__titulo {
+.group__title {
   margin: 0;
   font-weight: 600;
   font-size: var(--ab-fs-label);
@@ -95,7 +95,7 @@
   color: var(--ab-placeholder);
 }
 
-.opciones {
+.options {
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -104,12 +104,12 @@
   list-style: none;
 }
 
-/* El li se estira con la fila y la card lo llena: asi todas quedan
-   del mismo alto aunque la bajada ocupe una linea mas. */
-.opciones > li { display: flex; }
+/* The li stretches with the row and the card fills it: that way all of them
+   have the same height even if the lead takes one more line. */
+.options > li { display: flex; }
 
-/* ---------------- Opcion ---------------- */
-.opcion {
+/* ---------------- Option ---------------- */
+.option {
   display: flex;
   align-items: center;
   gap: 16px;
@@ -126,16 +126,16 @@
   transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-.opcion:hover {
-  border-color: color-mix(in srgb, var(--tono) 45%, transparent);
+.option:hover {
+  border-color: color-mix(in srgb, var(--tone) 45%, transparent);
   box-shadow: var(--ab-shadow-bar);
   transform: translateY(-1px);
 }
 
-.opcion:active { transform: none; }
-.opcion:focus-visible { outline: 2px solid var(--tono); outline-offset: 2px; }
+.option:active { transform: none; }
+.option:focus-visible { outline: 2px solid var(--tone); outline-offset: 2px; }
 
-.opcion__icono {
+.option__icon {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -143,11 +143,11 @@
   width: 48px;
   height: 48px;
   border-radius: var(--ab-r-card);
-  background: color-mix(in srgb, var(--tono) 10%, transparent);
-  color: var(--tono);
+  background: color-mix(in srgb, var(--tone) 10%, transparent);
+  color: var(--tone);
 }
 
-.opcion__texto {
+.option__text {
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -155,80 +155,80 @@
   flex: 1;
 }
 
-.opcion__titulo {
+.option__title {
   font-family: "Hanken Grotesk", Inter, sans-serif;
   font-size: var(--ab-fs-h3);
   line-height: 1.25;
-  color: var(--tinta);
+  color: var(--ink);
 }
 
-/* Marca los endpoints de /api/super, que un admin comun no puede usar */
-.opcion__super {
+/* Marks the /api/super endpoints, which a regular admin cannot use */
+.option__super {
   display: inline-block;
   margin-left: 8px;
   padding: 2px 8px;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--tono) 12%, transparent);
+  background: color-mix(in srgb, var(--tone) 12%, transparent);
   font-family: Inter, sans-serif;
   font-weight: 600;
   font-size: var(--ab-fs-label);
   line-height: 16px;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: var(--tono);
+  color: var(--tone);
   vertical-align: middle;
 }
 
-.opcion__bajada {
+.option__lead {
   font-size: calc(var(--ab-fs-body) + 1px);
   line-height: 1.45;
   color: var(--ab-body);
 }
 
-.opcion__flecha {
+.option__arrow {
   flex: none;
-  color: var(--tono);
+  color: var(--tone);
 }
 
-/* A partir de tablet las opciones entran de a dos */
+/* From tablet up the options come in pairs */
 @media (min-width: 768px) {
-  .opciones {
+  .options {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-auto-rows: 1fr;  /* todas las filas miden lo mismo */
+    grid-auto-rows: 1fr;  /* every row has the same height */
     gap: 16px;
   }
 
-  .opciones > li:last-child:nth-child(odd) { grid-column: 1 / -1; }
+  .options > li:last-child:nth-child(odd) { grid-column: 1 / -1; }
 }
 
 /* ============================================================
-   Movimiento
+   Motion
    ============================================================ */
-.gestion__resumen {
+.management__summary {
   animation: ab-pop var(--ab-dur-lenta) var(--ab-ease-spring) 200ms backwards;
 }
 
-/* Las opciones de cada grupo entran en cascada */
-.opciones > li {
-  animation: ab-sube var(--ab-dur-lenta) var(--ab-ease-out) backwards;
+/* The options of each group come in staggered */
+.options > li {
+  animation: ab-rise var(--ab-dur-lenta) var(--ab-ease-out) backwards;
 }
 
 @for $i from 1 through 8 {
-  .opciones > li:nth-child(#{$i}) { animation-delay: #{80 + $i * 50}ms; }
+  .options > li:nth-child(#{$i}) { animation-delay: #{80 + $i * 50}ms; }
 }
 
-.opcion__icono,
-.opcion__flecha {
+.option__icon,
+.option__arrow {
   transition: transform var(--ab-dur-media) var(--ab-ease-out);
 }
 
-.gestion__volver svg {
+.management__back svg {
   transition: transform var(--ab-dur-media) var(--ab-ease-out);
 }
 
 @media (hover: hover) {
-  .opcion:hover .opcion__icono { transform: scale(1.08); }
-  .opcion:hover .opcion__flecha { transform: translateX(4px); }
-  .gestion__volver:hover svg { transform: translateX(-4px); }
+  .option:hover .option__icon { transform: scale(1.08); }
+  .option:hover .option__arrow { transform: translateX(4px); }
+  .management__back:hover svg { transform: translateX(-4px); }
 }

@@ -1,170 +1,172 @@
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Subject } from 'rxjs';
-import { NotificacionesStore } from './notificaciones';
+import { NotificationsStore } from './notifications';
 import { RealtimeService } from '../services/realtime.service';
 import { AuthService } from '../services/auth.service';
 import { User } from '../models/auth.model';
-import { NotificacionPasajero } from '../models/viaje.model';
+import { PassengerNotification } from '../models/trip.model';
 
-describe('NotificacionesStore', () => {
-  let recibidas: Subject<NotificacionPasajero>;
-  let eliminadas: Subject<string>;
-  let store: NotificacionesStore;
-  let usuario: ReturnType<typeof signal<User | null>>;
+describe('NotificationsStore', () => {
+  let received: Subject<PassengerNotification>;
+  let deleted: Subject<string>;
+  let store: NotificationsStore;
+  let currentUser: ReturnType<typeof signal<User | null>>;
 
-  const cuenta = (uuid: string) => ({ uuid, rol: 'user' }) as User;
+  const account = (uuid: string) => ({ uuid, role: 'user' }) as User;
 
-  const llegada: NotificacionPasajero = {
+  const arrival: PassengerNotification = {
     type: 'BUS_ARRIVAL',
-    payload: { id: 'n-llegada', anden: 'A04', coordinates: { lat: 1, lng: 2 }, time_life: 5 },
+    payload: { id: 'n-arrival', bay: 'A04', coordinates: { lat: 1, lng: 2 }, time_life: 5 },
   };
-  const demora: NotificacionPasajero = {
+  const delay: PassengerNotification = {
     type: 'BUS_DELAY',
-    payload: { id: 'n-demora', license_patent: 'AB123CD', time_delay: 25, time_life: 5 },
+    payload: { id: 'n-delay', license_plate: 'AB123CD', time_delay: 25, time_life: 5 },
   };
-  const local: NotificacionPasajero = {
+  const local: PassengerNotification = {
     type: 'LOCAL',
-    payload: { id: 'n-local', message: 'Anden 3 cerrado', time_life: 5 },
+    payload: { id: 'n-local', message: 'Bay 3 closed', time_life: 5 },
   };
-  const global: NotificacionPasajero = {
+  const global: PassengerNotification = {
     type: 'GLOBAL',
-    payload: { id: 'n-global', message: 'Fuera de servicio de 6 a 7', time_life: 5 },
+    payload: { id: 'n-global', message: 'Out of service from 6 to 7', time_life: 5 },
   };
 
-  function crearStore(): NotificacionesStore {
+  function createStore(): NotificationsStore {
     TestBed.resetTestingModule();
-    recibidas = new Subject();
-    eliminadas = new Subject();
+    received = new Subject();
+    deleted = new Subject();
     TestBed.configureTestingModule({
       providers: [
-        { provide: AuthService, useValue: { user: usuario.asReadonly() } },
+        { provide: AuthService, useValue: { user: currentUser.asReadonly() } },
         {
           provide: RealtimeService,
           useValue: {
-            recibidas$: recibidas.asObservable(),
-            eliminadas$: eliminadas.asObservable(),
-            iniciar: () => Promise.resolve(),
+            received$: received.asObservable(),
+            deleted$: deleted.asObservable(),
+            start: () => Promise.resolve(),
           },
         },
       ],
     });
-    return TestBed.inject(NotificacionesStore);
+    return TestBed.inject(NotificationsStore);
   }
 
   beforeEach(() => {
     localStorage.clear();
-    usuario = signal<User | null>(cuenta('u-1'));
-    store = crearStore();
+    currentUser = signal<User | null>(account('u-1'));
+    store = createStore();
   });
 
-  it('arranca vacio, sin datos de ejemplo', () => {
-    expect(store.lista()).toEqual([]);
-    expect(store.cantidad()).toBe(0);
+  it('starts empty, without sample data', () => {
+    expect(store.list()).toEqual([]);
+    expect(store.count()).toBe(0);
   });
 
-  it('traduce cada tipo del pasajero y muestra la mas nueva primero', () => {
-    [llegada, demora, local, global].forEach((m) => recibidas.next(m));
+  it('translates each passenger type and shows the newest first', () => {
+    [arrival, delay, local, global].forEach((m) => received.next(m));
 
-    expect(store.lista().map((n) => [n.id, n.tipo, n.titulo, n.detalle])).toEqual([
-      ['n-global', 'servicio', 'Aviso general', 'Fuera de servicio de 6 a 7'],
-      ['n-local', 'servicio', 'Aviso de la terminal', 'Anden 3 cerrado'],
-      ['n-demora', 'retraso', 'Alerta de retraso', 'Su colectivo esta retrasado unos 25 minutos aproximadamente.'],
-      ['n-llegada', 'llegada', 'Tu colectivo acaba de llegar', 'Esta en la plataforma A04.'],
+    expect(store.list().map((n) => [n.id, n.kind, n.title, n.detail])).toEqual([
+      ['n-global', 'service', 'Aviso general', 'Out of service from 6 to 7'],
+      ['n-local', 'service', 'Aviso de la terminal', 'Bay 3 closed'],
+      ['n-delay', 'delay', 'Alerta de retraso', 'Su colectivo esta retrasado unos 25 minutos aproximadamente.'],
+      ['n-arrival', 'arrival', 'Tu colectivo acaba de llegar', 'Esta en la plataforma A04.'],
     ]);
-    expect(store.cantidad()).toBe(4);
+    expect(store.count()).toBe(4);
   });
 
-  it('usa el title de un GLOBAL si viene', () => {
-    recibidas.next({ type: 'GLOBAL', payload: { id: 'g', title: 'Paro', message: 'Sin servicio', time_life: 5 } });
-    expect(store.lista()[0].titulo).toBe('Paro');
+  it('uses the title of a GLOBAL if present', () => {
+    received.next({ type: 'GLOBAL', payload: { id: 'g', title: 'Strike', message: 'No service', time_life: 5 } });
+    expect(store.list()[0].title).toBe('Strike');
   });
 
-  it('no duplica lo que el hub reenvia al unirse o reconectar', () => {
-    recibidas.next(local);
-    recibidas.next(local);
-    expect(store.cantidad()).toBe(1);
+  it('does not duplicate what the hub resends when joining or reconnecting', () => {
+    received.next(local);
+    received.next(local);
+    expect(store.count()).toBe(1);
   });
 
-  it('ignora GLOBAL y LOCAL sin message o con message en blanco', () => {
-    recibidas.next({ type: 'GLOBAL', payload: { id: 'g1', time_life: 5 } });
-    recibidas.next({ type: 'GLOBAL', payload: { id: 'g2', message: '', time_life: 5 } });
-    recibidas.next({ type: 'GLOBAL', payload: { id: 'g3', message: '   ', time_life: 5 } });
-    recibidas.next({ type: 'LOCAL', payload: { id: 'l1', message: ' \t ', time_life: 5 } });
-    expect(store.cantidad()).toBe(0);
+  it('ignores GLOBAL and LOCAL without a message or with a blank message', () => {
+    received.next({ type: 'GLOBAL', payload: { id: 'g1', time_life: 5 } });
+    received.next({ type: 'GLOBAL', payload: { id: 'g2', message: '', time_life: 5 } });
+    received.next({ type: 'GLOBAL', payload: { id: 'g3', message: '   ', time_life: 5 } });
+    received.next({ type: 'LOCAL', payload: { id: 'l1', message: ' \t ', time_life: 5 } });
+    expect(store.count()).toBe(0);
   });
 
-  it('ignora CAMERA (es para admins) y mensajes sin id', () => {
-    recibidas.next({ type: 'CAMERA', payload: { id: 'c', message: 'Camara caida', time_life: 5 } });
-    recibidas.next({ type: 'LOCAL', payload: { message: 'sin id', time_life: 5 } });
-    expect(store.cantidad()).toBe(0);
+  it('ignores CAMERA (it is for admins) and messages without an id', () => {
+    received.next({ type: 'CAMERA', payload: { id: 'c', message: 'Camera down', time_life: 5 } });
+    received.next({ type: 'LOCAL', payload: { message: 'no id', time_life: 5 } });
+    expect(store.count()).toBe(0);
   });
 
-  it('quita la notificacion que borra un admin', () => {
-    recibidas.next(local);
-    recibidas.next(global);
-    eliminadas.next('n-local');
-    expect(store.lista().map((n) => n.id)).toEqual(['n-global']);
+  it('removes the notification an admin deletes', () => {
+    received.next(local);
+    received.next(global);
+    deleted.next('n-local');
+    expect(store.list().map((n) => n.id)).toEqual(['n-global']);
   });
 
-  it('lo limpiado no vuelve con el reenvio, ni despues de recargar', () => {
-    recibidas.next(local);
-    store.limpiar();
-    expect(store.cantidad()).toBe(0);
+  it('what was cleared does not come back with the resend, nor after reloading', () => {
+    received.next(local);
+    store.clear();
+    expect(store.count()).toBe(0);
 
-    recibidas.next(local);
-    expect(store.cantidad()).toBe(0);
+    received.next(local);
+    expect(store.count()).toBe(0);
 
-    // Simula recargar la pagina: store nuevo, mismo localStorage.
-    store = crearStore();
-    recibidas.next(local);
-    recibidas.next(global);
-    expect(store.lista().map((n) => n.id)).toEqual(['n-global']);
+    // Simulates reloading the page: new store, same localStorage.
+    store = createStore();
+    received.next(local);
+    received.next(global);
+    expect(store.list().map((n) => n.id)).toEqual(['n-global']);
   });
 
-  it('lo limpiado en una cuenta no se oculta en otra del mismo navegador', () => {
-    recibidas.next(global);
-    store.limpiar();
-    expect(store.cantidad()).toBe(0);
+  it('what was cleared in one account is not hidden in another one on the same browser', () => {
+    received.next(global);
+    store.clear();
+    expect(store.count()).toBe(0);
 
-    // Cambio de sesion sin recargar: la conexion al hub sigue y no reenvia nada.
-    usuario.set(cuenta('u-2'));
-    expect(store.lista().map((n) => n.id)).toEqual(['n-global']);
+    // Session change without reloading: the hub connection stays and resends nothing.
+    currentUser.set(account('u-2'));
+    expect(store.list().map((n) => n.id)).toEqual(['n-global']);
 
-    store.limpiar();
-    usuario.set(cuenta('u-1'));
-    expect(store.cantidad()).toBe(0);
+    store.clear();
+    currentUser.set(account('u-1'));
+    expect(store.count()).toBe(0);
 
-    // Otra cuenta que entra despues de recargar tambien la ve.
-    usuario.set(cuenta('u-3'));
-    store = crearStore();
-    recibidas.next(global);
-    expect(store.lista().map((n) => n.id)).toEqual(['n-global']);
+    // Another account that logs in after reloading also sees it.
+    currentUser.set(account('u-3'));
+    store = createStore();
+    received.next(global);
+    expect(store.list().map((n) => n.id)).toEqual(['n-global']);
   });
 
-  it('al arrancar poda del storage las descartadas vencidas de todas las cuentas', () => {
-    const ahora = Date.now();
-    localStorage.setItem('notificaciones_descartadas', JSON.stringify({ vieja: ahora + 60_000 }));
-    localStorage.setItem('notificaciones_descartadas:u-1', JSON.stringify({ vencida: ahora - 1, vigente: ahora + 60_000 }));
-    localStorage.setItem('notificaciones_descartadas:u-9', JSON.stringify({ vencida: ahora - 1 }));
-    localStorage.setItem('otra_cosa', 'x');
+  it('on startup prunes the expired dismissed ones of every account from storage', () => {
+    const now = Date.now();
+    localStorage.setItem('dismissed_notifications', JSON.stringify({ old: now + 60_000 }));
+    localStorage.setItem('dismissed_notifications:u-1', JSON.stringify({ expired: now - 1, current: now + 60_000 }));
+    localStorage.setItem('dismissed_notifications:u-9', JSON.stringify({ expired: now - 1 }));
+    localStorage.setItem('notificaciones_descartadas:u-1', JSON.stringify({ legacy: now + 60_000 }));
+    localStorage.setItem('something_else', 'x');
 
-    store = crearStore();
+    store = createStore();
 
-    expect(localStorage.getItem('notificaciones_descartadas')).toBeNull();
-    expect(JSON.parse(localStorage.getItem('notificaciones_descartadas:u-1')!)).toEqual({ vigente: ahora + 60_000 });
-    expect(localStorage.getItem('notificaciones_descartadas:u-9')).toBeNull();
-    expect(localStorage.getItem('otra_cosa')).toBe('x');
+    expect(localStorage.getItem('dismissed_notifications')).toBeNull();
+    expect(JSON.parse(localStorage.getItem('dismissed_notifications:u-1')!)).toEqual({ current: now + 60_000 });
+    expect(localStorage.getItem('dismissed_notifications:u-9')).toBeNull();
+    expect(localStorage.getItem('notificaciones_descartadas:u-1')).toBeNull();
+    expect(localStorage.getItem('something_else')).toBe('x');
   });
 
-  it('saca las vencidas', () => {
+  it('removes the expired ones', () => {
     vi.useFakeTimers();
     try {
-      store = crearStore();
-      recibidas.next({ type: 'LOCAL', payload: { id: 'corta', message: 'x', time_life: 1 } });
-      recibidas.next(local); // 5 minutos
+      store = createStore();
+      received.next({ type: 'LOCAL', payload: { id: 'short', message: 'x', time_life: 1 } });
+      received.next(local); // 5 minutes
       vi.advanceTimersByTime(90_000);
-      expect(store.lista().map((n) => n.id)).toEqual(['n-local']);
+      expect(store.list().map((n) => n.id)).toEqual(['n-local']);
     } finally {
       vi.useRealTimers();
     }

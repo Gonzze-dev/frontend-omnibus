@@ -3,31 +3,31 @@ import { NgTemplateOutlet } from '@angular/common';
 import { ActivatedRoute, ResolveFn, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Topbar } from '../../shared/topbar/topbar';
-import { Contador } from '../../shared/contador/contador';
-import { buscarSeccion } from './gestiones';
+import { Counter } from '../../shared/counter/counter';
+import { findSection } from './sections';
 
 /**
- * Menu de opciones de una card del dashboard. Las cinco gestiones
- * comparten esta pantalla: lo unico que cambia es la seccion del
- * catalogo que le toca segun la ruta.
+ * Options menu of a dashboard card. The five management sections
+ * share this screen: the only thing that changes is the catalog
+ * section it gets according to the route.
  */
 @Component({
-  selector: 'app-gestion',
-  imports: [Topbar, RouterLink, NgTemplateOutlet, Contador],
-  templateUrl: './gestion.html',
-  styleUrl: './gestion.scss',
+  selector: 'app-management',
+  imports: [Topbar, RouterLink, NgTemplateOutlet, Counter],
+  templateUrl: './management.html',
+  styleUrl: './management.scss',
 })
-export class Gestion {
-  private readonly ruta = inject(ActivatedRoute);
+export class Management {
+  private readonly route = inject(ActivatedRoute);
 
-  /** Se lee del parametro para que el link entre secciones funcione. */
-  private readonly parametros = toSignal(this.ruta.paramMap, {
-    initialValue: this.ruta.snapshot.paramMap,
+  /** It is read from the parameter so the link between sections works. */
+  private readonly params = toSignal(this.route.paramMap, {
+    initialValue: this.route.snapshot.paramMap,
   });
 
-  protected readonly seccion = computed(() => buscarSeccion(this.parametros().get('seccion')));
+  protected readonly section = computed(() => findSection(this.params().get('section')));
 }
 
-/** Titulo de la pestaña: el de la seccion, o el generico si no existe. */
-export const tituloGestion: ResolveFn<string> = (ruta) =>
-  buscarSeccion(ruta.paramMap.get('seccion'))?.titulo ?? 'Dashboard';
+/** Tab title: the section's, or the generic one if it does not exist. */
+export const managementTitle: ResolveFn<string> = (route) =>
+  findSection(route.paramMap.get('section'))?.title ?? 'Dashboard';

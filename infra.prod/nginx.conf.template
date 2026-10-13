@@ -1,6 +1,6 @@
-# Procesado por envsubst al arrancar la imagen oficial de nginx.
-# Reemplaza a proxy.conf.json en producción: /api, /notify_passengers y
-# /realtime quedan en el mismo origen que el frontend (cookie HttpOnly).
+# Processed by envsubst when the official nginx image starts.
+# Replaces proxy.conf.json in production: /api, /notify_passengers and
+# /realtime stay on the same origin as the frontend (HttpOnly cookie).
 
 map $http_upgrade $connection_upgrade {
     default upgrade;

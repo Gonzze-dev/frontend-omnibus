@@ -1,21 +1,21 @@
 <div class="home">
   <app-topbar />
 
-  @if (mostrarExito()) {
-    <app-toast animate.leave="ab-sale-arriba" mensaje="ID del pasaje cargado con éxito" (cerrado)="mostrarExito.set(false)" />
+  @if (showSuccess()) {
+    <app-toast animate.leave="ab-leave-up" message="ID del pasaje cargado con éxito" (closed)="showSuccess.set(false)" />
   }
 
-  @if (mostrarLlegada() && viaje()) {
-    <app-toast animate.leave="ab-sale-arriba"
-      [mensaje]="'¡Tu colectivo llegó! Plataforma ' + andenLlegada()"
-      [duracionMs]="6000"
-      (cerrado)="mostrarLlegada.set(false)"
+  @if (showArrival() && trip()) {
+    <app-toast animate.leave="ab-leave-up"
+      [message]="'¡Tu colectivo llegó! Plataforma ' + arrivalBay()"
+      [durationMs]="6000"
+      (closed)="showArrival.set(false)"
     />
   }
 
-  @if (viaje(); as v) {
-    <app-espera-viaje [viaje]="v" (buscarOtro)="buscarOtro()" />
-  } @else if (!restaurando()) {
+  @if (trip(); as t) {
+    <app-trip-wait [trip]="t" (searchAnother)="searchAnother()" />
+  } @else if (!restoring()) {
   <div class="ab-screen home__body">
     <section class="hero">
       <h1 class="hero__title">Rastrea tu viaje</h1>
@@ -25,7 +25,7 @@
       </p>
     </section>
 
-    <!-- Card 1: seleccion de terminal -->
+    <!-- Card 1: terminal selection -->
     <section class="terminal">
       <h2 class="terminal__title">Buscar Terminal</h2>
       <p class="terminal__hint">Buscá por nombre o filtrá por código postal</p>
@@ -36,45 +36,45 @@
                 stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
           <circle cx="8" cy="7" r="2" fill="currentColor" />
         </svg>
-        <!-- Combobox: se escribe para filtrar las terminales por nombre -->
+        <!-- Combobox: type to filter the terminals by name -->
         <input
           class="row__control row__control--select"
           type="text"
           role="combobox"
           aria-label="Terminal"
           aria-autocomplete="list"
-          aria-controls="lista-terminales"
+          aria-controls="terminal-list"
           autocomplete="off"
-          [attr.aria-expanded]="comboAbierto()"
-          [attr.aria-activedescendant]="comboAbierto() && opcionesTerminal().length ? 'terminal-' + opcionActiva() : null"
-          [placeholder]="nombreTerminal() || 'Elegí una terminal'"
-          [class.row__control--elegida]="!!nombreTerminal()"
-          [value]="comboAbierto() ? filtroNombre() : nombreTerminal()"
-          (focus)="abrirCombo()"
-          (click)="comboAbierto() || abrirCombo()"
-          (blur)="cerrarCombo()"
-          (input)="onFiltroNombre($any($event.target).value)"
-          (keydown)="onTeclaCombo($event)"
+          [attr.aria-expanded]="comboOpen()"
+          [attr.aria-activedescendant]="comboOpen() && terminalOptions().length ? 'terminal-' + activeOption() : null"
+          [placeholder]="terminalName() || 'Elegí una terminal'"
+          [class.row__control--selected]="!!terminalName()"
+          [value]="comboOpen() ? nameFilter() : terminalName()"
+          (focus)="openCombo()"
+          (click)="comboOpen() || openCombo()"
+          (blur)="closeCombo()"
+          (input)="onNameFilter($any($event.target).value)"
+          (keydown)="onComboKey($event)"
         />
       </div>
 
-      @if (comboAbierto()) {
-        <ul id="lista-terminales" class="combo" role="listbox" aria-label="Terminales">
-          @for (t of opcionesTerminal(); track t.uuid; let i = $index) {
+      @if (comboOpen()) {
+        <ul id="terminal-list" class="combo" role="listbox" aria-label="Terminales">
+          @for (t of terminalOptions(); track t.uuid; let i = $index) {
             <li
               [id]="'terminal-' + i"
-              class="combo__opcion"
+              class="combo__option"
               role="option"
-              [class.combo__opcion--activa]="i === opcionActiva()"
+              [class.combo__option--active]="i === activeOption()"
               [attr.aria-selected]="t.uuid === terminalId()"
-              (mousedown)="$event.preventDefault(); elegirTerminal(t)"
-              (mouseenter)="opcionActiva.set(i)"
+              (mousedown)="$event.preventDefault(); chooseTerminal(t)"
+              (mouseenter)="activeOption.set(i)"
             >
               <span>{{ t.name }}</span>
-              <span class="combo__cp">{{ t.postal_code }}</span>
+              <span class="combo__zip">{{ t.postal_code }}</span>
             </li>
           } @empty {
-            <li class="combo__vacio">No hay terminales que coincidan</li>
+            <li class="combo__empty">No hay terminales que coincidan</li>
           }
         </ul>
       }
@@ -91,12 +91,12 @@
           inputmode="numeric"
           placeholder="Código Postal"
           aria-label="Código postal"
-          [value]="filtroCp()"
-          (input)="onFiltroCp($any($event.target).value)"
+          [value]="zipFilter()"
+          (input)="onZipFilter($any($event.target).value)"
         />
       </div>
 
-      <!-- Marca de agua decorativa de la esquina inferior derecha -->
+      <!-- Decorative watermark in the bottom right corner -->
       <svg class="terminal__deco" width="90" height="95" viewBox="0 0 90 95" fill="none" aria-hidden="true">
         <path d="M10 95V25l35-20 35 20v70" stroke="currentColor" stroke-width="6" />
         <rect x="28" y="45" width="16" height="16" fill="currentColor" />
@@ -105,7 +105,7 @@
       </svg>
     </section>
 
-    <!-- Card 2: verificacion de ticket -->
+    <!-- Card 2: ticket verification -->
     <section class="ticket">
       <div class="ticket__head">
         <svg class="ab-icon ticket__icon" width="20" height="16" viewBox="0 0 20 16" fill="none" aria-hidden="true">
@@ -130,15 +130,15 @@
             autocapitalize="characters"
             [value]="ticket()"
             (input)="ticket.set($any($event.target).value)"
-            (keydown.enter)="buscarViaje()"
+            (keydown.enter)="searchTrip()"
           />
         </div>
-        @if (errorEscaneo()) {
-          <p class="ticket__error">{{ errorEscaneo() }}</p>
+        @if (scanError()) {
+          <p class="ticket__error">{{ scanError() }}</p>
         }
       </div>
 
-      <button class="ab-button ab-button--lg" type="button" (click)="escaneando.set(true)">
+      <button class="ab-button ab-button--lg" type="button" (click)="scanning.set(true)">
         <svg class="ab-icon" width="22" height="18" viewBox="0 0 22 18" fill="none" aria-hidden="true">
           <path d="M1 1v16M5 1v16M8 1v16M12 1v16M15 1v16M18 1v16M21 1v16"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" />
@@ -147,36 +147,36 @@
       </button>
     </section>
 
-    @if (escaneando()) {
+    @if (scanning()) {
       <app-qr-scanner
-        (codigoLeido)="onCodigoLeido($event)"
-        (cerrar)="escaneando.set(false)"
+        (codeRead)="onCodeRead($event)"
+        (close)="scanning.set(false)"
       />
     }
 
-    @if (errorBusqueda(); as error) {
+    @if (searchError(); as error) {
       <p class="home__error" role="alert">{{ error }}</p>
     }
 
     <button
       class="ab-button ab-button--lg home__cta"
       type="button"
-      [disabled]="buscando()"
-      (click)="buscarViaje()"
+      [disabled]="searching()"
+      (click)="searchTrip()"
     >
-      {{ buscando() ? 'Buscando…' : 'Buscar viaje' }}
+      {{ searching() ? 'Buscando…' : 'Buscar viaje' }}
     </button>
   </div>
   }
 
-  <dialog #dialogoPasaje class="popup" role="alertdialog" aria-labelledby="pasaje-titulo" aria-describedby="pasaje-texto"
-          (cancel)="$event.preventDefault(); aceptarErrorPasaje()">
-    @if (errorPasaje(); as error) {
-      <div class="popup__contenido">
-        <h2 class="popup__titulo" id="pasaje-titulo">{{ error.titulo }}</h2>
-        <p class="popup__texto" id="pasaje-texto">{{ error.mensaje }}</p>
-        <div class="popup__acciones">
-          <button class="ab-button popup__boton" type="button" autofocus (click)="aceptarErrorPasaje()">Aceptar</button>
+  <dialog #ticketDialog class="popup" role="alertdialog" aria-labelledby="ticket-title" aria-describedby="ticket-text"
+          (cancel)="$event.preventDefault(); acceptTicketError()">
+    @if (ticketError(); as error) {
+      <div class="popup__content">
+        <h2 class="popup__title" id="ticket-title">{{ error.title }}</h2>
+        <p class="popup__text" id="ticket-text">{{ error.message }}</p>
+        <div class="popup__actions">
+          <button class="ab-button popup__button" type="button" autofocus (click)="acceptTicketError()">Aceptar</button>
         </div>
       </div>
     }

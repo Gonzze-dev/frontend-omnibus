@@ -1,19 +1,19 @@
 import { Component, inject } from '@angular/core';
 import { Topbar } from '../../shared/topbar/topbar';
-import { NotificacionesStore } from '../../shared/notificaciones';
+import { NotificationsStore } from '../../shared/notifications';
 
 @Component({
-  selector: 'app-notificaciones',
+  selector: 'app-notifications',
   imports: [Topbar],
-  templateUrl: './notificaciones.html',
-  styleUrl: './notificaciones.scss',
+  templateUrl: './notifications.html',
+  styleUrl: './notifications.scss',
 })
-export class Notificaciones {
-  private readonly store = inject(NotificacionesStore);
+export class Notifications {
+  private readonly store = inject(NotificationsStore);
 
-  protected readonly lista = this.store.lista;
+  protected readonly list = this.store.list;
 
-  limpiar(): void {
-    this.store.limpiar();
+  clear(): void {
+    this.store.clear();
   }
 }

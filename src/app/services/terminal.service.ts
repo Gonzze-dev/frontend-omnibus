@@ -4,51 +4,51 @@ import { Observable } from 'rxjs';
 import { APP_CONFIG } from '../config';
 import {
   CreateTerminalRequest,
-  ListTerminalesParams,
-  ListTerminalesResponse,
+  ExternalTerminal,
+  ListTerminalsParams,
+  ListTerminalsResponse,
   Terminal,
-  TerminalExterna,
   UpdateTerminalRequest,
 } from '../models/terminal.model';
 
-/** ABM de terminales contra /api/super/terminals (solo super admin). */
+/** Terminals CRUD against /api/super/terminals (super admin only). */
 @Injectable({ providedIn: 'root' })
 export class TerminalService {
   private readonly http = inject(HttpClient);
   private readonly terminalsUrl = `${APP_CONFIG.apiUrl}/super/terminals`;
 
-  /** Listado publico (cualquier usuario autenticado) para selects de terminal. */
-  listarPublicas(): Observable<Terminal[]> {
+  /** Public list (any authenticated user) for terminal selects. */
+  listPublic(): Observable<Terminal[]> {
     return this.http.get<Terminal[]>(`${APP_CONFIG.apiUrl}/users/terminals`);
   }
 
-  listar(params: ListTerminalesParams = {}): Observable<ListTerminalesResponse> {
+  list(params: ListTerminalsParams = {}): Observable<ListTerminalsResponse> {
     let query = new HttpParams();
     if (params.page) query = query.set('page', params.page);
     if (params.limit) query = query.set('limit', params.limit);
     if (params.order) query = query.set('order', params.order);
 
-    return this.http.get<ListTerminalesResponse>(this.terminalsUrl, { params: query });
+    return this.http.get<ListTerminalsResponse>(this.terminalsUrl, { params: query });
   }
 
-  obtener(uuid: string): Observable<Terminal> {
+  get(uuid: string): Observable<Terminal> {
     return this.http.get<Terminal>(`${this.terminalsUrl}/${uuid}`);
   }
 
-  crear(datos: CreateTerminalRequest): Observable<Terminal> {
-    return this.http.post<Terminal>(this.terminalsUrl, datos);
+  create(data: CreateTerminalRequest): Observable<Terminal> {
+    return this.http.post<Terminal>(this.terminalsUrl, data);
   }
 
-  actualizar(uuid: string, datos: UpdateTerminalRequest): Observable<Terminal> {
-    return this.http.put<Terminal>(`${this.terminalsUrl}/${uuid}`, datos);
+  update(uuid: string, data: UpdateTerminalRequest): Observable<Terminal> {
+    return this.http.put<Terminal>(`${this.terminalsUrl}/${uuid}`, data);
   }
 
-  eliminar(uuid: string): Observable<void> {
+  delete(uuid: string): Observable<void> {
     return this.http.delete<void>(`${this.terminalsUrl}/${uuid}`);
   }
 
-  /** Terminales del sistema de pasajes, para elegir el id externo. */
-  listarExternas(): Observable<TerminalExterna[]> {
-    return this.http.get<TerminalExterna[]>(`${APP_CONFIG.apiUrl}/super/get-external-terminals`);
+  /** Terminals of the bus ticket system, to choose the external id. */
+  listExternal(): Observable<ExternalTerminal[]> {
+    return this.http.get<ExternalTerminal[]>(`${APP_CONFIG.apiUrl}/super/get-external-terminals`);
   }
 }

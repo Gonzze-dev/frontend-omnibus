@@ -12,79 +12,79 @@ import { switchMap } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { PasswordToggle } from '../../shared/password-toggle/password-toggle';
 
-type Campo = 'nombre' | 'apellido' | 'email' | 'password' | 'confirmar';
+type Field = 'firstName' | 'lastName' | 'email' | 'password' | 'confirm';
 
 @Component({
-  selector: 'app-registro',
+  selector: 'app-register',
   imports: [RouterLink, ReactiveFormsModule, PasswordToggle],
-  templateUrl: './registro.html',
-  styleUrl: './registro.scss',
+  templateUrl: './register.html',
+  styleUrl: './register.scss',
 })
-export class Registro {
+export class Register {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
 
   readonly form = inject(FormBuilder).nonNullable.group(
     {
-      nombre: ['', Validators.required],
-      apellido: ['', Validators.required],
+      firstName: ['', Validators.required],
+      lastName: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(8)]],
-      confirmar: ['', Validators.required],
+      confirm: ['', Validators.required],
     },
-    { validators: contrasenasIguales },
+    { validators: passwordsMatch },
   );
 
-  readonly cargando = signal(false);
+  readonly loading = signal(false);
   readonly error = signal<string | null>(null);
-  readonly mostrarPassword = signal(false);
-  readonly mostrarConfirmar = signal(false);
+  readonly showPassword = signal(false);
+  readonly showConfirm = signal(false);
 
-  crearCuenta(): void {
+  createAccount(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
 
-    this.cargando.set(true);
+    this.loading.set(true);
     this.error.set(null);
 
-    const { nombre, apellido, email, password } = this.form.getRawValue();
-    const credenciales = { email: email.trim(), password };
+    const { firstName, lastName, email, password } = this.form.getRawValue();
+    const credentials = { email: email.trim(), password };
 
-    // El registro no devuelve tokens: se inicia sesion con los mismos datos
+    // Registration returns no tokens: log in with the same data
     this.auth
-      .register({ first_name: nombre.trim(), last_name: apellido.trim(), ...credenciales })
-      .pipe(switchMap(() => this.auth.login(credenciales)))
+      .register({ first_name: firstName.trim(), last_name: lastName.trim(), ...credentials })
+      .pipe(switchMap(() => this.auth.login(credentials)))
       .subscribe({
         next: (user) => {
-          this.cargando.set(false);
-          this.router.navigateByUrl(this.auth.rutaInicio(user));
+          this.loading.set(false);
+          this.router.navigateByUrl(this.auth.homeRoute(user));
         },
         error: (err: HttpErrorResponse) => {
-          this.cargando.set(false);
-          this.error.set(mensajeError(err));
+          this.loading.set(false);
+          this.error.set(errorMessage(err));
         },
       });
   }
 
-  invalido(campo: Campo): boolean {
-    const control = this.form.controls[campo];
+  invalid(field: Field): boolean {
+    const control = this.form.controls[field];
     return control.invalid && control.touched;
   }
 
-  noCoinciden(): boolean {
-    return this.form.hasError('noCoinciden') && this.form.controls.confirmar.touched;
+  mismatch(): boolean {
+    return this.form.hasError('mismatch') && this.form.controls.confirm.touched;
   }
 }
 
-function contrasenasIguales(group: AbstractControl): ValidationErrors | null {
+function passwordsMatch(group: AbstractControl): ValidationErrors | null {
   const password = group.get('password')?.value;
-  const confirmar = group.get('confirmar')?.value;
-  return confirmar && password !== confirmar ? { noCoinciden: true } : null;
+  const confirm = group.get('confirm')?.value;
+  return confirm && password !== confirm ? { mismatch: true } : null;
 }
 
-function mensajeError(err: HttpErrorResponse): string {
+function errorMessage(err: HttpErrorResponse): string {
   switch (err.status) {
     case 0:
       return 'No se pudo conectar con el servidor. Intenta mas tarde.';
