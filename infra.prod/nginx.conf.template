@@ -7,6 +7,21 @@ map $http_upgrade $connection_upgrade {
     ''      close;
 }
 
+# Client IP: Railway's edge proxy appends it as the last X-Forwarded-For entry.
+# Without recursion, the entries the client may have sent itself are ignored.
+set_real_ip_from 0.0.0.0/0;
+set_real_ip_from ::/0;
+real_ip_header X-Forwarded-For;
+
+# Rate limits per client IP ($remote_addr after real_ip). The backend has
+# looser limits of its own as a second layer.
+limit_req_zone $binary_remote_addr zone=auth:10m rate=5r/m;
+limit_req_zone $binary_remote_addr zone=ocr:10m rate=10r/m;
+limit_req_zone $binary_remote_addr zone=api:10m rate=10r/s;
+limit_conn_zone $binary_remote_addr zone=realtime:10m;
+limit_req_status 429;
+limit_conn_status 429;
+
 server {
     listen ${PORT};
     listen [::]:${PORT};
@@ -23,15 +38,37 @@ server {
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $http_x_forwarded_proto;
 
+    # Login, register and password recovery: brute force and mass emails.
+    location /api/auth/ {
+        limit_req zone=auth burst=5 nodelay;
+        proxy_pass ${BACKEND_UPSTREAM};
+    }
+
+    # The app calls these on every load / token expiry: general limit.
+    location ~ ^/api/auth/(refresh|logout)$ {
+        limit_req zone=api burst=40 nodelay;
+        proxy_pass ${BACKEND_UPSTREAM};
+    }
+
+    # Each read runs the OCR model (CPU-heavy).
+    location = /api/admin/license-plate/read {
+        limit_req zone=ocr burst=3 nodelay;
+        proxy_pass ${BACKEND_UPSTREAM};
+    }
+
     location /api/ {
+        limit_req zone=api burst=40 nodelay;
         proxy_pass ${BACKEND_UPSTREAM};
     }
 
     location /notify_passengers {
+        limit_req zone=api burst=40 nodelay;
         proxy_pass ${BACKEND_UPSTREAM};
     }
 
     location /realtime {
+        limit_req zone=api burst=40 nodelay;
+        limit_conn realtime 20;
         proxy_pass ${REALTIME_UPSTREAM};
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection $connection_upgrade;
