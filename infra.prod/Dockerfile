@@ -25,7 +25,10 @@ COPY --chmod=755 infra.prod/40-env-js.sh /docker-entrypoint.d/40-env-js.sh
 # The script may have CRLF endings if the context comes from a Windows checkout.
 RUN sed -i 's/\r$//' /docker-entrypoint.d/40-env-js.sh
 
-ENV PORT=80 \
+# NGINX_ENTRYPOINT_LOCAL_RESOLVERS makes the image export NGINX_LOCAL_RESOLVERS
+# (the container's DNS servers) for the template's resolver directive.
+ENV NGINX_ENTRYPOINT_LOCAL_RESOLVERS=1 \
+    PORT=80 \
     BACKEND_UPSTREAM=http://localhost:4989 \
     REALTIME_UPSTREAM=http://localhost:4988 \
     REALTIME_API_KEY=

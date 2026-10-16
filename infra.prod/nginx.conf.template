@@ -32,6 +32,14 @@ server {
 
     client_max_body_size 20m;
 
+    # With the upstreams in variables nginx resolves them at request time (every
+    # 10s at most) instead of only on startup: on each redeploy the backend and
+    # the hub get a new private IP. NGINX_LOCAL_RESOLVERS comes from /etc/resolv.conf.
+    resolver ${NGINX_LOCAL_RESOLVERS} valid=10s;
+    resolver_timeout 5s;
+    set $backend_upstream ${BACKEND_UPSTREAM};
+    set $realtime_upstream ${REALTIME_UPSTREAM};
+
     proxy_http_version 1.1;
     proxy_ssl_server_name on;
     proxy_set_header X-Real-IP $remote_addr;
@@ -41,35 +49,35 @@ server {
     # Login, register and password recovery: brute force and mass emails.
     location /api/auth/ {
         limit_req zone=auth burst=5 nodelay;
-        proxy_pass ${BACKEND_UPSTREAM};
+        proxy_pass $backend_upstream;
     }
 
     # The app calls these on every load / token expiry: general limit.
     location ~ ^/api/auth/(refresh|logout)$ {
         limit_req zone=api burst=40 nodelay;
-        proxy_pass ${BACKEND_UPSTREAM};
+        proxy_pass $backend_upstream;
     }
 
     # Each read runs the OCR model (CPU-heavy).
     location = /api/admin/license-plate/read {
         limit_req zone=ocr burst=3 nodelay;
-        proxy_pass ${BACKEND_UPSTREAM};
+        proxy_pass $backend_upstream;
     }
 
     location /api/ {
         limit_req zone=api burst=40 nodelay;
-        proxy_pass ${BACKEND_UPSTREAM};
+        proxy_pass $backend_upstream;
     }
 
     location /notify_passengers {
         limit_req zone=api burst=40 nodelay;
-        proxy_pass ${BACKEND_UPSTREAM};
+        proxy_pass $backend_upstream;
     }
 
     location /realtime {
         limit_req zone=api burst=40 nodelay;
         limit_conn realtime 20;
-        proxy_pass ${REALTIME_UPSTREAM};
+        proxy_pass $realtime_upstream;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection $connection_upgrade;
         proxy_read_timeout 3600s;
