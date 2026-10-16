@@ -1,4 +1,4 @@
-import { Component, computed, inject, model } from '@angular/core';
+import { Component, ElementRef, computed, effect, inject, model, viewChild } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 
@@ -18,6 +18,25 @@ export class Sidebar {
   readonly open = model(false);
 
   protected readonly isAdmin = computed(() => this.auth.hasRole('admin', 'super_admin'));
+
+  private readonly panel = viewChild.required<ElementRef<HTMLElement>>('panel');
+  /** Element that had focus before opening (the menu button): it gets it back when closing. */
+  private opener: HTMLElement | null = null;
+
+  constructor() {
+    // Keyboard and screen readers follow the drawer: when it opens focus goes to
+    // its first link, and when it closes it goes back to whoever opened it.
+    effect(() => {
+      if (this.open()) {
+        this.opener = document.activeElement as HTMLElement | null;
+        // Waits for the panel to lose `inert`, which blocks focus
+        setTimeout(() => this.panel().nativeElement.querySelector<HTMLElement>('a, button')?.focus());
+      } else if (this.opener) {
+        this.opener.focus();
+        this.opener = null;
+      }
+    });
+  }
 
   close(): void {
     this.open.set(false);

@@ -40,6 +40,11 @@ server {
         proxy_buffering off;
     }
 
+    # Generated on startup from the environment: must not take the 1-year cache below.
+    location = /env.js {
+        add_header Cache-Control "no-store";
+    }
+
     location ~* \.(?:js|css|woff2?|ttf|svg|png|jpe?g|gif|ico|webp)$ {
         expires 1y;
         add_header Cache-Control "public, immutable";

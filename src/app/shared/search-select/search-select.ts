@@ -40,6 +40,8 @@ export class SearchSelect implements ControlValueAccessor {
   readonly placeholder = input('Buscar...');
   readonly inputId = input<string>();
   readonly invalid = input(false);
+  /** Ids of the texts that describe the field (e.g. its validation error). */
+  readonly describedBy = input<string>();
 
   protected readonly value = signal('');
   protected readonly text = signal('');

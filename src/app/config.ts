@@ -4,11 +4,15 @@
  * to the SignalR hub (localhost:4988) through proxy.conf.json, so the refresh token's
  * HttpOnly cookie stays on the same origin as the frontend.
  */
+
+/** Runtime values from env.js (written by the nginx container on startup in production). */
+const env = (window as unknown as { __env?: { realtimeApiKey?: string } }).__env ?? {};
+
 export const APP_CONFIG = {
   apiUrl: '/api',
   /** Bus arrival notice; outside /api because the camera uses it too. */
   notifyPassengersUrl: '/notify_passengers',
   realtimeUrl: '/realtime',
-  /** The hub rejects connections without `?apiKey=` (RealTime/appsettings.json: ApiKey). */
-  realtimeApiKey: 'agag2J26sgJ2SAV6ATAJ6aG26sg26JG',
+  /** The hub rejects connections without `?apiKey=` (RealTime ApiKey); REALTIME_API_KEY in production. */
+  realtimeApiKey: env.realtimeApiKey ?? '',
 };

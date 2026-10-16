@@ -253,6 +253,19 @@ body {
 .ab-password__toggle:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: -2px; border-radius: var(--ab-r-input); }
 .ab-password__toggle svg { width: 20px; height: 20px; }
 
+/* Text only for screen readers: it is read but not seen */
+.ab-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* Message under an invalid field */
 .ab-field-error {
   margin: 0;

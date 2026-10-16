@@ -1,6 +1,7 @@
 <div class="search">
-  <input #field class="search__input" type="text" role="combobox" autocomplete="off"
+  <input #field class="search__input" type="text" role="combobox" autocomplete="off" aria-autocomplete="list"
          [id]="inputId()" [placeholder]="placeholder()" [value]="text()" [disabled]="disabled()"
+         [attr.aria-describedby]="describedBy() || null"
          [attr.aria-expanded]="open()" [attr.aria-controls]="listId"
          [attr.aria-activedescendant]="open() && active() >= 0 ? listId + '-' + active() : null"
          [attr.aria-invalid]="invalid()"

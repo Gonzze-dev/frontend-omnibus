@@ -1,4 +1,4 @@
-<div class="ab-screen login">
+<div role="main" class="ab-screen login">
   <!-- Brand: the isotype comes in alone in the center and then slides to the left
        while the name unfolds (see .mark in login.scss). -->
   <h1 class="ab-brand login__brand mark">
@@ -26,10 +26,10 @@
     <form class="login__form" [formGroup]="form" (ngSubmit)="signIn()" novalidate>
       <div class="ab-field">
         <label class="ab-label" for="email">Email</label>
-        <input class="ab-input" id="email" type="email" placeholder="nombre@ejemplo.com" autocomplete="email"
+        <input class="ab-input" id="email" aria-describedby="email-error" type="email" placeholder="nombre@ejemplo.com" autocomplete="email"
                formControlName="email" [attr.aria-invalid]="invalid('email')" />
         @if (invalid('email')) {
-          <p class="ab-field-error">Ingresá un email válido.</p>
+          <p class="ab-field-error" id="email-error">Ingresá un email válido.</p>
         }
       </div>
 
@@ -39,13 +39,13 @@
           <a class="ab-link login__forgot" routerLink="/forgot-password">¿Olvidaste tu contraseña?</a>
         </div>
         <div class="ab-password">
-          <input class="ab-input" id="password" [type]="showPassword() ? 'text' : 'password'"
+          <input class="ab-input" id="password" aria-describedby="password-error" [type]="showPassword() ? 'text' : 'password'"
                  placeholder="••••••••" autocomplete="current-password"
                  formControlName="password" [attr.aria-invalid]="invalid('password')" />
           <app-password-toggle [visible]="showPassword()" (visibleChange)="showPassword.set($event)" />
         </div>
         @if (invalid('password')) {
-          <p class="ab-field-error">Ingresá tu contraseña.</p>
+          <p class="ab-field-error" id="password-error">Ingresá tu contraseña.</p>
         }
       </div>
 

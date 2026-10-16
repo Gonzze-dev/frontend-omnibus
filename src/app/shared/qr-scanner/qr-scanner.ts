@@ -22,10 +22,14 @@ import jsQR from 'jsqr';
   imports: [],
   templateUrl: './qr-scanner.html',
   styleUrl: './qr-scanner.scss',
+  host: {
+    '(document:keydown.escape)': 'closeModal()',
+  },
 })
 export class QrScanner implements AfterViewInit, OnDestroy {
   @ViewChild('video') private readonly videoRef?: ElementRef<HTMLVideoElement>;
   @ViewChild('canvas') private readonly canvasRef?: ElementRef<HTMLCanvasElement>;
+  @ViewChild('closeButton') private readonly closeButtonRef?: ElementRef<HTMLButtonElement>;
 
   @Output() readonly codeRead = new EventEmitter<string>();
   @Output() readonly close = new EventEmitter<void>();
@@ -40,16 +44,21 @@ export class QrScanner implements AfterViewInit, OnDestroy {
   private stream: MediaStream | null = null;
   private frameId = 0;
   private closeTimer?: ReturnType<typeof setTimeout>;
+  /** Element that had focus before opening (the "Escanear QR" button): it gets it back when closing. */
+  private readonly opener = document.activeElement as HTMLElement | null;
 
   /** Time the confirmation is shown before closing the modal. */
   private static readonly READ_PAUSE_MS = 600;
 
   async ngAfterViewInit(): Promise<void> {
+    // Focus goes into the modal so the keyboard does not stay on the page behind it
+    this.closeButtonRef?.nativeElement.focus();
     await this.startCamera();
   }
 
   ngOnDestroy(): void {
     this.stopCamera();
+    this.opener?.focus();
   }
 
   private async startCamera(): Promise<void> {

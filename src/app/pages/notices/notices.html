@@ -1,6 +1,6 @@
 <app-topbar />
 
-<div class="ab-screen crud tone--orange">
+<div role="main" class="ab-screen crud tone--orange">
   @if (action() === 'list') {
     <a class="crud__back" routerLink="/dashboard">
     <svg class="ab-icon" width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
@@ -167,11 +167,11 @@
         @if (!isGlobal()) {
           <div class="ab-field">
             <label class="ab-label" for="notice-terminal">Terminal</label>
-            <app-search-select inputId="notice-terminal" formControlName="terminal"
+            <app-search-select inputId="notice-terminal" describedBy="notice-terminal-error" formControlName="terminal"
                                placeholder="Buscá una terminal"
                                [options]="terminalOptions()" [invalid]="noticeInvalid('terminal')" />
             @if (noticeInvalid('terminal')) {
-              <p class="ab-field-error">Elegí una terminal.</p>
+              <p class="ab-field-error" id="notice-terminal-error">Elegí una terminal.</p>
             }
           </div>
         }
@@ -179,13 +179,13 @@
         @if (isArrival()) {
           <div class="ab-field">
             <label class="ab-label" for="arrival-bay">Andén</label>
-            <app-search-select inputId="arrival-bay" formControlName="bay"
+            <app-search-select inputId="arrival-bay" describedBy="arrival-bay-error" formControlName="bay"
                                [placeholder]="loadingBays() ? 'Cargando andenes...' : bays().length ? 'Buscá un andén' : 'La terminal no tiene andenes'"
                                [options]="bayOptions()" [invalid]="noticeInvalid('bay')" />
             @if (baysError()) {
-              <p class="ab-field-error" role="alert">{{ baysError() }}</p>
+              <p class="ab-field-error" id="arrival-bay-error" role="alert">{{ baysError() }}</p>
             } @else if (noticeInvalid('bay')) {
-              <p class="ab-field-error">Elegí el andén donde llegó el colectivo.</p>
+              <p class="ab-field-error" id="arrival-bay-error">Elegí el andén donde llegó el colectivo.</p>
             }
           </div>
 
@@ -194,23 +194,23 @@
             <div class="crud__row">
               <div class="ab-field">
                 <label class="ab-label" for="notice-lifetime">Duración (minutos)</label>
-                <input class="ab-input" id="notice-lifetime" type="number" min="1" placeholder="12"
+                <input class="ab-input" id="notice-lifetime" aria-describedby="notice-lifetime-error" type="number" min="1" placeholder="12"
                        formControlName="lifetime" [attr.aria-invalid]="noticeInvalid('lifetime')" />
                 @if (noticeInvalid('lifetime')) {
-                  <p class="ab-field-error">Ingresá una duración de al menos 1 minuto.</p>
+                  <p class="ab-field-error" id="notice-lifetime-error">Ingresá una duración de al menos 1 minuto.</p>
                 }
               </div>
 
               <div class="ab-field">
                 <label class="ab-label" for="arrival-plate">Patente del colectivo</label>
                 <div class="plate-row">
-                  <input class="ab-input" id="arrival-plate" type="text" placeholder="AB 123 CD"
+                  <input class="ab-input" id="arrival-plate" aria-describedby="arrival-plate-error" type="text" placeholder="AB 123 CD"
                          autocomplete="off" formControlName="plate"
                          [attr.aria-invalid]="noticeInvalid('plate')" />
                   <app-plate-camera (plateRead)="onPlateRead($event)" />
                 </div>
                 @if (noticeInvalid('plate')) {
-                  <p class="ab-field-error">Ingresá la patente del colectivo.</p>
+                  <p class="ab-field-error" id="arrival-plate-error">Ingresá la patente del colectivo.</p>
                 }
               </div>
             </div>
@@ -223,20 +223,20 @@
             <div class="crud__row">
               <div class="ab-field">
                 <label class="ab-label" for="delay-plate">Patente del colectivo</label>
-                <input class="ab-input" id="delay-plate" type="text" placeholder="AB 123 CD"
+                <input class="ab-input" id="delay-plate" aria-describedby="delay-plate-error" type="text" placeholder="AB 123 CD"
                        autocomplete="off" formControlName="plate"
                        [attr.aria-invalid]="noticeInvalid('plate')" />
                 @if (noticeInvalid('plate')) {
-                  <p class="ab-field-error">Ingresá la patente del colectivo.</p>
+                  <p class="ab-field-error" id="delay-plate-error">Ingresá la patente del colectivo.</p>
                 }
               </div>
 
               <div class="ab-field">
                 <label class="ab-label" for="delay-date">Fecha del viaje</label>
-                <input class="ab-input" id="delay-date" type="date" formControlName="date"
+                <input class="ab-input" id="delay-date" aria-describedby="delay-date-error" type="date" formControlName="date"
                        [attr.aria-invalid]="noticeInvalid('date')" />
                 @if (noticeInvalid('date')) {
-                  <p class="ab-field-error">Elegí la fecha del viaje.</p>
+                  <p class="ab-field-error" id="delay-date-error">Elegí la fecha del viaje.</p>
                 }
               </div>
             </div>
@@ -245,11 +245,11 @@
         } @else {
           <div class="ab-field">
             <label class="ab-label" for="notice-message">Mensaje</label>
-            <textarea class="crud__textarea" id="notice-message" formControlName="message"
+            <textarea class="crud__textarea" id="notice-message" aria-describedby="notice-message-error" formControlName="message"
                       [attr.aria-invalid]="noticeInvalid('message')"
                       placeholder="Ej: El andén A3 permanece cerrado por mantenimiento."></textarea>
             @if (noticeInvalid('message')) {
-              <p class="ab-field-error">Escribí el mensaje del aviso.</p>
+              <p class="ab-field-error" id="notice-message-error">Escribí el mensaje del aviso.</p>
             }
           </div>
         }
@@ -261,20 +261,20 @@
               @if (isDelay()) {
                 <div class="ab-field">
                   <label class="ab-label" for="delay-minutes">Demora (minutos)</label>
-                  <input class="ab-input" id="delay-minutes" type="number" min="1" placeholder="15"
+                  <input class="ab-input" id="delay-minutes" aria-describedby="delay-minutes-error" type="number" min="1" placeholder="15"
                          formControlName="delay" [attr.aria-invalid]="noticeInvalid('delay')" />
                   @if (noticeInvalid('delay')) {
-                    <p class="ab-field-error">Ingresá una demora de al menos 1 minuto.</p>
+                    <p class="ab-field-error" id="delay-minutes-error">Ingresá una demora de al menos 1 minuto.</p>
                   }
                 </div>
               }
 
               <div class="ab-field">
                 <label class="ab-label" for="notice-lifetime">Duración (minutos)</label>
-                <input class="ab-input" id="notice-lifetime" type="number" min="1" placeholder="12"
+                <input class="ab-input" id="notice-lifetime" aria-describedby="notice-lifetime-error" type="number" min="1" placeholder="12"
                        formControlName="lifetime" [attr.aria-invalid]="noticeInvalid('lifetime')" />
                 @if (noticeInvalid('lifetime')) {
-                  <p class="ab-field-error">Ingresá una duración de al menos 1 minuto.</p>
+                  <p class="ab-field-error" id="notice-lifetime-error">Ingresá una duración de al menos 1 minuto.</p>
                 }
               </div>
             </div>

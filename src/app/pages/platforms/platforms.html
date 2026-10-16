@@ -1,6 +1,6 @@
 <app-topbar />
 
-<div class="ab-screen crud tone--indigo">
+<div role="main" class="ab-screen crud tone--indigo">
   <a class="crud__back" routerLink="/dashboard">
     <svg class="ab-icon" width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
       <path d="M15 7H1M1 7l5.5-5.5M1 7l5.5 5.5" stroke="currentColor" stroke-width="1.8"
@@ -71,7 +71,8 @@
                     <li class="table__row table__row--selectable"
                         (click)="openEdit(p.code)"
                         (keydown.enter)="openEdit(p.code)"
-                        tabindex="0" role="button" aria-label="Editar plataforma">
+                        (keydown.space)="$event.preventDefault(); openEdit(p.code)"
+                        tabindex="0" role="button" [attr.aria-label]="'Editar andén ' + p.bay">
                       <span class="table__cell">
                         <span class="table__line">{{ p.bay }}</span>
                         <span class="table__sub">Código {{ p.code }}</span>
@@ -83,7 +84,8 @@
                       <span class="table__actions">
                         <button class="table__icon table__icon--crimson" type="button"
                                 (click)="$event.stopPropagation(); confirmDelete(p.code, p.bay, g.name)"
-                                (keydown.enter)="$event.stopPropagation()" aria-label="Eliminar plataforma">
+                                (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()"
+                                [attr.aria-label]="'Eliminar andén ' + p.bay">
                           <svg width="18" height="18" viewBox="0 0 22 22" fill="none" aria-hidden="true">
                             <path d="M3 5.5h16M8.5 5.5V3h5v2.5M5.5 5.5 6.5 19h9l1-13.5" stroke="currentColor"
                                   stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
@@ -208,7 +210,7 @@
       <form class="crud__form" [formGroup]="createForm" (ngSubmit)="create()" novalidate>
         <div class="ab-field">
           <label class="ab-label" for="terminal-create">Terminal</label>
-          <select class="crud__select" id="terminal-create" formControlName="bus_terminal_id"
+          <select class="crud__select" id="terminal-create" aria-describedby="terminal-create-error" formControlName="bus_terminal_id"
                    [attr.aria-invalid]="createInvalid('bus_terminal_id')">
             <option value="" disabled>Elegí una terminal</option>
             @for (t of terminals(); track t.uuid) {
@@ -216,16 +218,16 @@
             }
           </select>
           @if (createInvalid('bus_terminal_id')) {
-            <p class="ab-field-error">Elegí una terminal.</p>
+            <p class="ab-field-error" id="terminal-create-error">Elegí una terminal.</p>
           }
         </div>
 
         <div class="ab-field">
           <label class="ab-label" for="bay-create">Andén</label>
-          <input class="ab-input" id="bay-create" type="text" placeholder="Ej: A20" autocomplete="off"
+          <input class="ab-input" id="bay-create" aria-describedby="bay-create-error" type="text" placeholder="Ej: A20" autocomplete="off"
                  formControlName="bay" [attr.aria-invalid]="createInvalid('bay')" />
           @if (createInvalid('bay')) {
-            <p class="ab-field-error">Ingresá el andén.</p>
+            <p class="ab-field-error" id="bay-create-error">Ingresá el andén.</p>
           }
         </div>
 
@@ -299,10 +301,10 @@
 
           <div class="ab-field">
             <label class="ab-label" for="bay-edit">Andén</label>
-            <input class="ab-input" id="bay-edit" type="text" autocomplete="off"
+            <input class="ab-input" id="bay-edit" aria-describedby="bay-edit-error" type="text" autocomplete="off"
                    formControlName="bay" [attr.aria-invalid]="editInvalid('bay')" />
             @if (editInvalid('bay')) {
-              <p class="ab-field-error">Ingresá el andén.</p>
+              <p class="ab-field-error" id="bay-edit-error">Ingresá el andén.</p>
             }
           </div>
 

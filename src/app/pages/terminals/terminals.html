@@ -1,6 +1,6 @@
 <app-topbar />
 
-<div class="ab-screen crud tone--crimson">
+<div role="main" class="ab-screen crud tone--crimson">
   <a class="crud__back" routerLink="/dashboard">
     <svg class="ab-icon" width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
       <path d="M15 7H1M1 7l5.5-5.5M1 7l5.5 5.5" stroke="currentColor" stroke-width="1.8"
@@ -54,7 +54,8 @@
             <li class="table__row table__row--selectable"
                 (click)="openEdit(t.uuid)"
                 (keydown.enter)="openEdit(t.uuid)"
-                tabindex="0" role="button" aria-label="Editar terminal">
+                (keydown.space)="$event.preventDefault(); openEdit(t.uuid)"
+                tabindex="0" role="button" [attr.aria-label]="'Editar terminal ' + t.name">
               <span class="table__cell">
                 <span class="table__line">{{ t.name }}</span>
                 <span class="table__sub">{{ t.uuid }}</span>
@@ -66,7 +67,8 @@
               <span class="table__actions">
                 <button class="table__icon table__icon--crimson" type="button"
                         (click)="$event.stopPropagation(); confirmDelete(t)"
-                        (keydown.enter)="$event.stopPropagation()" aria-label="Eliminar terminal">
+                        (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()"
+                        [attr.aria-label]="'Eliminar terminal ' + t.name">
                   <svg width="18" height="18" viewBox="0 0 22 22" fill="none" aria-hidden="true">
                     <path d="M3 5.5h16M8.5 5.5V3h5v2.5M5.5 5.5 6.5 19h9l1-13.5" stroke="currentColor"
                           stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
@@ -187,34 +189,34 @@
       <form class="crud__form" [formGroup]="createForm" (ngSubmit)="create()" novalidate>
         <div class="ab-field">
           <label class="ab-label" for="name-create">Nombre</label>
-          <input class="ab-input" id="name-create" type="text" placeholder="Ej: Terminal Retiro BS AS" autocomplete="off"
+          <input class="ab-input" id="name-create" aria-describedby="name-create-error" type="text" placeholder="Ej: Terminal Retiro BS AS" autocomplete="off"
                  formControlName="name" [attr.aria-invalid]="createInvalid('name')" />
           @if (createInvalid('name')) {
-            <p class="ab-field-error">Ingresá el nombre.</p>
+            <p class="ab-field-error" id="name-create-error">Ingresá el nombre.</p>
           }
         </div>
 
         <div class="ab-field">
           <label class="ab-label" for="city-create">Ciudad</label>
-          <app-search-select inputId="city-create" formControlName="postal_code"
+          <app-search-select inputId="city-create" describedBy="city-create-error" formControlName="postal_code"
                              placeholder="Buscá una ciudad por nombre o código postal"
                              [options]="cityOptions()" [invalid]="createInvalid('postal_code')" />
           @if (createInvalid('postal_code')) {
-            <p class="ab-field-error">Elegí una ciudad.</p>
+            <p class="ab-field-error" id="city-create-error">Elegí una ciudad.</p>
           }
         </div>
 
         <div class="ab-field">
           <label class="ab-label" for="external-create">Terminal externa</label>
-          <app-search-select inputId="external-create" formControlName="external_terminal_id"
+          <app-search-select inputId="external-create" describedBy="external-create-load-error external-create-error" formControlName="external_terminal_id"
                              placeholder="Buscá una terminal externa"
                              [options]="externalOptions()" [invalid]="createInvalid('external_terminal_id')" />
           <p class="crud__note">Es la terminal en el sistema de pasajes. No puede estar asignada a otra terminal.</p>
           @if (externalsError()) {
-            <p class="ab-field-error">{{ externalsError() }}</p>
+            <p class="ab-field-error" id="external-create-load-error">{{ externalsError() }}</p>
           }
           @if (createInvalid('external_terminal_id')) {
-            <p class="ab-field-error">Elegí una terminal externa.</p>
+            <p class="ab-field-error" id="external-create-error">Elegí una terminal externa.</p>
           }
         </div>
 
@@ -260,33 +262,33 @@
         <form class="crud__form" [formGroup]="editForm" (ngSubmit)="saveEdit()" novalidate>
           <div class="ab-field">
             <label class="ab-label" for="name-edit">Nombre</label>
-            <input class="ab-input" id="name-edit" type="text" autocomplete="off"
+            <input class="ab-input" id="name-edit" aria-describedby="name-edit-error" type="text" autocomplete="off"
                    formControlName="name" [attr.aria-invalid]="editInvalid('name')" />
             @if (editInvalid('name')) {
-              <p class="ab-field-error">Ingresá el nombre.</p>
+              <p class="ab-field-error" id="name-edit-error">Ingresá el nombre.</p>
             }
           </div>
 
           <div class="ab-field">
             <label class="ab-label" for="city-edit">Ciudad</label>
-            <app-search-select inputId="city-edit" formControlName="postal_code"
+            <app-search-select inputId="city-edit" describedBy="city-edit-error" formControlName="postal_code"
                                placeholder="Buscá una ciudad por nombre o código postal"
                                [options]="cityOptions()" [invalid]="editInvalid('postal_code')" />
             @if (editInvalid('postal_code')) {
-              <p class="ab-field-error">Elegí una ciudad.</p>
+              <p class="ab-field-error" id="city-edit-error">Elegí una ciudad.</p>
             }
           </div>
 
           <div class="ab-field">
             <label class="ab-label" for="external-edit">Terminal externa</label>
-            <app-search-select inputId="external-edit" formControlName="external_terminal_id"
+            <app-search-select inputId="external-edit" describedBy="external-edit-load-error external-edit-error" formControlName="external_terminal_id"
                                placeholder="Buscá una terminal externa"
                                [options]="externalOptions()" [invalid]="editInvalid('external_terminal_id')" />
             @if (externalsError()) {
-              <p class="ab-field-error">{{ externalsError() }}</p>
+              <p class="ab-field-error" id="external-edit-load-error">{{ externalsError() }}</p>
             }
             @if (editInvalid('external_terminal_id')) {
-              <p class="ab-field-error">Elegí una terminal externa.</p>
+              <p class="ab-field-error" id="external-edit-error">Elegí una terminal externa.</p>
             }
           </div>
 

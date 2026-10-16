@@ -1,4 +1,4 @@
-<div class="ab-screen wait">
+<div role="main" class="ab-screen wait">
   <h1 class="wait__title">Detalles del viaje</h1>
 
   <!-- Bus status notice -->
@@ -29,7 +29,7 @@
   }
 
   @if (!connected()) {
-    <p class="wait__offline">
+    <p class="wait__offline" role="status">
       Sin conexión en tiempo real. Igual te enviamos un mail cuando llegue el colectivo.
     </p>
   }
@@ -42,7 +42,9 @@
         @if (mapsUrl(); as url) {
           <span class="platform__actions">
             <button class="platform__link" type="button" (click)="showOnMap()">Ver en mapa</button>
-            <a class="platform__link" [href]="url" target="_blank" rel="noopener">Cómo llegar</a>
+            <a class="platform__link" [href]="url" target="_blank" rel="noopener">
+              Cómo llegar<span class="ab-sr-only"> (se abre en una pestaña nueva)</span>
+            </a>
           </span>
         }
       </div>
