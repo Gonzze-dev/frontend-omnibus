@@ -36,6 +36,13 @@ server {
 
     client_max_body_size 20m;
 
+    # The JS bundles shrink to about a quarter (html is always compressed once on).
+    gzip on;
+    gzip_vary on;
+    gzip_comp_level 6;
+    gzip_min_length 1024;
+    gzip_types text/css text/plain text/xml application/javascript application/json image/svg+xml;
+
     # With the upstreams in variables nginx resolves them at request time (every
     # 10s at most) instead of only on startup: on each redeploy the backend and
     # the hub get a new private IP. NGINX_LOCAL_RESOLVERS comes from /etc/resolv.conf.
@@ -108,16 +115,19 @@ server {
 
     # Screens behind login (and the reset link, which carries a token): out of
     # search results. robots.txt must not disallow them, or crawlers never see this.
-    # index.html is served from this block (not as a try_files fallback, which
+    # The SPA shell is served from this block (not as a try_files fallback, which
     # would jump to "location /" and drop these headers).
     location ~ ^/(home|dashboard|profile|notifications|reset-password)(/|$) {
         add_header Cache-Control "no-cache";
         add_header X-Robots-Tag "noindex, nofollow";
-        try_files /index.html =404;
+        try_files /index.csr.html =404;
     }
 
+    # /login, /register and /forgot-password are prerendered at build time
+    # (<route>/index.html); any other route gets the SPA shell (index.csr.html).
+    # "$uri/index.html" instead of "$uri/" so nginx does not redirect /login to /login/.
     location / {
         add_header Cache-Control "no-cache";
-        try_files $uri $uri/ /index.html;
+        try_files $uri $uri/index.html /index.csr.html;
     }
 }

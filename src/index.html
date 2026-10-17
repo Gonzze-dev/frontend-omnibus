@@ -23,6 +23,21 @@
   <link rel="icon" type="image/x-icon" href="favicon.ico?v=2">
   <link rel="apple-touch-icon" href="favicon.png?v=2">
   <script src="env.js"></script>
+  <!-- Login splash (login.scss): decided here, before the first paint, so the
+       prerendered login does not start the animation and cut it once the app
+       boots. It plays on a fresh load of the entry screen at most once every
+       24 h; if storage is blocked it plays every time. -->
+  <script>
+    (function () {
+      if (!/^\/(login\/?)?$/.test(location.pathname)) return;
+      var key = 'login_intro_until', now = Date.now();
+      try {
+        if (Number(localStorage.getItem(key)) > now) return;
+        localStorage.setItem(key, String(now + 24 * 60 * 60 * 1000));
+      } catch (e) {}
+      document.documentElement.classList.add('login-intro');
+    })();
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600&family=Inter:wght@400;500;600;700&family=Manrope:wght@700;800&display=swap" rel="stylesheet">

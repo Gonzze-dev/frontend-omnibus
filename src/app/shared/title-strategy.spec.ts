@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { TitleStrategy, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
+import { APP_CONFIG } from '../config';
 import { BrandTitleStrategy } from './title-strategy';
 
 @Component({ template: '' })
@@ -38,6 +39,6 @@ describe('BrandTitleStrategy', () => {
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/login?returnUrl=%2Fhome');
     const link = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]');
-    expect(link?.href).toBe(`${location.origin}/login`);
+    expect(link?.href).toBe(`${APP_CONFIG.siteUrl}/login`);
   });
 });

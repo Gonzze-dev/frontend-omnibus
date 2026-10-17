@@ -1,14 +1,16 @@
 import { DOCUMENT, Injectable, inject } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { RouterStateSnapshot, TitleStrategy } from '@angular/router';
+import { APP_CONFIG } from '../config';
 
 const BRAND = 'Ya llegó';
 
 /**
  * Sets the page title and the canonical URL on every navigation.
  * The title carries the brand ("Iniciar sesión · Ya llegó") so browser tabs
- * and search results show whose screen it is. The canonical drops the query
- * string and fragment, so links with tokens or filters count as one page.
+ * and search results show whose screen it is. The canonical always points to
+ * the public site (also when prerendering, where there is no real host) and
+ * drops the query string, so links with tokens or filters count as one page.
  */
 @Injectable({ providedIn: 'root' })
 export class BrandTitleStrategy extends TitleStrategy {
@@ -29,6 +31,6 @@ export class BrandTitleStrategy extends TitleStrategy {
       link.rel = 'canonical';
       head.appendChild(link);
     }
-    link.href = this.document.location.origin + path;
+    link.href = APP_CONFIG.siteUrl + path;
   }
 }

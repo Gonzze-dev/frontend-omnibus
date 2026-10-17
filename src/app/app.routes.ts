@@ -5,7 +5,6 @@ import { Login } from './pages/login/login';
 import { Register } from './pages/register/register';
 import { ForgotPassword } from './pages/forgot-password/forgot-password';
 import { ResetPassword } from './pages/reset-password/reset-password';
-import { Home } from './pages/home/home';
 import { Notifications } from './pages/notifications/notifications';
 import { Profile } from './pages/profile/profile';
 import { Dashboard } from './pages/dashboard/dashboard';
@@ -28,7 +27,14 @@ export const routes: Routes = [
   },
   // The backend builds this route in the email (FRONT_END_BASE_LINK + /reset-password?token=...)
   { path: 'reset-password', component: ResetPassword, title: 'Nueva contraseña' },
-  { path: 'home', component: Home, title: 'Rastreá tu viaje', canMatch: [authenticatedOnly] },
+  {
+    path: 'home',
+    // Lazy: it pulls in Leaflet, which touches `document` as soon as it is
+    // imported and would break prerendering (and it only matters with a session).
+    loadComponent: () => import('./pages/home/home').then((m) => m.Home),
+    title: 'Rastreá tu viaje',
+    canMatch: [authenticatedOnly],
+  },
   {
     path: 'notifications',
     component: Notifications,

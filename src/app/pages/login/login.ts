@@ -1,4 +1,4 @@
-import { Component, Injector, inject, signal } from '@angular/core';
+import { Component, DOCUMENT, DestroyRef, Injector, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -26,13 +26,17 @@ export class Login {
   readonly error = signal<string | null>(null);
   readonly showPassword = signal(false);
 
-  /** Whether the brand splash plays on this visit (at most once every 24 h). */
-  readonly intro = shouldPlayIntro();
-
   /** Notice left by /reset-password after the password is changed. */
   readonly passwordChanged = signal(
     inject(ActivatedRoute).snapshot.queryParamMap.get('changed') === 'ok',
   );
+
+  constructor() {
+    // The brand splash (login-intro on <html>, decided in index.html) only
+    // plays the first time this screen shows up in a page load.
+    const root = inject(DOCUMENT).documentElement;
+    inject(DestroyRef).onDestroy(() => root.classList.remove('login-intro'));
+  }
 
   signIn(): void {
     if (this.form.invalid) {
@@ -74,23 +78,4 @@ function errorMessage(err: HttpErrorResponse): string {
     default:
       return 'Ocurrió un error inesperado. Intentá de nuevo.';
   }
-}
-
-/** localStorage key with the timestamp (ms) until which the splash is skipped. */
-const INTRO_KEY = 'login_intro_until';
-const INTRO_INTERVAL_MS = 24 * 60 * 60 * 1000;
-
-/**
- * The splash plays when there is no valid timestamp or it already expired;
- * in that case the next 24 h are marked as seen. If localStorage fails
- * (private mode, blocked storage) it plays every time, as before.
- */
-function shouldPlayIntro(): boolean {
-  const now = Date.now();
-  try {
-    const until = Number(localStorage.getItem(INTRO_KEY));
-    if (until > now) return false;
-    localStorage.setItem(INTRO_KEY, String(now + INTRO_INTERVAL_MS));
-  } catch {}
-  return true;
 }

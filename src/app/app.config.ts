@@ -1,4 +1,5 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
+import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { TitleStrategy, provideRouter, withViewTransitions } from '@angular/router';
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import { routes } from './app.routes';
@@ -13,5 +14,9 @@ export const appConfig: ApplicationConfig = {
     // "<page> · Ya llegó" titles and a canonical link per route (SEO).
     { provide: TitleStrategy, useClass: BrandTitleStrategy },
     provideHttpClient(withFetch(), withInterceptors([authInterceptor])),
+    // Prerendered screens reuse the server DOM instead of drawing it again
+    // (no flash, the entry animations keep running); clicks made before the
+    // app boots are replayed.
+    provideClientHydration(withEventReplay()),
   ]
 };
