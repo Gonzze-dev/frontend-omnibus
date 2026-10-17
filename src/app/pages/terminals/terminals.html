@@ -1,6 +1,6 @@
 <app-topbar />
 
-<main class="ab-screen crud tone--crimson">
+<main id="contenido" tabindex="-1" class="ab-screen crud tone--crimson">
   <a class="crud__back" routerLink="/dashboard">
     <svg class="ab-icon" width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
       <path d="M15 7H1M1 7l5.5-5.5M1 7l5.5 5.5" stroke="currentColor" stroke-width="1.8"
@@ -193,7 +193,7 @@
       <form class="crud__form" [formGroup]="createForm" (ngSubmit)="create()" novalidate>
         <div class="ab-field">
           <label class="ab-label" for="name-create">Nombre</label>
-          <input class="ab-input" id="name-create" aria-describedby="name-create-error" type="text" placeholder="Ej: Terminal Retiro BS AS" autocomplete="off"
+          <input class="ab-input" id="name-create" [attr.aria-describedby]="createInvalid('name') ? 'name-create-error' : null" type="text" placeholder="Ej: Terminal Retiro BS AS" autocomplete="off"
                  formControlName="name" [attr.aria-invalid]="createInvalid('name')" />
           @if (createInvalid('name')) {
             <p class="ab-field-error" id="name-create-error">Ingresá el nombre.</p>
@@ -202,7 +202,7 @@
 
         <div class="ab-field">
           <label class="ab-label" for="city-create">Ciudad</label>
-          <app-search-select inputId="city-create" describedBy="city-create-error" formControlName="postal_code"
+          <app-search-select inputId="city-create" [describedBy]="createInvalid('postal_code') ? 'city-create-error' : undefined" formControlName="postal_code"
                              placeholder="Buscá una ciudad por nombre o código postal"
                              [options]="cityOptions()" [invalid]="createInvalid('postal_code')" />
           @if (createInvalid('postal_code')) {
@@ -212,7 +212,7 @@
 
         <div class="ab-field">
           <label class="ab-label" for="external-create">Terminal externa</label>
-          <app-search-select inputId="external-create" describedBy="external-create-load-error external-create-error" formControlName="external_terminal_id"
+          <app-search-select inputId="external-create" [describedBy]="[externalsError() ? 'external-create-load-error' : '', createInvalid('external_terminal_id') ? 'external-create-error' : ''].join(' ').trim() || undefined" formControlName="external_terminal_id"
                              placeholder="Buscá una terminal externa"
                              [options]="externalOptions()" [invalid]="createInvalid('external_terminal_id')" />
           <p class="crud__note">Es la terminal en el sistema de pasajes. No puede estar asignada a otra terminal.</p>
@@ -267,7 +267,7 @@
         <form class="crud__form" [formGroup]="editForm" (ngSubmit)="saveEdit()" novalidate>
           <div class="ab-field">
             <label class="ab-label" for="name-edit">Nombre</label>
-            <input class="ab-input" id="name-edit" aria-describedby="name-edit-error" type="text" autocomplete="off"
+            <input class="ab-input" id="name-edit" [attr.aria-describedby]="editInvalid('name') ? 'name-edit-error' : null" type="text" autocomplete="off"
                    formControlName="name" [attr.aria-invalid]="editInvalid('name')" />
             @if (editInvalid('name')) {
               <p class="ab-field-error" id="name-edit-error">Ingresá el nombre.</p>
@@ -276,7 +276,7 @@
 
           <div class="ab-field">
             <label class="ab-label" for="city-edit">Ciudad</label>
-            <app-search-select inputId="city-edit" describedBy="city-edit-error" formControlName="postal_code"
+            <app-search-select inputId="city-edit" [describedBy]="editInvalid('postal_code') ? 'city-edit-error' : undefined" formControlName="postal_code"
                                placeholder="Buscá una ciudad por nombre o código postal"
                                [options]="cityOptions()" [invalid]="editInvalid('postal_code')" />
             @if (editInvalid('postal_code')) {
@@ -286,7 +286,7 @@
 
           <div class="ab-field">
             <label class="ab-label" for="external-edit">Terminal externa</label>
-            <app-search-select inputId="external-edit" describedBy="external-edit-load-error external-edit-error" formControlName="external_terminal_id"
+            <app-search-select inputId="external-edit" [describedBy]="[externalsError() ? 'external-edit-load-error' : '', editInvalid('external_terminal_id') ? 'external-edit-error' : ''].join(' ').trim() || undefined" formControlName="external_terminal_id"
                                placeholder="Buscá una terminal externa"
                                [options]="externalOptions()" [invalid]="editInvalid('external_terminal_id')" />
             @if (externalsError()) {

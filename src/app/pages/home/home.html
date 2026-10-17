@@ -16,7 +16,7 @@
   @if (trip(); as t) {
     <app-trip-wait [trip]="t" (searchAnother)="searchAnother()" />
   } @else if (!restoring()) {
-  <main class="ab-screen home__body">
+  <main id="contenido" tabindex="-1" class="ab-screen home__body">
     <section class="hero">
       <h1 class="hero__title">Rastreá tu viaje</h1>
       <p class="hero__text">
@@ -125,7 +125,7 @@
           <input
             class="ticket__input"
             id="ticket"
-            aria-describedby="ticket-error"
+            [attr.aria-describedby]="scanError() ? 'ticket-error' : null"
             [attr.aria-invalid]="!!scanError()"
             type="text"
             placeholder="FLE-002-2026"

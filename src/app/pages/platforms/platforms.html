@@ -1,6 +1,6 @@
 <app-topbar />
 
-<main class="ab-screen crud tone--indigo">
+<main id="contenido" tabindex="-1" class="ab-screen crud tone--indigo">
   <a class="crud__back" routerLink="/dashboard">
     <svg class="ab-icon" width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
       <path d="M15 7H1M1 7l5.5-5.5M1 7l5.5 5.5" stroke="currentColor" stroke-width="1.8"
@@ -212,7 +212,7 @@
       <form class="crud__form" [formGroup]="createForm" (ngSubmit)="create()" novalidate>
         <div class="ab-field">
           <label class="ab-label" for="terminal-create">Terminal</label>
-          <select class="crud__select" id="terminal-create" aria-describedby="terminal-create-error" formControlName="bus_terminal_id"
+          <select class="crud__select" id="terminal-create" [attr.aria-describedby]="createInvalid('bus_terminal_id') ? 'terminal-create-error' : null" formControlName="bus_terminal_id"
                    [attr.aria-invalid]="createInvalid('bus_terminal_id')">
             <option value="" disabled>Elegí una terminal</option>
             @for (t of terminals(); track t.uuid) {
@@ -226,7 +226,7 @@
 
         <div class="ab-field">
           <label class="ab-label" for="bay-create">Andén</label>
-          <input class="ab-input" id="bay-create" aria-describedby="bay-create-error" type="text" placeholder="Ej: A20" autocomplete="off"
+          <input class="ab-input" id="bay-create" [attr.aria-describedby]="createInvalid('bay') ? 'bay-create-error' : null" type="text" placeholder="Ej: A20" autocomplete="off"
                  formControlName="bay" [attr.aria-invalid]="createInvalid('bay')" />
           @if (createInvalid('bay')) {
             <p class="ab-field-error" id="bay-create-error">Ingresá el andén.</p>
@@ -304,7 +304,7 @@
 
           <div class="ab-field">
             <label class="ab-label" for="bay-edit">Andén</label>
-            <input class="ab-input" id="bay-edit" aria-describedby="bay-edit-error" type="text" autocomplete="off"
+            <input class="ab-input" id="bay-edit" [attr.aria-describedby]="editInvalid('bay') ? 'bay-edit-error' : null" type="text" autocomplete="off"
                    formControlName="bay" [attr.aria-invalid]="editInvalid('bay')" />
             @if (editInvalid('bay')) {
               <p class="ab-field-error" id="bay-edit-error">Ingresá el andén.</p>

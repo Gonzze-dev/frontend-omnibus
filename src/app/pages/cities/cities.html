@@ -1,6 +1,6 @@
 <app-topbar />
 
-<main class="ab-screen crud tone--blue">
+<main id="contenido" tabindex="-1" class="ab-screen crud tone--blue">
   <a class="crud__back" routerLink="/dashboard">
     <svg class="ab-icon" width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
       <path d="M15 7H1M1 7l5.5-5.5M1 7l5.5 5.5" stroke="currentColor" stroke-width="1.8"
@@ -186,7 +186,7 @@
       <form class="crud__form" [formGroup]="createForm" (ngSubmit)="create()" novalidate>
         <div class="ab-field">
           <label class="ab-label" for="zip-create">Código postal</label>
-          <input class="ab-input" id="zip-create" aria-describedby="zip-create-error" type="text" placeholder="Ej: 1004" autocomplete="off"
+          <input class="ab-input" id="zip-create" [attr.aria-describedby]="createInvalid('postal_code') ? 'zip-create-error' : null" type="text" placeholder="Ej: 1004" autocomplete="off"
                  formControlName="postal_code" [attr.aria-invalid]="createInvalid('postal_code')" />
           @if (createInvalid('postal_code')) {
             <p class="ab-field-error" id="zip-create-error">Ingresá el código postal.</p>
@@ -195,7 +195,7 @@
 
         <div class="ab-field">
           <label class="ab-label" for="name-create">Nombre</label>
-          <input class="ab-input" id="name-create" aria-describedby="name-create-error" type="text" placeholder="Ej: Buenos Aires" autocomplete="off"
+          <input class="ab-input" id="name-create" [attr.aria-describedby]="createInvalid('name') ? 'name-create-error' : null" type="text" placeholder="Ej: Buenos Aires" autocomplete="off"
                  formControlName="name" [attr.aria-invalid]="createInvalid('name')" />
           @if (createInvalid('name')) {
             <p class="ab-field-error" id="name-create-error">Ingresá el nombre.</p>
@@ -245,7 +245,7 @@
         <form class="crud__form" [formGroup]="editForm" (ngSubmit)="saveEdit()" novalidate>
           <div class="ab-field">
             <label class="ab-label" for="zip-edit">Código postal</label>
-            <input class="ab-input" id="zip-edit" aria-describedby="zip-edit-error" type="text" autocomplete="off"
+            <input class="ab-input" id="zip-edit" [attr.aria-describedby]="editInvalid('postal_code') ? 'zip-edit-error' : null" type="text" autocomplete="off"
                    formControlName="postal_code" [attr.aria-invalid]="editInvalid('postal_code')" />
             @if (editInvalid('postal_code')) {
               <p class="ab-field-error" id="zip-edit-error">Ingresá el código postal.</p>
@@ -254,7 +254,7 @@
 
           <div class="ab-field">
             <label class="ab-label" for="name-edit">Nombre</label>
-            <input class="ab-input" id="name-edit" aria-describedby="name-edit-error" type="text" autocomplete="off"
+            <input class="ab-input" id="name-edit" [attr.aria-describedby]="editInvalid('name') ? 'name-edit-error' : null" type="text" autocomplete="off"
                    formControlName="name" [attr.aria-invalid]="editInvalid('name')" />
             @if (editInvalid('name')) {
               <p class="ab-field-error" id="name-edit-error">Ingresá el nombre.</p>

@@ -1,6 +1,6 @@
 <app-topbar />
 
-<main class="ab-screen crud tone--orange">
+<main id="contenido" tabindex="-1" class="ab-screen crud tone--orange">
   @if (action() === 'list') {
     <a class="crud__back" routerLink="/dashboard">
     <svg class="ab-icon" width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
@@ -171,7 +171,7 @@
         @if (!isGlobal()) {
           <div class="ab-field">
             <label class="ab-label" for="notice-terminal">Terminal</label>
-            <app-search-select inputId="notice-terminal" describedBy="notice-terminal-error" formControlName="terminal"
+            <app-search-select inputId="notice-terminal" [describedBy]="noticeInvalid('terminal') ? 'notice-terminal-error' : undefined" formControlName="terminal"
                                placeholder="Buscá una terminal"
                                [options]="terminalOptions()" [invalid]="noticeInvalid('terminal')" />
             @if (noticeInvalid('terminal')) {
@@ -183,7 +183,7 @@
         @if (isArrival()) {
           <div class="ab-field">
             <label class="ab-label" for="arrival-bay">Andén</label>
-            <app-search-select inputId="arrival-bay" describedBy="arrival-bay-error" formControlName="bay"
+            <app-search-select inputId="arrival-bay" [describedBy]="baysError() || noticeInvalid('bay') ? 'arrival-bay-error' : undefined" formControlName="bay"
                                [placeholder]="loadingBays() ? 'Cargando andenes...' : bays().length ? 'Buscá un andén' : 'La terminal no tiene andenes'"
                                [options]="bayOptions()" [invalid]="noticeInvalid('bay')" />
             @if (baysError()) {
@@ -198,7 +198,7 @@
             <div class="crud__row">
               <div class="ab-field">
                 <label class="ab-label" for="notice-lifetime">Duración (minutos)</label>
-                <input class="ab-input" id="notice-lifetime" aria-describedby="notice-lifetime-error" type="number" min="1" placeholder="12"
+                <input class="ab-input" id="notice-lifetime" [attr.aria-describedby]="noticeInvalid('lifetime') ? 'notice-lifetime-error' : null" type="number" min="1" placeholder="12"
                        formControlName="lifetime" [attr.aria-invalid]="noticeInvalid('lifetime')" />
                 @if (noticeInvalid('lifetime')) {
                   <p class="ab-field-error" id="notice-lifetime-error">Ingresá una duración de al menos 1 minuto.</p>
@@ -208,7 +208,7 @@
               <div class="ab-field">
                 <label class="ab-label" for="arrival-plate">Patente del colectivo</label>
                 <div class="plate-row">
-                  <input class="ab-input" id="arrival-plate" aria-describedby="arrival-plate-error" type="text" placeholder="AB 123 CD"
+                  <input class="ab-input" id="arrival-plate" [attr.aria-describedby]="noticeInvalid('plate') ? 'arrival-plate-error' : null" type="text" placeholder="AB 123 CD"
                          autocomplete="off" formControlName="plate"
                          [attr.aria-invalid]="noticeInvalid('plate')" />
                   <app-plate-camera (plateRead)="onPlateRead($event)" />
@@ -227,7 +227,7 @@
             <div class="crud__row">
               <div class="ab-field">
                 <label class="ab-label" for="delay-plate">Patente del colectivo</label>
-                <input class="ab-input" id="delay-plate" aria-describedby="delay-plate-error" type="text" placeholder="AB 123 CD"
+                <input class="ab-input" id="delay-plate" [attr.aria-describedby]="noticeInvalid('plate') ? 'delay-plate-error' : null" type="text" placeholder="AB 123 CD"
                        autocomplete="off" formControlName="plate"
                        [attr.aria-invalid]="noticeInvalid('plate')" />
                 @if (noticeInvalid('plate')) {
@@ -237,7 +237,7 @@
 
               <div class="ab-field">
                 <label class="ab-label" for="delay-date">Fecha del viaje</label>
-                <input class="ab-input" id="delay-date" aria-describedby="delay-date-error" type="date" formControlName="date"
+                <input class="ab-input" id="delay-date" [attr.aria-describedby]="noticeInvalid('date') ? 'delay-date-error' : null" type="date" formControlName="date"
                        [attr.aria-invalid]="noticeInvalid('date')" />
                 @if (noticeInvalid('date')) {
                   <p class="ab-field-error" id="delay-date-error">Elegí la fecha del viaje.</p>
@@ -249,7 +249,7 @@
         } @else {
           <div class="ab-field">
             <label class="ab-label" for="notice-message">Mensaje</label>
-            <textarea class="crud__textarea" id="notice-message" aria-describedby="notice-message-error" formControlName="message"
+            <textarea class="crud__textarea" id="notice-message" [attr.aria-describedby]="noticeInvalid('message') ? 'notice-message-error' : null" formControlName="message"
                       [attr.aria-invalid]="noticeInvalid('message')"
                       placeholder="Ej: El andén A3 permanece cerrado por mantenimiento."></textarea>
             @if (noticeInvalid('message')) {
@@ -265,7 +265,7 @@
               @if (isDelay()) {
                 <div class="ab-field">
                   <label class="ab-label" for="delay-minutes">Demora (minutos)</label>
-                  <input class="ab-input" id="delay-minutes" aria-describedby="delay-minutes-error" type="number" min="1" placeholder="15"
+                  <input class="ab-input" id="delay-minutes" [attr.aria-describedby]="noticeInvalid('delay') ? 'delay-minutes-error' : null" type="number" min="1" placeholder="15"
                          formControlName="delay" [attr.aria-invalid]="noticeInvalid('delay')" />
                   @if (noticeInvalid('delay')) {
                     <p class="ab-field-error" id="delay-minutes-error">Ingresá una demora de al menos 1 minuto.</p>
@@ -275,7 +275,7 @@
 
               <div class="ab-field">
                 <label class="ab-label" for="notice-lifetime">Duración (minutos)</label>
-                <input class="ab-input" id="notice-lifetime" aria-describedby="notice-lifetime-error" type="number" min="1" placeholder="12"
+                <input class="ab-input" id="notice-lifetime" [attr.aria-describedby]="noticeInvalid('lifetime') ? 'notice-lifetime-error' : null" type="number" min="1" placeholder="12"
                        formControlName="lifetime" [attr.aria-invalid]="noticeInvalid('lifetime')" />
                 @if (noticeInvalid('lifetime')) {
                   <p class="ab-field-error" id="notice-lifetime-error">Ingresá una duración de al menos 1 minuto.</p>
