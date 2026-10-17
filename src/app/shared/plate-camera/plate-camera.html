@@ -8,8 +8,14 @@
 </button>
 
 @if (open()) {
+  <!-- Clicking the backdrop is a mouse shortcut: the keyboard closes with Escape or the close button. -->
+  <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
   <div class="camera__backdrop" (click)="close()">
+    <!-- cdkTrapFocus with auto capture: focus goes into the modal when it opens,
+         Tab stays inside, and it returns to the camera button when it closes (WCAG 2.4.3). -->
+    <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events -->
     <div class="camera__panel" role="dialog" aria-modal="true" aria-labelledby="camera-title"
+         cdkTrapFocus [cdkTrapFocusAutoCapture]="true"
          (click)="$event.stopPropagation()">
       <div class="camera__top-bar">
         <button class="camera__close" type="button" (click)="close()" aria-label="Cerrar cámara">
@@ -36,7 +42,7 @@
         }
 
         @if (starting()) {
-          <p class="camera__status">Iniciando cámara...</p>
+          <p class="camera__status" role="status">Iniciando cámara...</p>
         } @else if (step() === 'reading') {
           <p class="camera__status camera__status--veil" role="status">Leyendo patente...</p>
         }

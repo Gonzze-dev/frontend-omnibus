@@ -1,4 +1,4 @@
-import { Component, ElementRef, computed, effect, inject, signal, untracked, viewChild } from '@angular/core';
+import { Component, ElementRef, computed, effect, Injector, inject, signal, untracked, viewChild } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, ResolveFn, RouterLink } from '@angular/router';
@@ -9,6 +9,7 @@ import { TerminalService } from '../../services/terminal.service';
 import { CityService } from '../../services/city.service';
 import { ExternalTerminal, Terminal } from '../../models/terminal.model';
 import { City } from '../../models/city.model';
+import { focusFirstInvalid } from '../../shared/a11y';
 
 export type TerminalAction = 'list' | 'create' | 'edit';
 
@@ -49,6 +50,7 @@ const BACKEND_LIMIT = 500;
   styleUrl: './terminals.scss',
 })
 export class Terminals {
+  private readonly injector = inject(Injector);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly terminalService = inject(TerminalService);
@@ -336,6 +338,7 @@ export class Terminals {
   protected create(): void {
     if (this.createForm.invalid) {
       this.createForm.markAllAsTouched();
+      focusFirstInvalid(this.injector);
       return;
     }
 
@@ -365,6 +368,7 @@ export class Terminals {
   protected saveEdit(): void {
     if (this.editForm.invalid) {
       this.editForm.markAllAsTouched();
+      focusFirstInvalid(this.injector);
       return;
     }
 

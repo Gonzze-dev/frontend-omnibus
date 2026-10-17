@@ -181,6 +181,39 @@ $row: $icon + 29px;
 .table__icon--crimson { color: $crimson; }
 .table__icon--crimson:hover { background: rgba(180, 0, 54, 0.1); }
 
+/* Edit button of a selectable row. It looks like the cell text and its
+   ::after stretches over the whole row (which is position: relative), so a
+   click anywhere edits it while the delete button stays a sibling control
+   instead of being nested inside an interactive row. */
+.table__open {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.table__open::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+/* The row draws the focus ring (see each screen) */
+.table__open:focus-visible { outline: none; }
+
+/* The row actions stay above the stretched edit button */
+.table__row--selectable .table__actions {
+  position: relative;
+  z-index: 1;
+}
+
 /* Blank row that completes the page so the table does not change height */
 .table__row--filler { visibility: hidden; }
 
@@ -361,7 +394,7 @@ $row: $icon + 29px;
   resize: vertical;
 }
 
-.crud__textarea::placeholder { color: rgba(116, 118, 133, 0.5); }
+.crud__textarea::placeholder { color: var(--ab-placeholder); }
 .crud__textarea:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 2px; }
 
 /* Note at the bottom of a field */
@@ -690,9 +723,12 @@ $row: $icon + 29px;
     font-weight: 700;
   }
 
+  /* 28px target (WCAG 2.5.8 asks for 24px); the negative margin keeps
+     the header the same size it had with the 22px button */
   .popup__close {
     display: inline-flex;
-    padding: 4px;
+    padding: 7px;
+    margin: -3px;
     border: 0;
     background: none;
     color: var(--ab-body);

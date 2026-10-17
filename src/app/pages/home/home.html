@@ -16,7 +16,7 @@
   @if (trip(); as t) {
     <app-trip-wait [trip]="t" (searchAnother)="searchAnother()" />
   } @else if (!restoring()) {
-  <div role="main" class="ab-screen home__body">
+  <main class="ab-screen home__body">
     <section class="hero">
       <h1 class="hero__title">Rastreá tu viaje</h1>
       <p class="hero__text">
@@ -168,7 +168,7 @@
     >
       {{ searching() ? 'Buscando…' : 'Buscar viaje' }}
     </button>
-  </div>
+  </main>
   }
 
   <dialog #ticketDialog class="popup" role="alertdialog" aria-labelledby="ticket-title" aria-describedby="ticket-text"

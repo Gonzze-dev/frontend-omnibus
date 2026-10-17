@@ -9,6 +9,10 @@
    ============================================================ */
 
 @use 'sass:meta';
+@use '@angular/cdk';
+
+/* .cdk-visually-hidden: used by the CDK LiveAnnouncer region */
+@include cdk.a11y-visually-hidden();
 
 :root {
   /* --- Color --- */
@@ -18,14 +22,14 @@
   --ab-ink:           #191B22;  /* titles                   */
   --ab-body:          #444654;  /* text and labels          */
   --ab-field:         #E1E2EB;  /* input background         */
-  --ab-placeholder:   #747685;  /* placeholder (at 50%)     */
+  --ab-placeholder:   #5F6170;  /* placeholder, secondary text: 4.5:1 on --ab-field (WCAG 1.4.3) */
   --ab-card:          #F3F3FC;  /* light card               */
   --ab-line:          rgba(196, 197, 214, 0.30);
   --ab-white:         #FFFFFF;
   --ab-accent:        #9F4200;  /* location pin             */
-  --ab-badge:         #F97316;  /* notification bubble      */
-  --ab-ok:            #16A34A;  /* bus-at-bay notice */
-  --ab-success:       #34C759;  /* Figma "saved successfully" toast */
+  --ab-badge:         #C2410C;  /* notification bubble: 5.2:1 with white text */
+  --ab-ok:            #15803D;  /* bus-at-bay notice: 5:1 with white text */
+  --ab-success:       #15803D;  /* "saved successfully" toast; the Figma #34C759 only gives 2.2:1 with white */
   --ab-danger:        #BA1A1A;  /* form errors              */
   --ab-icon-muted:    #64748B;
   --ab-icon-nav:      #1D4ED8;
@@ -226,7 +230,7 @@ body {
   line-height: 1.2;
 }
 
-.ab-input::placeholder { color: rgba(116, 118, 133, 0.5); }
+.ab-input::placeholder { color: var(--ab-placeholder); }
 .ab-input:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 2px; }
 .ab-input[aria-invalid="true"] { box-shadow: inset 0 0 0 1px var(--ab-danger); }
 
@@ -265,6 +269,10 @@ body {
   white-space: nowrap;
   border: 0;
 }
+
+/* Headings and landmarks receive focus by script (route change, skip link):
+   they are not interactive, so they do not show the focus ring */
+[tabindex="-1"]:focus { outline: none; }
 
 /* Message under an invalid field */
 .ab-field-error {

@@ -1,5 +1,6 @@
 <div class="drawer" [class.drawer--open]="open()">
   <!-- Gray layer: tapping it closes the menu -->
+  <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
   <div class="drawer__scrim" (click)="close()"></div>
 
   <nav

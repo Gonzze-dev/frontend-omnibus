@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, Injector, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import {
   AbstractControl,
@@ -11,6 +11,7 @@ import { Router, RouterLink } from '@angular/router';
 import { switchMap } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { PasswordToggle } from '../../shared/password-toggle/password-toggle';
+import { focusFirstInvalid } from '../../shared/a11y';
 
 type Field = 'firstName' | 'lastName' | 'email' | 'password' | 'confirm';
 
@@ -21,6 +22,7 @@ type Field = 'firstName' | 'lastName' | 'email' | 'password' | 'confirm';
   styleUrl: './register.scss',
 })
 export class Register {
+  private readonly injector = inject(Injector);
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
 
@@ -43,6 +45,7 @@ export class Register {
   createAccount(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      focusFirstInvalid(this.injector);
       return;
     }
 

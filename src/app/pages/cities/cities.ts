@@ -1,4 +1,4 @@
-import { Component, ElementRef, computed, effect, inject, signal, untracked, viewChild } from '@angular/core';
+import { Component, ElementRef, computed, effect, Injector, inject, signal, untracked, viewChild } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, ResolveFn, RouterLink } from '@angular/router';
@@ -6,6 +6,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { Topbar } from '../../shared/topbar/topbar';
 import { CityService } from '../../services/city.service';
 import { City } from '../../models/city.model';
+import { focusFirstInvalid } from '../../shared/a11y';
 
 export type CityAction = 'list' | 'create' | 'edit';
 
@@ -47,6 +48,7 @@ const BACKEND_LIMIT = 500;
   styleUrl: './cities.scss',
 })
 export class Cities {
+  private readonly injector = inject(Injector);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly cityService = inject(CityService);
@@ -273,6 +275,7 @@ export class Cities {
   protected create(): void {
     if (this.createForm.invalid) {
       this.createForm.markAllAsTouched();
+      focusFirstInvalid(this.injector);
       return;
     }
 
@@ -296,6 +299,7 @@ export class Cities {
   protected saveEdit(): void {
     if (this.editForm.invalid) {
       this.editForm.markAllAsTouched();
+      focusFirstInvalid(this.injector);
       return;
     }
 

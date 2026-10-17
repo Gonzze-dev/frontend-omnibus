@@ -28,14 +28,15 @@
 }
 
 .table__row--selectable:hover,
-.table__row--selectable:focus-visible {
+.table__row--selectable:has(.table__open:focus-visible) {
   background: color-mix(in srgb, var(--tone) 15%, white);
   color: var(--ab-ink);
   transform: scale(1.04);
   z-index: 1;
 }
 
-.table__row--selectable:focus-visible { outline: none; }
+/* The row shows the focus of its edit button (WCAG 2.4.7) */
+.table__row--selectable:has(.table__open:focus-visible) { outline: 2px solid var(--ab-primary); outline-offset: -2px; }
 
 /* Popup to confirm the deletion */
 @include delete-popup;

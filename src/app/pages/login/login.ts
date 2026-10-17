@@ -1,9 +1,10 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, Injector, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { PasswordToggle } from '../../shared/password-toggle/password-toggle';
+import { focusFirstInvalid } from '../../shared/a11y';
 
 @Component({
   selector: 'app-login',
@@ -12,6 +13,7 @@ import { PasswordToggle } from '../../shared/password-toggle/password-toggle';
   styleUrl: './login.scss',
 })
 export class Login {
+  private readonly injector = inject(Injector);
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
 
@@ -32,6 +34,7 @@ export class Login {
   signIn(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      focusFirstInvalid(this.injector);
       return;
     }
 

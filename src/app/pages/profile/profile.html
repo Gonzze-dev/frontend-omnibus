@@ -4,7 +4,7 @@
   <app-toast animate.leave="ab-leave-up" message="Cambios guardados con éxito" (closed)="showSuccess.set(false)" />
 }
 
-<div role="main" class="ab-screen profile">
+<main class="ab-screen profile">
   <header class="profile__head">
     <h1 class="ab-brand profile__title">Información sobre tu perfil</h1>
     <p class="profile__lead">
@@ -87,9 +87,10 @@
 
     <button class="profile__delete" type="button" (click)="confirmingDelete.set(true)">Eliminar cuenta</button>
   }
-</div>
+</main>
 
 <!-- Popup to confirm the deletion. Escape or a click outside closes it. -->
+<!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events -->
 <dialog #deleteDialog class="popup" role="alertdialog" aria-labelledby="delete-title" aria-describedby="delete-text"
         (cancel)="$event.preventDefault(); cancelDelete()"
         (click)="onPopupClick($event)">

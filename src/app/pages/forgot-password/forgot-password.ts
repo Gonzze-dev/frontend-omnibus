@@ -1,9 +1,10 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, Injector, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { Toast } from '../../shared/toast/toast';
+import { focusFirstInvalid } from '../../shared/a11y';
 
 @Component({
   selector: 'app-forgot-password',
@@ -12,6 +13,7 @@ import { Toast } from '../../shared/toast/toast';
   styleUrl: './forgot-password.scss',
 })
 export class ForgotPassword {
+  private readonly injector = inject(Injector);
   private readonly auth = inject(AuthService);
 
   readonly form = inject(FormBuilder).nonNullable.group({
@@ -26,6 +28,7 @@ export class ForgotPassword {
   sendLink(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      focusFirstInvalid(this.injector);
       return;
     }
 

@@ -233,7 +233,7 @@
 /* In the mockup the ticket button is 4px taller than the final CTA */
 .ticket .ab-button--lg { min-height: 72px; }
 
-.ticket__input::placeholder { color: rgba(116, 118, 133, 0.5); }
+.ticket__input::placeholder { color: var(--ab-placeholder); }
 .ticket__input:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 2px; }
 
 .ticket__error {

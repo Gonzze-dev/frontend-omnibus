@@ -1,4 +1,4 @@
-import { Component, effect, ElementRef, inject, OnInit, signal, viewChild } from '@angular/core';
+import { Component, effect, ElementRef, Injector, inject, OnInit, signal, viewChild } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import {
   AbstractControl,
@@ -12,6 +12,7 @@ import { PasswordToggle } from '../../shared/password-toggle/password-toggle';
 import { Toast } from '../../shared/toast/toast';
 import { UserService } from '../../services/user.service';
 import { UpdateProfileRequest, User } from '../../models/auth.model';
+import { focusFirstInvalid } from '../../shared/a11y';
 
 type Field = 'firstName' | 'lastName' | 'email' | 'password' | 'confirm';
 
@@ -22,6 +23,7 @@ type Field = 'firstName' | 'lastName' | 'email' | 'password' | 'confirm';
   styleUrl: './profile.scss',
 })
 export class Profile implements OnInit {
+  private readonly injector = inject(Injector);
   private readonly userService = inject(UserService);
 
   private readonly deleteDialog = viewChild<ElementRef<HTMLDialogElement>>('deleteDialog');
@@ -93,6 +95,7 @@ export class Profile implements OnInit {
   protected save(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      focusFirstInvalid(this.injector);
       return;
     }
 

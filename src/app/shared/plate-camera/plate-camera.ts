@@ -9,6 +9,7 @@ import {
   signal,
 } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
+import { CdkTrapFocus } from '@angular/cdk/a11y';
 import { Subscription } from 'rxjs';
 import { LicensePlateService } from '../../services/license-plate.service';
 
@@ -27,8 +28,12 @@ const MAX_SIDE = 1600;
  */
 @Component({
   selector: 'app-plate-camera',
+  imports: [CdkTrapFocus],
   templateUrl: './plate-camera.html',
   styleUrl: './plate-camera.scss',
+  host: {
+    '(document:keydown.escape)': 'open() && close()',
+  },
 })
 export class PlateCamera implements OnDestroy {
   private readonly licensePlateService = inject(LicensePlateService);

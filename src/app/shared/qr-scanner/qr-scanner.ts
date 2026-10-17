@@ -8,6 +8,7 @@ import {
   AfterViewInit,
   OnDestroy,
 } from '@angular/core';
+import { CdkTrapFocus } from '@angular/cdk/a11y';
 import jsQR from 'jsqr';
 
 /**
@@ -19,7 +20,7 @@ import jsQR from 'jsqr';
  */
 @Component({
   selector: 'app-qr-scanner',
-  imports: [],
+  imports: [CdkTrapFocus],
   templateUrl: './qr-scanner.html',
   styleUrl: './qr-scanner.scss',
   host: {

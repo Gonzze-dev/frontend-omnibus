@@ -4,12 +4,14 @@ import {
   ElementRef,
   afterRenderEffect,
   computed,
+  effect,
   inject,
   input,
   output,
   viewChild,
 } from '@angular/core';
 import { DatePipe } from '@angular/common';
+import { LiveAnnouncer } from '@angular/cdk/a11y';
 import * as L from 'leaflet';
 import { RealtimeService } from '../../services/realtime.service';
 import { AwaitedTrip, Coordinates } from '../../models/trip.model';
@@ -55,6 +57,26 @@ export class TripWait {
   private observer?: ResizeObserver;
 
   constructor() {
+    // The notices below change in real time while the passenger waits: they are
+    // announced to screen readers as they arrive (WCAG 4.1.3). The arrival is
+    // announced by the home toast.
+    const announcer = inject(LiveAnnouncer);
+    effect(() => {
+      const d = this.delay();
+      if (d && !this.arrival()) {
+        announcer.announce(`Tu colectivo viene con una demora de ${d.time_delay} minutos aproximadamente.`);
+      }
+    });
+    // Only a lost connection is announced, not the initial connecting state
+    let wasConnected = false;
+    effect(() => {
+      const connected = this.connected();
+      if (wasConnected && !connected) {
+        announcer.announce('Sin conexión en tiempo real. Igual te enviamos un mail cuando llegue el colectivo.');
+      }
+      wasConnected = connected;
+    });
+
     // The map container only exists when the bus arrives, which is why
     // the map is created after rendering and not in ngAfterViewInit.
     afterRenderEffect(() => {

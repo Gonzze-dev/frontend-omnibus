@@ -1,4 +1,4 @@
-import { Component, ElementRef, computed, effect, inject, signal, untracked, viewChild } from '@angular/core';
+import { Component, ElementRef, computed, effect, Injector, inject, signal, untracked, viewChild } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, ResolveFn, RouterLink } from '@angular/router';
@@ -8,6 +8,7 @@ import { PlatformService } from '../../services/platform.service';
 import { TerminalService } from '../../services/terminal.service';
 import { TerminalWithPlatforms } from '../../models/platform.model';
 import { Terminal } from '../../models/terminal.model';
+import { focusFirstInvalid } from '../../shared/a11y';
 
 export type PlatformAction = 'list' | 'create' | 'edit';
 
@@ -48,6 +49,7 @@ const BACKEND_LIMIT = 500;
   styleUrl: './platforms.scss',
 })
 export class Platforms {
+  private readonly injector = inject(Injector);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly platformService = inject(PlatformService);
@@ -328,6 +330,7 @@ export class Platforms {
   protected create(): void {
     if (this.createForm.invalid) {
       this.createForm.markAllAsTouched();
+      focusFirstInvalid(this.injector);
       return;
     }
 
@@ -353,6 +356,7 @@ export class Platforms {
   protected saveEdit(): void {
     if (this.editForm.invalid) {
       this.editForm.markAllAsTouched();
+      focusFirstInvalid(this.injector);
       return;
     }
 

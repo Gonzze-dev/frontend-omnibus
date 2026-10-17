@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, Injector, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import {
   AbstractControl,
@@ -10,6 +10,7 @@ import {
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { PasswordToggle } from '../../shared/password-toggle/password-toggle';
+import { focusFirstInvalid } from '../../shared/a11y';
 
 /** State of the token that arrives in the email link. */
 type TokenState = 'no-token' | 'validating' | 'valid' | 'invalid';
@@ -21,6 +22,7 @@ type TokenState = 'no-token' | 'validating' | 'valid' | 'invalid';
   styleUrl: './reset-password.scss',
 })
 export class ResetPassword {
+  private readonly injector = inject(Injector);
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
 
@@ -58,6 +60,7 @@ export class ResetPassword {
   save(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      focusFirstInvalid(this.injector);
       return;
     }
 

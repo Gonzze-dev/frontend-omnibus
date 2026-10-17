@@ -1,6 +1,6 @@
 <app-topbar />
 
-<div role="main" class="ab-screen crud tone--ink">
+<main class="ab-screen crud tone--ink">
   <a class="crud__back" routerLink="/dashboard">
     <svg class="ab-icon" width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
       <path d="M15 7H1M1 7l5.5-5.5M1 7l5.5 5.5" stroke="currentColor" stroke-width="1.8"
@@ -42,6 +42,7 @@
         <li class="table__item">
           <!-- Only an admin manages terminals: their row expands to show them.
                The click on the row is a shortcut; the arrow is the accessible button. -->
+          <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
           <div class="table__row user"
                [class.user--dropdown]="isAdmin(u)"
                [class.user--open]="expanded() === u.uuid"
@@ -158,6 +159,7 @@
   }
 
   <!-- Popup to raise the role. Escape or a click outside closes it. -->
+  <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
   <dialog #dialog class="popup" aria-labelledby="popup-title"
           (cancel)="$event.preventDefault(); closePromotion()"
           (click)="onPopupClick($event)">
@@ -248,6 +250,7 @@
                 <!-- mousedown with preventDefault: the input does not lose focus before the click -->
                 <ul class="combo__list" id="terminal-options" role="listbox" aria-label="Terminales">
                   @for (t of filteredTerminals(); track t.uuid; let i = $index) {
+                    <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
                     <li class="combo__option" role="option" [id]="'terminal-option-' + t.uuid"
                         [class.combo__option--highlighted]="i === highlighted()"
                         [class.combo__option--selected]="chosenTerminal() === t.uuid"
@@ -307,4 +310,4 @@
       </div>
     }
   </dialog>
-</div>
+</main>

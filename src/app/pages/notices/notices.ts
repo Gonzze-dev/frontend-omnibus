@@ -1,4 +1,4 @@
-import { Component, ElementRef, computed, effect, inject, signal, untracked, viewChild } from '@angular/core';
+import { Component, ElementRef, computed, effect, Injector, inject, signal, untracked, viewChild } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, ResolveFn, Router, RouterLink } from '@angular/router';
@@ -17,6 +17,7 @@ import {
   NotificationStatus,
   NotificationType,
 } from '../../models/notice.model';
+import { focusFirstInvalid } from '../../shared/a11y';
 
 export type NoticeAction = 'list' | 'send';
 
@@ -88,6 +89,7 @@ const DATE_FORMAT = new Intl.DateTimeFormat('es-AR', { dateStyle: 'short', timeS
   styleUrl: './notices.scss',
 })
 export class Notices {
+  private readonly injector = inject(Injector);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly auth = inject(AuthService);
@@ -409,6 +411,7 @@ export class Notices {
   protected sendNotice(): void {
     if (this.noticeForm.invalid) {
       this.noticeForm.markAllAsTouched();
+      focusFirstInvalid(this.injector);
       return;
     }
 
