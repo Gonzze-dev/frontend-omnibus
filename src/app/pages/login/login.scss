@@ -8,6 +8,7 @@
    2. The name column grows from 0 to its width: since the block
       stays centered, the logo slides to the left by itself.
    3. The name comes in from behind the logo while it unfolds.
+   The whole splash, form included, ends at 1.2 s.
    It only plays with .login-intro on <html> (once every 24 h, decided
    in index.html before the first paint);
    otherwise the brand is static and comes in with the .ab-screen stagger.
@@ -52,20 +53,20 @@
 }
 
 :host-context(.login-intro) .mark__layer--pin {
-  animation: mark-pin 500ms var(--ab-ease-spring) both;
+  animation: mark-pin 350ms var(--ab-ease-spring) both;
 }
 
 :host-context(.login-intro) .mark__layer--bus {
-  animation: mark-bus 450ms 300ms var(--ab-ease-spring) both;
+  animation: mark-bus 300ms 150ms var(--ab-ease-spring) both;
 }
 
 :host-context(.login-intro) .mark__layer--wave1,
 :host-context(.login-intro) .mark__layer--wave2 {
-  animation: mark-wave 380ms var(--ab-ease-out) both;
+  animation: mark-wave 250ms var(--ab-ease-out) both;
 }
 
-:host-context(.login-intro) .mark__layer--wave1 { animation-delay: 650ms; }
-:host-context(.login-intro) .mark__layer--wave2 { animation-delay: 850ms; }
+:host-context(.login-intro) .mark__layer--wave1 { animation-delay: 300ms; }
+:host-context(.login-intro) .mark__layer--wave2 { animation-delay: 400ms; }
 
 .mark__text {
   display: grid;
@@ -74,7 +75,7 @@
 
 :host-context(.login-intro) .mark__text {
   grid-template-columns: 0fr;
-  animation: mark-open 700ms 1150ms var(--ab-ease-out) forwards;
+  animation: mark-open 400ms 450ms var(--ab-ease-out) forwards;
 }
 
 /* The gap between logo and name goes inside the clipped area,
@@ -87,18 +88,18 @@
 }
 
 :host-context(.login-intro) .mark__name {
-  animation: mark-name 600ms 1300ms var(--ab-ease-out) both;
+  animation: mark-name 350ms 500ms var(--ab-ease-out) both;
 }
 
 /* Splash: the brand does not come in with the global .ab-screen stagger.
    It starts enlarged in the center of the screen, plays its animation
-   there (logo in parts + name, ~1900ms) and then moves up to its place.
+   there (logo in parts + name, ~850ms) and then moves up to its place.
    The origin is the center of the content (66px of padding + half the
    logo), so the translate takes it right to the middle of the viewport. */
 :host-context(.login-intro) .mark {
   --marca-escala: 1.4;
   transform-origin: 50% calc(66px + 32px);
-  animation: mark-settle 700ms 2100ms var(--ab-ease-out) backwards;
+  animation: mark-settle 500ms 700ms var(--ab-ease-out) backwards;
 }
 
 /* On narrow phones the enlarged block does not fit at 1.4 */
@@ -107,7 +108,10 @@
 }
 
 /* The form waits until the brand is almost in its place */
-:host-context(.login-intro) .login__card { animation-delay: 2550ms; }
+:host-context(.login-intro) .login__card {
+  animation-delay: 800ms;
+  animation-duration: 400ms;
+}
 
 @keyframes mark-settle {
   from { transform: translateY(calc(50dvh - 66px - 32px)) scale(var(--marca-escala)); }
