@@ -8,6 +8,8 @@
    2. The name column grows from 0 to its width: since the block
       stays centered, the logo slides to the left by itself.
    3. The name comes in from behind the logo while it unfolds.
+   It only plays with .login--intro (once every 24 h, see login.ts);
+   otherwise the brand is static and comes in with the .ab-screen stagger.
    ============================================================ */
 .mark {
   display: flex;
@@ -37,25 +39,39 @@
 
 .mark__layer--pin {
   transform-origin: 40% 99%;
-  animation: mark-pin 500ms var(--ab-ease-spring) both;
 }
 
 .mark__layer--bus {
   transform-origin: 40% 49%;
-  animation: mark-bus 450ms 300ms var(--ab-ease-spring) both;
 }
 
 .mark__layer--wave1,
 .mark__layer--wave2 {
   transform-origin: 64% 39%;
+}
+
+.login--intro .mark__layer--pin {
+  animation: mark-pin 500ms var(--ab-ease-spring) both;
+}
+
+.login--intro .mark__layer--bus {
+  animation: mark-bus 450ms 300ms var(--ab-ease-spring) both;
+}
+
+.login--intro .mark__layer--wave1,
+.login--intro .mark__layer--wave2 {
   animation: mark-wave 380ms var(--ab-ease-out) both;
 }
 
-.mark__layer--wave1 { animation-delay: 650ms; }
-.mark__layer--wave2 { animation-delay: 850ms; }
+.login--intro .mark__layer--wave1 { animation-delay: 650ms; }
+.login--intro .mark__layer--wave2 { animation-delay: 850ms; }
 
 .mark__text {
   display: grid;
+  grid-template-columns: 1fr;
+}
+
+.login--intro .mark__text {
   grid-template-columns: 0fr;
   animation: mark-open 700ms 1150ms var(--ab-ease-out) forwards;
 }
@@ -67,6 +83,9 @@
   overflow: hidden;
   padding-left: 12px;
   white-space: nowrap;
+}
+
+.login--intro .mark__name {
   animation: mark-name 600ms 1300ms var(--ab-ease-out) both;
 }
 
@@ -75,7 +94,7 @@
    there (logo in parts + name, ~1900ms) and then moves up to its place.
    The origin is the center of the content (66px of padding + half the
    logo), so the translate takes it right to the middle of the viewport. */
-.login .mark {
+.login--intro .mark {
   --marca-escala: 1.4;
   transform-origin: 50% calc(66px + 32px);
   animation: mark-settle 700ms 2100ms var(--ab-ease-out) backwards;
@@ -83,11 +102,11 @@
 
 /* On narrow phones the enlarged block does not fit at 1.4 */
 @media (max-width: 380px) {
-  .login .mark { --marca-escala: 1.2; }
+  .login--intro .mark { --marca-escala: 1.2; }
 }
 
 /* The form waits until the brand is almost in its place */
-.login .login__card { animation-delay: 2550ms; }
+.login--intro .login__card { animation-delay: 2550ms; }
 
 @keyframes mark-settle {
   from { transform: translateY(calc(50dvh - 66px - 32px)) scale(var(--marca-escala)); }
