@@ -72,8 +72,9 @@
                          click anywhere edits without nesting the delete button in it. -->
                     <li class="table__row table__row--selectable">
                       <span class="table__cell">
-                        <button class="table__open" type="button" (click)="openEdit(p.code)"
-                                [attr.aria-label]="'Editar andén ' + p.bay">
+                        <!-- Accessible name = hidden verb + the visible text (WCAG 2.5.3 Label in Name). -->
+                        <button class="table__open" type="button" (click)="openEdit(p.code)">
+                          <span class="ab-sr-only">Editar andén </span>
                           <span class="table__line">{{ p.bay }}</span>
                           <span class="table__sub">Código {{ p.code }}</span>
                         </button>

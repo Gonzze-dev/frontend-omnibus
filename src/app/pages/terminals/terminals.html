@@ -57,8 +57,10 @@
                  click anywhere edits without nesting the delete button in it. -->
             <div class="table__row table__row--selectable" role="row">
               <span class="table__cell" role="cell">
-                <button class="table__open" type="button" (click)="openEdit(t.uuid)"
-                        [attr.aria-label]="'Editar terminal ' + t.name">
+                <!-- Accessible name = hidden verb + the visible text, so voice control
+                     users can say what they see (WCAG 2.5.3 Label in Name). -->
+                <button class="table__open" type="button" (click)="openEdit(t.uuid)">
+                  <span class="ab-sr-only">Editar terminal </span>
                   <span class="table__line">{{ t.name }}</span>
                   <span class="table__sub">{{ t.uuid }}</span>
                 </button>

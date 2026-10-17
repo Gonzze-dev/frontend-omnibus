@@ -59,7 +59,9 @@
       </div>
 
       @if (comboOpen()) {
-        <ul id="terminal-list" class="combo" role="listbox" aria-label="Terminales">
+        <!-- tabindex="-1": a scrollable list is a Tab stop in Chrome; Tab must go
+             from the input to the next field (options are reached with the arrows). -->
+        <ul id="terminal-list" class="combo" role="listbox" aria-label="Terminales" tabindex="-1">
           @for (t of terminalOptions(); track t.uuid; let i = $index) {
             <li
               [id]="'terminal-' + i"

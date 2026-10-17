@@ -14,7 +14,9 @@
   </svg>
 
   @if (open()) {
-    <ul #list class="search__list" role="listbox" popover="manual" [id]="listId">
+    <!-- tabindex="-1": a scrollable list is a Tab stop in Chrome; Tab must go
+         from the input to the next field (options are reached with the arrows). -->
+    <ul #list class="search__list" role="listbox" popover="manual" [id]="listId" tabindex="-1">
       @for (o of filtered(); track o.value; let i = $index) {
         <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
         <li class="search__option" role="option" [id]="listId + '-' + i"
