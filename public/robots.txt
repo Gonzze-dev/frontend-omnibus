@@ -1,0 +1,9 @@
+# Private screens (home, dashboard, profile...) are not disallowed on purpose:
+# nginx serves them with "X-Robots-Tag: noindex", and crawlers only see that
+# header if they are allowed to fetch the page.
+User-agent: *
+Disallow: /api/
+Disallow: /realtime
+Disallow: /notify_passengers
+
+Sitemap: https://frontend-omnibus-production.up.railway.app/sitemap.xml

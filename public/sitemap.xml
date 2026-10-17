@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Only the public screens: everything else is behind login. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://frontend-omnibus-production.up.railway.app/login</loc>
+  </url>
+  <url>
+    <loc>https://frontend-omnibus-production.up.railway.app/register</loc>
+  </url>
+  <url>
+    <loc>https://frontend-omnibus-production.up.railway.app/forgot-password</loc>
+  </url>
+</urlset>
